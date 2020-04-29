@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PMDDotNETConsole": {
+      "commandName": "Project",
+      "commandLineArgs": "/v C:\\Users\\kuma\\Desktop\\pmd\\work.mml"
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETFramework,Version=v4.7.2": {
+      "PMDDotNETCommon/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        }
+      },
+      "PMDDotNETCompiler/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "dependencies": {
+          "PMDDotNETCommon": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.7.2/win7-x86": {
+      "PMDDotNETCommon/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        }
+      },
+      "PMDDotNETCompiler/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "dependencies": {
+          "PMDDotNETCommon": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PMDDotNETCommon/1.0.0": {
+      "type": "project",
+      "path": "../PMDDotNETCommon/PMDDotNETCommon.csproj",
+      "msbuildProject": "../PMDDotNETCommon/PMDDotNETCommon.csproj"
+    },
+    "PMDDotNETCompiler/1.0.0": {
+      "type": "project",
+      "path": "../PMDDotNETCompiler/PMDDotNETCompiler.csproj",
+      "msbuildProject": "../PMDDotNETCompiler/PMDDotNETCompiler.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETFramework,Version=v4.7.2": [
+      "PMDDotNETCommon >= 1.0.0",
+      "PMDDotNETCompiler >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\kuma\\.nuget\\packages\\": {},
+    "C:\\Microsoft\\Xamarin\\NuGet\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole.Net4\\PMDDotNETConsole.Net4.csproj",
+      "projectName": "PMDDotNETConsole",
+      "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole.Net4\\PMDDotNETConsole.Net4.csproj",
+      "packagesPath": "C:\\Users\\kuma\\.nuget\\packages\\",
+      "outputPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole.Net4\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Microsoft\\Xamarin\\NuGet\\",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\kuma\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net472"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net472": {
+          "projectReferences": {
+            "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCommon\\PMDDotNETCommon.csproj": {
+              "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCommon\\PMDDotNETCommon.csproj"
+            },
+            "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCompiler\\PMDDotNETCompiler.csproj": {
+              "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCompiler\\PMDDotNETCompiler.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net472": {
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win7-x86": {
+        "#import": []
+      }
+    }
+  }
+}

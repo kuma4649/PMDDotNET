@@ -1,0 +1,15 @@
+﻿;日本語メッセージ定義
+;I 通常のメッセージ
+;E エラーメッセージ
+
+;
+
+;common
+E0000=Exception message:\r\n{0}\r\nException stacktrace:\r\n{1}\r\n
+E0001=従来の書式が既に使われていて自動でmucomDotNET形式に移行できませんでした。Driverタグを使用してmucomDotNETを予め宣言してください。
+
+;PmdException.cs 0300
+E0300=[行:{0} 桁:{1}]{2}
+
+;Console向け
+E0600=引数がありません\r\nUsage:  MC [/DotNEToption] [/option] filename[.MML] [filename[.FF] [filename[.M]]]\r\nDotNETOption: -LOGLEVEL=[FATAL|ERROR|WARNING|INFO|DEBUG|TRACE] Set LOG Level.(Default:INFO)\r\n              -OFFLOG=WARNING                                  Not out level warning.\r\n              -XML                                             output xml File\r\nOption:       /V  Compile with Tonedatas & Messages & Filenames\r\n              /VW Write Tonedata after Compile\r\n              /N  Compile on OPN   Mode(Default)\r\n              /L  Compile on OPL   Mode\r\n              /M  Compile on OPM   Mode\r\n              /T  Compile on TOWNS Mode\r\n              /P  Play after Compile Complete\r\n              /S  Not Write Compiled File & Play\r\n              /A  Not Set ADPCM_File before Play\r\n              /O  Not Put Title Messages after Play\r\n              /C  Calculate & Put Total Length of Parts\r\n
