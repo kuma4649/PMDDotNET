@@ -1,0 +1,11 @@
+.vs/
+PMDDotNET/bin/
+PMDDotNET/obj/
+PMDDotNETCommon/bin/
+PMDDotNETCommon/obj/
+PMDDotNETCompiler/bin/
+PMDDotNETCompiler/obj/
+PMDDotNETConsole/bin/
+PMDDotNETConsole/obj/
+PMDDotNETConsole.Net4/bin/
+PMDDotNETConsole.Net4/obj/
