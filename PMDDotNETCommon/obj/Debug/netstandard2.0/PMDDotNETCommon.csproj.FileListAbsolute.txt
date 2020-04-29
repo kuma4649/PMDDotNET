@@ -1,0 +1,9 @@
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\bin\Debug\netstandard2.0\PMDDotNETCommon.deps.json
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\bin\Debug\netstandard2.0\PMDDotNETCommon.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\bin\Debug\netstandard2.0\PMDDotNETCommon.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.csprojAssemblyReference.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.csproj.CoreCompileInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.AssemblyInfoInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.AssemblyInfo.cs
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCommon\obj\Debug\netstandard2.0\PMDDotNETCommon.pdb

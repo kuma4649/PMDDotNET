@@ -1,0 +1,165 @@
+#Title TriggerHeart EXELICA Player Select 「トリガーハートたち」
+#Composer M.Kajihara
+#Arranger 編曲者
+#Memo 動画見ながら入力
+#Memo めも2
+#FM3Extend XY
+
+; nm alg fb
+@034 003 007 = EBASS
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams EBass
+ 027 016 000 007 004 025 000 015 007 000
+ 031 008 000 007 006 045 000 000 003 000
+ 031 018 000 007 006 015 000 000 007 000
+ 031 006 000 008 014 000 000 001 000 000
+
+; nm alg fb
+@001 005 005
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams PiyoKick
+ 031 020 000 015 015 004 000 001 003 000
+ 021 001 015 008 000 000 000 000 003 000
+ 031 001 015 008 000 000 000 000 003 000
+ 031 001 015 008 000 000 000 000 007 000
+
+; nm alg fb
+@002 004 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams TappySnare
+ 018 012 000 015 001 009 000 005 003 000
+ 031 016 014 015 001 000 000 013 007 000
+ 024 027 015 015 012 002 000 010 007 000
+ 031 016 014 015 005 000 000 005 003 000
+
+; nm alg fb
+@003 004 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams PowerSnare(o2g)
+ 031 000 000 000 000 003 000 008 000 000
+ 031 020 013 008 002 000 002 009 000 000
+ 031 000 000 000 000 005 000 000 000 000
+ 031 016 000 008 015 000 000 001 000 000
+
+; nm alg fb
+@004 003 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams SynTom
+ 031 000 000 006 000 000 001 015 000 000
+ 031 023 014 006 005 025 001 008 000 000
+ 031 023 000 015 015 000 001 002 000 000
+ 031 011 000 007 015 000 001 004 000 000
+
+; nm alg fb
+@012 004 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams SEQ 2op
+ 021 004 002 004 002 045 000 012 003 000
+ 024 012 004 006 002 000 000 004 007 001
+ 021 004 002 004 002 040 000 012 007 000
+ 024 012 004 006 002 000 000 004 003 001
+
+; nm alg fb
+@013 006 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams SEQ 2op + 1op x2
+ 021 004 002 004 002 045 000 012 003 000
+ 024 012 004 006 002 000 000 004 007 001
+ 024 012 004 006 002 000 000 004 003 001
+ 024 012 004 006 002 000 000 004 003 001
+
+; nm alg fb
+@000 005 005
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams SEQ 2op + 1op x2
+ 031 000 000 000 000 000 000 001 007 000
+ 014 014 015 010 003 000 000 003 000 000
+ 013 013 015 010 003 000 000 002 000 000
+ 012 012 015 010 003 000 000 000 000 000
+
+; nm alg fb
+@005 005 006
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams DGuitar
+ 018 016 000 008 003 000 002 000 003 000
+ 026 010 000 009 001 000 000 001 000 000
+ 026 010 000 009 001 000 000 005 000 000
+ 026 010 000 009 001 005 000 008 000 000
+
+; nm alg fb
+@040 002 007
+; ar  dr  sr  rr  sl  tl  ks  ml  dt ams APiano
+ 028 008 004 004 001 040 002 001 007 000
+ 028 000 000 004 000 050 002 012 003 000
+ 028 000 000 004 000 040 002 003 007 000
+ 026 008 004 006 001 000 002 001 003 000
+
+A t48
+ACXYDEFGH _1
+
+!b @1v13o1*1
+!s @3v15o2*0
+!S @2v13o2*0
+!t @4v13o2*1
+
+!h E1,-3,1,1v15w0
+!H E1,-2,4,1v15w0
+!c E0,0,3,1v15w5
+
+!o @0v10q1
+!g @5v08q1
+!a @40v08q1
+
+ABCDEFXYGHI L
+
+A  @34v12q1
+A  o4l16W6,-5c8.c8.<a-8.b-8.W0b8g8> 
+B  MP-60
+B  o2l16!ba8.a8.a8.a8.a!Sggg
+I  P2
+I  o2l16!hf((ff))f((ff))f((ff))f((f32f32f))f((f))f((!Ha!h))
+C  s3@13v9W6,-2o3l8. gg e-f  g8 d8 W0
+X  s4@13v9W6,-2o3l8. ee c d  d8<b8>W0
+Y  s8@13v9W6,-2o3l8. cc<a-b- b-8g8>W0
+GH E2,-2,6,1v15q1
+G  o3l8W6,-3c.c.<a-.b-.bg>W0
+H  o2l8W6,-3c.c.<a-.b-.bg>W0
+D  v10o7!oD0 W6,-5l16c8.c8.<a-8.b-8.W0b8g8>
+E  v10o6!oD3 W6,-5l16c8.c8.<a-8.b-8.W0b8g8>
+F  v10o5!oD-3W6,-5l16c8.c8.<a-8.b-8.W0b8g8>
+
+A  o4l16[ccf&grcrcrcf&grcf<g>]4
+B  o2l16[!ba8!sg8.!ba!sg8.:!ba!sg!ba8a!sg8]4!Sg8!ba!sg!ba!sgg
+I  o2l16!cc8!h(f(f)) f((f)f(f)) f((f32f32)f(f)) f((!Ha!h)f(f))
+I  o2l16[f((f)f(f)) f((f)f(f)) f((f32f32)f(f)) f((!Ha!h)f(f))]2
+I  o2l16 f((f))!cc8!h f((f)f(f)) f!cw10c8!h((f)) f((!Ha!h))!cw15c8
+C       o4l16v7 W3,-3 p1       [cgfc8gfc8<g>gfc<g>fg]4
+X  s12@12o4l16v7 W3,-3 p1 D3r8. [cgfc8gfc8<g>gfc<g>fg]4
+Y  s0 [r1]4
+GH Ml8,1,3,1*1 E2,-1,0,1 v15 |H D1 v13 r8.
+GH o5l16cde-fg8cb-8.a-g8f8g1r cde-fg8cb-8.a-g8f8c2.rr4
+D  o7l16{c<<c}4,16!go2p2(((([c&)]4c2&{c>c}1&c1&[c8&(]5c8!oo6p3g8g8
+E  o6l16{c<<c}4,16!go3p2(((([c&)]4c2&{c>c}1&c1&[c8&(]5c8!oo5p3g8g8
+F  o5l16{c<<c}4,16!go3p2(((([c&)]4c2&{c>c}1&c1&[c8&(]5c8!oo4p3)g8g8(
+
+A  o4l16[ccf&grcrcrcf&grcf<g>]4
+B  o2l16[!ba8!sg8.!ba!sg8:r!ba!sg!ba8a!sg8]4!ba!sg!ba!sg!ba!tp2bp3fp1dp3
+I  o2l16!cc8!h(f(f)) f((f)f(f)) f((f32f32)f(f)) f((!Ha!h)f(f))
+I  o2l16[f((f)f(f)) f((f)f(f)) f((f32f32)f(f)) f((!Ha!h)f(f))]2
+I  o2l16 f((f))!cc8!h f((f)f(f)) f!cw10c8!h((f)) f((!Ha!h))!cw15c8
+C  [cgfc8gfc8<g>gfc< g>fg]4
+X  [cgfc8gfc8<g>gfc<:g>fg]4
+Y  [r1]4
+GH o5l16cde-fg8cb-8.a-g8f8g1r cde-fg8cb-8.a-g8f8c2.re-8d8
+D  o7{c<<c}4,16r2.!ap2v10 o4    cde-fg8cb-8.a-rgf8g1r cde-fgrb->c&4 !oo6p3g8g8
+E  o6{c<<c}4,16r2.!ap2v09 o6    cde-fg8cb-8.a-rgf8g1r cde-fgrb->c&4 !oo5p3g8g8
+F  o5{c<<c}4,16r2.!ap2v05 o6 r8.cde-fg8cb-8.a-rgf8g1r cde-fgrb->c8  !oo4p3g8g8
+
+A  o3l16W6,-5a-8.a-8.a-8.a-8.W0f8a-8W6,-5b-8.b-8.b-8.b-8.W0g8b-8
+B  o2l16!ba8!sg!ba8!sg!ba!Sg8!ba!sg8!ba8!Sg%2g%8.-%2
+B  o2l16!ba8!sg!ba8!sg!ba!Sg8!ba!Sg8!ba8a8
+I  o2l16!cc8!h((f))f((ff))f((ff))f((f32f32f))!cw10c8w15c8
+I  o2l16!cc8!h((f))f((ff))f((ff))f((f32f32f))f((f))f((!Ha!h))
+C      [cgfc8gfc8<g>gfc< g>fg]2
+X  s4@13l8 v10W6,-2 e-.e-.e-.e-.c8 e-8 f.f.f.f. d8 f8
+Y  s8@13l8 v10W6,-2 c. c. c. c.<a-8>c8 d.d.d.d.<b-8>d8
+GH o5l16c2.<b-8>c8d4.. |G b-2r |H b-4. D0
+D  o6l16W6,-5a-8.a-8.a-8.a-8.W0f8a-8 W6,-5b-8.b-8.b-8.b-8.W0g8b-8
+E  o5l16W6,-5a-8.a-8.a-8.a-8.W0f8a-8 W6,-5b-8.b-8.b-8.b-8.W0g8b-8
+F  o4l16W6,-5a-8.a-8.a-8.a-8.W0f8a-8 W6,-5b-8.b-8.b-8.b-8.W0g8b-8
+
+
+ bendset:
+  Bコマンドで13以上セットするとpush dxしたままjncしてしまう？
+

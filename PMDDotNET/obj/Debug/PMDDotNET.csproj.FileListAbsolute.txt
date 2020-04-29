@@ -1,0 +1,7 @@
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\bin\Debug\PMDDotNET.exe.config
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\bin\Debug\PMDDotNET.exe
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\bin\Debug\PMDDotNET.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\obj\Debug\PMDDotNET.csprojAssemblyReference.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\obj\Debug\PMDDotNET.csproj.CoreCompileInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\obj\Debug\PMDDotNET.exe
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNET\obj\Debug\PMDDotNET.pdb

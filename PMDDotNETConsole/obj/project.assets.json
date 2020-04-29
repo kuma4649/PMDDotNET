@@ -1,0 +1,117 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "PMDDotNETCommon/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCommon.dll": {}
+        }
+      },
+      "PMDDotNETCompiler/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "dependencies": {
+          "PMDDotNETCommon": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PMDDotNETCompiler.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "PMDDotNETCommon/1.0.0": {
+      "type": "project",
+      "path": "../PMDDotNETCommon/PMDDotNETCommon.csproj",
+      "msbuildProject": "../PMDDotNETCommon/PMDDotNETCommon.csproj"
+    },
+    "PMDDotNETCompiler/1.0.0": {
+      "type": "project",
+      "path": "../PMDDotNETCompiler/PMDDotNETCompiler.csproj",
+      "msbuildProject": "../PMDDotNETCompiler/PMDDotNETCompiler.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETCoreApp,Version=v3.1": [
+      "PMDDotNETCommon >= 1.0.0",
+      "PMDDotNETCompiler >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\kuma\\.nuget\\packages\\": {},
+    "C:\\Microsoft\\Xamarin\\NuGet\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole\\PMDDotNETConsole.csproj",
+      "projectName": "PMDDotNETConsole",
+      "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole\\PMDDotNETConsole.csproj",
+      "packagesPath": "C:\\Users\\kuma\\.nuget\\packages\\",
+      "outputPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETConsole\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Microsoft\\Xamarin\\NuGet\\",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\kuma\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "netcoreapp3.1"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "projectReferences": {
+            "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCommon\\PMDDotNETCommon.csproj": {
+              "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCommon\\PMDDotNETCommon.csproj"
+            },
+            "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCompiler\\PMDDotNETCompiler.csproj": {
+              "projectPath": "D:\\bootcamp\\Source\\Repos\\PMDDotNET\\PMDDotNETCompiler\\PMDDotNETCompiler.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "netcoreapp3.1": {
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.201\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

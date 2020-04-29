@@ -1,0 +1,15 @@
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\lang\PMDDotNETmessage.ja-JP.txt
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\lang\PMDDotNETmessage.txt
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\PMDDotNETCompiler.deps.json
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\PMDDotNETCompiler.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\PMDDotNETCompiler.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\musicDriverInterface.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\PMDDotNETCommon.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\bin\Debug\netstandard2.0\PMDDotNETCommon.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.csprojAssemblyReference.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.csproj.CoreCompileInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.AssemblyInfoInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.AssemblyInfo.cs
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.csproj.CopyComplete
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETCompiler\obj\Debug\netstandard2.0\PMDDotNETCompiler.pdb
