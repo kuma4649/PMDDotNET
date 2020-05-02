@@ -9,12 +9,12 @@ namespace PMDDotNET.Compiler
 		//;==============================================================================
 		//;	Work Area
 		//;==============================================================================
-		public string warning_mes = "Warning " + mc.eof;
-		public string not_ff_mes = ": 音色ファイル名が指定されていません．" + mc.cr + mc.lf + mc.eof;
-		public string ff_readerr_mes = ": 音色ファイルが読み込めません．" + mc.cr + mc.lf + mc.eof;
-		public string not_pmd_mes = ": ＰＭＤが常駐していません．" + mc.cr + mc.lf + mc.eof;
-		public string loop_err_mes = " : ループ終了記号 ] が足りません。" + mc.cr + mc.lf + mc.eof;
-		public string mcopt_err_mes = ": 環境変数 MCOPT の記述に誤りがあります。" + (char)13 + (char)10 + mc.eof;
+		public string warning_mes = "Warning ";
+		public string not_ff_mes = ": 音色ファイル名が指定されていません．";
+		public string ff_readerr_mes = ": 音色ファイルが読み込めません．";
+		public string not_pmd_mes = ": ＰＭＤが常駐していません．";
+		public string loop_err_mes = " : ループ終了記号 ] が足りません。";
+		public string mcopt_err_mes = ": 環境変数 MCOPT の記述に誤りがあります。";
 
 #if efc
 		public string usames = "Usage:  EFC [/option] filename[.EML] [filename[.FF]]" + mc.cr + mc.lf + mc.cr + mc.lf

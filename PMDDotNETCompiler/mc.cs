@@ -1821,16 +1821,17 @@ namespace PMDDotNET.Compiler
             }
             catch
             {
-                if (voice_seg.voice_buf == null) voice_seg.voice_buf = new byte[8192];
-                print_mes(mml_seg.warning_mes);
-                print_mes(mml_seg.ff_readerr_mes);
-                return;
+            }
+
+            if (voice_seg.voice_buf == null)
+            {
+                voice_seg.voice_buf = new byte[8192];
+                print_mes(mml_seg.warning_mes + mml_seg.ff_readerr_mes);
             }
 
 #if !hyouka
             mml_seg.prg_flg |= 1;
 #endif
-            if (voice_seg.voice_buf == null) voice_seg.voice_buf = new byte[8192];
         }
 
 
