@@ -202,178 +202,13 @@ namespace PMDDotNET.Compiler
 
             do
             {
-                Log.WriteLine(LogLevel.TRACE, string.Format("jp:{0}", ret));
-                switch (ret)
-                {
-                    //Pass1
-
-                    case enmPass2JumpTable.Pass1:
-                        ret = Pass1();
-                        break;
-
-                    case enmPass2JumpTable.mainLoopPass1:
-                        ret = mainLoopPass1();
-                        break;
-
-                    case enmPass2JumpTable.InitLoopCount:
-                        ret = InitLoopCount();
-                        break;
-
-
-
-                    //Pass2
-
-                    case enmPass2JumpTable.Pass2CompileStart:
-                        ret = Pass2CompileStart();
-                        break;
-                    case enmPass2JumpTable.cmloop:
-                        ret = cmloop();
-                        break;
-                    case enmPass2JumpTable.part_stadr_set:
-                        ret = part_stadr_set();
-                        break;
-                    case enmPass2JumpTable.cmloop2:
-                        ret = cmloop2();
-                        break;
-                    case enmPass2JumpTable.cloop:
-                        ret = cloop();
-                        break;
-                    case enmPass2JumpTable.part_end:
-                        ret = part_end();
-                        break;
-                    case enmPass2JumpTable.check_lopcnt:
-                        ret = check_lopcnt();
-                        break;
-
-                    case enmPass2JumpTable.hsset:
-                        ret = hsset();
-                        break;
-                    case enmPass2JumpTable.one_line_compile:
-                        ret = one_line_compile();
-                        break;
-                    case enmPass2JumpTable.rem_set:
-                        ret = rem_set();
-                        break;
-
-                    case enmPass2JumpTable.vdat_set:
-                        ret = vdat_set();
-                        break;
-                    case enmPass2JumpTable.nd_s_loop:
-                        ret = nd_s_loop();
-                        break;
-                    case enmPass2JumpTable.nd_s_exit:
-                        ret = nd_s_exit();
-                        break;
-
-                    case enmPass2JumpTable.memo_write:
-                        ret = memo_write();
-                        break;
-
-                    case enmPass2JumpTable.hscom_exit:
-                        ret = hscom_exit();
-                        break;
-
-                    case enmPass2JumpTable.forceReturn:
-                        throw new Exception("ここでreturnにはならないはず");
-
-                    case enmPass2JumpTable.olc0:
-                        ret = olc0();
-                        break;
-
-                    case enmPass2JumpTable.olc00:
-                        ret = olc00();
-                        break;
-
-                    case enmPass2JumpTable.olc02:
-                        ret = olc02();
-                        break;
-
-                    case enmPass2JumpTable.olc03:
-                        ret = olc03();
-                        break;
-
-                    case enmPass2JumpTable.ots002:
-                        ret = ots002();
-                        break;
-
-                    case enmPass2JumpTable.olc_skip2:
-                        ret = olc_skip2();
-                        break;
-
-                    case enmPass2JumpTable.skip_mml:
-                        ret = skip_mml();
-                        break;
-
-                    case enmPass2JumpTable.parset:
-                        ret = parset();
-                        break;
-
-                    case enmPass2JumpTable.vset:
-                        ret = vset();
-                        break;
-
-                    case enmPass2JumpTable.vsetm:
-                        ret = vsetm();
-                        break;
-
-                    case enmPass2JumpTable.vsetm1:
-                        ret = vsetm1();
-                        break;
-
-                    case enmPass2JumpTable.vss:
-                        ret = vss();
-                        break;
-
-                    case enmPass2JumpTable.vss2:
-                        ret = vss2();
-                        break;
-
-                    case enmPass2JumpTable.vss2m:
-                        ret = vss2m();
-                        break;
-
-                    case enmPass2JumpTable.lngrew:
-                        ret = lngrew();
-                        break;
-
-                    case enmPass2JumpTable.lng_dec:
-                        ret = lng_dec();
-                        break;
-
-                    case enmPass2JumpTable.tieset_2:
-                        ret = tieset_2();
-                        break;
-
-                    case enmPass2JumpTable.lngmul:
-                        ret = lngmul();
-                        break;
-
-                    case enmPass2JumpTable.p1c_fin:
-                        line_skip();
-                        ret = enmPass2JumpTable.mainLoopPass1;
-                        break;
-
-                    case enmPass2JumpTable.rskip:
-                        ret = rskip();
-                        break;
-
-                    case enmPass2JumpTable.rtloop:
-                        ret = rtloop();
-                        break;
-
-                    case enmPass2JumpTable.rtlp2:
-                        ret = rtlp2();
-                        break;
-
-                }
+                ret = Jumper(ret);
 
                 if (ret == enmPass2JumpTable.exit) break;
 
             } while (true);
 
-
-
-            List<MmlDatum> dst = new List<MmlDatum>();
+            List < MmlDatum > dst = new List<MmlDatum>();
             dst.Add(new MmlDatum(m_seg.m_start));
             for (int i = 0; i < m_seg.m_buf.Count; i++) dst.Add(m_seg.m_buf.Get(i));
             for (int i = 0; i < dst.Count; i++) m_seg.m_buf.Set(i, dst[i]);
@@ -381,6 +216,176 @@ namespace PMDDotNET.Compiler
             return m_seg.m_buf.GetByteArray();
         }
 
+        private enmPass2JumpTable Jumper(enmPass2JumpTable ret)
+        {
+            Log.WriteLine(LogLevel.TRACE, string.Format("jp:{0}", ret));
+            switch (ret)
+            {
+                //Pass1
+
+                case enmPass2JumpTable.Pass1:
+                    ret = Pass1();
+                    break;
+
+                case enmPass2JumpTable.mainLoopPass1:
+                    ret = mainLoopPass1();
+                    break;
+
+                case enmPass2JumpTable.InitLoopCount:
+                    ret = InitLoopCount();
+                    break;
+
+
+
+                //Pass2
+
+                case enmPass2JumpTable.Pass2CompileStart:
+                    ret = Pass2CompileStart();
+                    break;
+                case enmPass2JumpTable.cmloop:
+                    ret = cmloop();
+                    break;
+                case enmPass2JumpTable.part_stadr_set:
+                    ret = part_stadr_set();
+                    break;
+                case enmPass2JumpTable.cmloop2:
+                    ret = cmloop2();
+                    break;
+                case enmPass2JumpTable.cloop:
+                    ret = cloop();
+                    break;
+                case enmPass2JumpTable.part_end:
+                    ret = part_end();
+                    break;
+                case enmPass2JumpTable.check_lopcnt:
+                    ret = check_lopcnt();
+                    break;
+
+                case enmPass2JumpTable.hsset:
+                    ret = hsset();
+                    break;
+                case enmPass2JumpTable.one_line_compile:
+                    ret = one_line_compile();
+                    break;
+                case enmPass2JumpTable.rem_set:
+                    ret = rem_set();
+                    break;
+
+                case enmPass2JumpTable.vdat_set:
+                    ret = vdat_set();
+                    break;
+                case enmPass2JumpTable.nd_s_loop:
+                    ret = nd_s_loop();
+                    break;
+                case enmPass2JumpTable.nd_s_exit:
+                    ret = nd_s_exit();
+                    break;
+
+                case enmPass2JumpTable.memo_write:
+                    ret = memo_write();
+                    break;
+
+                case enmPass2JumpTable.hscom_exit:
+                    ret = hscom_exit();
+                    break;
+
+                case enmPass2JumpTable.forceReturn:
+                    return ret;
+                //throw new Exception("ここでreturnにはならないはず");
+
+                case enmPass2JumpTable.olc0:
+                    ret = olc0();
+                    break;
+
+                case enmPass2JumpTable.olc00:
+                    ret = olc00();
+                    break;
+
+                case enmPass2JumpTable.olc02:
+                    ret = olc02();
+                    break;
+
+                case enmPass2JumpTable.olc03:
+                    ret = olc03();
+                    break;
+
+                case enmPass2JumpTable.ots002:
+                    ret = ots002();
+                    break;
+
+                case enmPass2JumpTable.olc_skip2:
+                    ret = olc_skip2();
+                    break;
+
+                case enmPass2JumpTable.skip_mml:
+                    ret = skip_mml();
+                    break;
+
+                case enmPass2JumpTable.parset:
+                    ret = parset();
+                    break;
+
+                case enmPass2JumpTable.vset:
+                    ret = vset();
+                    break;
+
+                case enmPass2JumpTable.vsetm:
+                    ret = vsetm();
+                    break;
+
+                case enmPass2JumpTable.vsetm1:
+                    ret = vsetm1();
+                    break;
+
+                case enmPass2JumpTable.vss:
+                    ret = vss();
+                    break;
+
+                case enmPass2JumpTable.vss2:
+                    ret = vss2();
+                    break;
+
+                case enmPass2JumpTable.vss2m:
+                    ret = vss2m();
+                    break;
+
+                case enmPass2JumpTable.lngrew:
+                    ret = lngrew();
+                    break;
+
+                case enmPass2JumpTable.lng_dec:
+                    ret = lng_dec();
+                    break;
+
+                case enmPass2JumpTable.tieset_2:
+                    ret = tieset_2();
+                    break;
+
+                case enmPass2JumpTable.lngmul:
+                    ret = lngmul();
+                    break;
+
+                case enmPass2JumpTable.p1c_fin:
+                    line_skip();
+                    ret = enmPass2JumpTable.mainLoopPass1;
+                    break;
+
+                case enmPass2JumpTable.rskip:
+                    ret = rskip();
+                    break;
+
+                case enmPass2JumpTable.rtloop:
+                    ret = rtloop();
+                    break;
+
+                case enmPass2JumpTable.rtlp2:
+                    ret = rtlp2();
+                    break;
+
+            }
+
+            return ret;
+        }
 
         private enum enmPass2JumpTable
         {
@@ -1346,12 +1351,28 @@ namespace PMDDotNET.Compiler
             work.di = aa;
 
             //push bx
+            int bx_p = work.bx;
             mml_seg.hsflag = 1;
             mml_seg.prsok = 0;
-            if (one_line_compile() != enmPass2JumpTable.forceReturn)
+            enmPass2JumpTable ret = one_line_compile();
+            //if (ret != enmPass2JumpTable.forceReturn)
             {
-                throw new Exception("リターンできていない!");//KUMA:ここでは戻ってくる必要あり
+                do
+                {
+                    ret = Jumper(ret);
+
+                    if (ret == enmPass2JumpTable.exit) break;
+                    if (ret == enmPass2JumpTable.hscom_exit)
+                    {
+                        mml_seg.hsflag--;
+                        break;
+                    }
+
+                } while (ret != enmPass2JumpTable.forceReturn);
+
+                //throw new Exception("リターンできていない!");//KUMA:ここでは戻ってくる必要あり
             }
+            work.bx = bx_p;
             //pop bx
 
             m_seg.m_buf.Set(work.di, new MmlDatum(0xff));
@@ -7288,7 +7309,9 @@ namespace PMDDotNET.Compiler
             mml_seg.lextbl[work.bx + 0] = (byte)work.di;// lextblに開けておくアドレスをセット
             mml_seg.lextbl[work.bx + 1] = (byte)(work.di >> 8);
 
-            work.di += 2;//２つ、開けておく
+            //work.di += 2;//２つ、開けておく
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0x00));//KUMA: オリジナルではメモリの内容が不定のまま？
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0x00));
 
             return enmPass2JumpTable.olc0;
         }

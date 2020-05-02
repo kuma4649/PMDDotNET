@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "/v C:\\Users\\kuma\\Desktop\\pmd\\work.mml "
+      "commandLineArgs": "/v C:\\Users\\kuma\\Desktop\\pmd\\ms_ff7.mml C:\\Users\\kuma\\Desktop\\pmd\\v5.ff"
     }
   }
 }

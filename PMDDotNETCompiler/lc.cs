@@ -37,6 +37,15 @@ namespace PMDDotNET.Compiler
             enmPart_ends ret;
             ret = enmPart_ends.calc_start;
 
+            //List<byte> dst = new List<byte>();
+            //dst.Add(0);
+            //for (int i = 0; i < m_seg.m_buf.Count; i++)
+            //{
+            //    MmlDatum o = m_seg.m_buf.Get(i);
+            //    dst.Add((byte)(o == null ? 0xff : o.dat));
+            //}
+            //System.IO.File.WriteAllBytes("c:\\temp\\debug",dst.ToArray());
+
             do
             {
                 switch (ret)
@@ -170,7 +179,8 @@ namespace PMDDotNET.Compiler
                 do
                 {
                     Log.WriteLine(LogLevel.TRACE, string.Format("si:{0}", work.si));
-                    al = (byte)m_seg.m_buf.Get(work.si++).dat;
+                    al = (byte)(work.si<m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++).dat : 0x80);
+
                     if (al == 0x80) return enmPart_ends.part_ends;
                     if (al >= 0x80) break;
 
@@ -213,7 +223,7 @@ namespace PMDDotNET.Compiler
                 work.si = work.di < 3 ? fm3_adr[work.di] : pcm_adr[work.di - 3];
                 if (work.si == 0) goto extend_check_next;
                 work.si += 0;//offset m_buf
-                char al_c = _fm3_partchr[bx];
+                char al_c = bx < 3 ? _fm3_partchr[bx] : _pcm_partchr[bx - 3];
                 part_chr = al_c;
                 if (work.di < 3) fm3_adr[work.di] = 0;
                 else pcm_adr[work.di - 3] = 0;
