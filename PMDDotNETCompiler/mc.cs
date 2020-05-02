@@ -16,7 +16,7 @@ namespace PMDDotNET.Compiler
         private mml_seg mml_seg = null;
         private fnumdat_seg fnumdat_seg = null;
         private hs_seg hs_seg = null;
-
+        private voice_seg voice_seg = null;
 
         //;==============================================================================
         //;
@@ -156,15 +156,24 @@ namespace PMDDotNET.Compiler
             this.work = work;
             this.kankyo_seg = kankyo_seg;
 
+            voice_seg = new voice_seg();
             m_seg = new m_seg();
             lc = new lc(this, work, m_seg);
             mml_seg = new mml_seg();
             mml_seg.mml_buf = srcBuf;
-            voice_seg.voice_buf = ffBuf;
+            voiceTrancer(ffBuf);
             setupComTbl();
             setupRcomtbl();
             fnumdat_seg = new fnumdat_seg();
             hs_seg = new hs_seg();
+        }
+
+        private void voiceTrancer(byte[] ffBuf)
+        {
+            voice_seg.voice_buf = new byte[8192];
+            if (ffBuf == null || ffBuf.Length < 1) return;
+            for(int i=0;i< ffBuf.Length;i++)
+                voice_seg.voice_buf[i] = ffBuf[i];
         }
 
         //;==============================================================================
@@ -1366,8 +1375,15 @@ namespace PMDDotNET.Compiler
                     if (ret == enmPass2JumpTable.exit) break;
                     if (ret == enmPass2JumpTable.hscom_exit)
                     {
-                        mml_seg.hsflag--;
-                        break;
+                        if (mml_seg.hsflag > 1)
+                        {
+                            ret = hscom_exit();
+                        }
+                        else
+                        {
+                            mml_seg.hsflag--;
+                            break;
+                        }
                     }
 
                 } while (ret != enmPass2JumpTable.forceReturn);
@@ -1841,16 +1857,14 @@ namespace PMDDotNET.Compiler
             try
             {
                 voice_seg.voice_buf = compiler.ReadFile(voice_seg.v_filename);
+                if (voice_seg.voice_buf == null)
+                    print_mes(mml_seg.warning_mes + mml_seg.ff_readerr_mes);
+                voiceTrancer(voice_seg.voice_buf);
             }
             catch
             {
             }
 
-            if (voice_seg.voice_buf == null)
-            {
-                voice_seg.voice_buf = new byte[8192];
-                print_mes(mml_seg.warning_mes + mml_seg.ff_readerr_mes);
-            }
 
 #if !hyouka
             mml_seg.prg_flg |= 1;
@@ -2322,6 +2336,7 @@ namespace PMDDotNET.Compiler
             if (al == "M")//#TIMer
             {
                 tempo_set2();
+                return;
             }
 
             mml_seg.title_adr = work.si;
@@ -5926,12 +5941,12 @@ namespace PMDDotNET.Compiler
         private bool hexget8(out byte al_b)
         {
             al_b = (byte)mml_seg.mml_buf[work.si++];
-            if (hexcal8(ref al_b)) return true;//;ERROR RETURN
+            if (!hexcal8(ref al_b)) return true;//;ERROR RETURN
 
             byte bl = al_b;
             al_b = (byte)mml_seg.mml_buf[work.si++];
 
-            if (!hexcal8(ref al_b))
+            if (hexcal8(ref al_b))
             {
                 al_b += (byte)(bl * 16);
                 return false;
@@ -5944,17 +5959,14 @@ namespace PMDDotNET.Compiler
 
         private bool hexcal8(ref byte al_b)
         {
-            try
-            {
-                int a = Convert.ToInt32(((char)al_b).ToString(), 16);
-                al_b = (byte)a;
-            }
-            catch
+            if (byte.TryParse(((char)al_b).ToString(), System.Globalization.NumberStyles.HexNumber, null, out al_b))
             {
                 return true;
             }
-
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
 
@@ -6656,7 +6668,7 @@ namespace PMDDotNET.Compiler
 
             cy = getnum(out bx, out dl);
 
-            mml_seg.volss = dl;
+            mml_seg.volss = (sbyte)dl;
             work.dx = (work.dx & 0xff00) | (byte)mml_seg.nowvol;
 #if !efc
             if (mml_seg.part == mml_seg.pcmpart) return enmPass2JumpTable.vsetm1;
@@ -6756,7 +6768,7 @@ namespace PMDDotNET.Compiler
             }
 
             work.bx |= (0b1000_0000) * 0x100;
-            mml_seg.lastprg = bx;
+            mml_seg.lastprg = work.bx;
             return enmPass2JumpTable.olc03;
 
         psgprg:;
@@ -7135,6 +7147,7 @@ namespace PMDDotNET.Compiler
             if (dh == 0)
             {
                 work.dx = dl;
+                work.bx = bx;
                 return cy;
             }
 
@@ -7143,6 +7156,7 @@ namespace PMDDotNET.Compiler
             dl = (byte)(-(int)dl);
 
             work.dx = (dh << 8) | dl;
+            work.bx = bx;
             return cy;
         }
 

@@ -4,10 +4,9 @@ using System.Text;
 
 namespace PMDDotNET.Compiler
 {
-    public static class voice_seg
+    public class voice_seg
     {
-        public static string v_filename;//b 128 dup(?)
-        public static byte[] voice_buf = new byte[8192];
-
+        public string v_filename;//b 128 dup(?)
+        public byte[] voice_buf = new byte[8192];
     }
 }
