@@ -204,7 +204,8 @@ namespace PMDDotNET.Compiler
             {
                 ret = Jumper(ret);
 
-                if (ret == enmPass2JumpTable.exit) break;
+                if (ret == enmPass2JumpTable.exit)
+                    break;
 
             } while (true);
 
@@ -1069,7 +1070,8 @@ namespace PMDDotNET.Compiler
             byte ah_b, al_b;
             char al = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
 
-            if (al == 0x1a) return enmPass2JumpTable.part_end;
+            if (al == 0x1a) 
+                return enmPass2JumpTable.part_end;
             if (al < (' ' + 1)) goto c_fin;
             if (al == ';') goto c_fin;
             if (al != '`') goto c_no_skip;
@@ -2952,6 +2954,11 @@ namespace PMDDotNET.Compiler
             try
             {
                 inc = compiler.ReadFileText(mml_seg.mml_filename2);
+
+                while (inc.Length > 1 && inc[inc.Length - 1] == 0x1a)
+                {
+                    inc = inc.Substring(0, inc.Length - 1);
+                }
             }
             catch
             {
@@ -4923,7 +4930,7 @@ namespace PMDDotNET.Compiler
                 error('=', 8, work.si);
             }
 
-            cy = lngset(out bx, out al);
+            lngcal();
 
         futen_rew:;
             cy = futen();
@@ -6468,7 +6475,7 @@ namespace PMDDotNET.Compiler
             if (alc == '%') return qset3();
 
             cy = lngset(out bx, out al);
-            if (work.al == 9)
+            if (work.al >= 9)
             {
                 error('Q', 2, work.si);
             }
@@ -6476,7 +6483,7 @@ namespace PMDDotNET.Compiler
             work.al *= 2;
             if (work.al == 0) goto q2_not_inc;
 
-            work.al *= 32;
+            work.al *= 16;
             work.al--;
 
         q2_not_inc:;
