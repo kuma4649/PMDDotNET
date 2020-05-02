@@ -10,6 +10,9 @@
 ;English Translation By Chromaryu(knight-ryu12)
 ;Please improve this :|
 
+;mc.cs 0100
+W0100=You can specify a tone number from 0 to 9 for the PSG part (value:{0}).
+
 ;common
 E0000=Exception message:\r\n{0}\r\nException stacktrace:\r\n{1}\r\n
 

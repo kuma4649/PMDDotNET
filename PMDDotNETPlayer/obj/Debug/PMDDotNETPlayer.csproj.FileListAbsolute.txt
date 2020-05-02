@@ -1,0 +1,17 @@
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETPlayer.exe.config
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETPlayer.exe
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETPlayer.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\MDSound.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\musicDriverInterface.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\NAudio.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETCommon.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETDriver.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\RealChipCtlWrap.dll
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETCommon.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\PMDDotNETDriver.pdb
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\bin\Debug\NAudio.xml
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\obj\Debug\PMDDotNETPlayer.csprojAssemblyReference.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\obj\Debug\PMDDotNETPlayer.csproj.CoreCompileInputs.cache
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\obj\Debug\PMDDotNETPlayer.csproj.CopyComplete
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\obj\Debug\PMDDotNETPlayer.exe
+D:\bootcamp\Source\Repos\PMDDotNET\PMDDotNETPlayer\obj\Debug\PMDDotNETPlayer.pdb

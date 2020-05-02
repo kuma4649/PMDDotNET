@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using musicDriverInterface;
+using PMDDotNET.Common;
 
 namespace PMDDotNET.Compiler
 {
@@ -540,8 +541,11 @@ namespace PMDDotNET.Compiler
             //PMDからもらってくる機能は省略
 
             mml_seg.pmd_flg = 0;
-            if (voice_seg.voice_buf == null) voice_seg.voice_buf = new byte[8192];
-            for (int i = 0; i < voice_seg.voice_buf.Length; i++) voice_seg.voice_buf[i] = 0;
+            if (voice_seg.voice_buf == null)
+            {
+                voice_seg.voice_buf = new byte[8192];
+                for (int i = 0; i < voice_seg.voice_buf.Length; i++) voice_seg.voice_buf[i] = 0;
+            }
         }
 
 
@@ -6725,11 +6729,18 @@ namespace PMDDotNET.Compiler
             return enmPass2JumpTable.olc03;
 
         psgprg:;
-            work.bx *= 4;
-            work.bx = (byte)work.bx;
+            //work.bx *= 4;
+            //work.bx = (byte)work.bx;
             work.bx += 0;//offset psgenvdat
             m_seg.m_buf.Set(work.di++, new MmlDatum(0xf0));
             cx = 4;
+            if (work.bx > 9)
+            {
+                Log.WriteLine(LogLevel.WARNING,
+                    string.Format(msg.get("W0100"), work.bx)
+                    );
+                work.bx = 0;
+            }
             //pplop0:;
             for (int i = 0; i < 4; i++)
             {
@@ -7137,7 +7148,9 @@ namespace PMDDotNET.Compiler
             mml_seg.lextbl[work.bx + 1] = (byte)0;
 
             //2byte 開けておく
-            work.di += 2;
+            //work.di += 2;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0x00));//KUMA: オリジナルではメモリの内容が不定のまま？
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0x00));
 
             mml_seg.length_check2 = 0;//[]0発見対策
 
@@ -8192,8 +8205,8 @@ namespace PMDDotNET.Compiler
                 work.bx++;
             } while (true);
         rc01:;
-            rcomtbl[work.bx].Item2();
-            return enmPass2JumpTable.olc0;
+            return rcomtbl[work.bx].Item2();
+            //return enmPass2JumpTable.olc0;
         }
 
         private enmPass2JumpTable mstvol()

@@ -6,7 +6,9 @@
 
 ;common
 E0000=Exception message:\r\n{0}\r\nException stacktrace:\r\n{1}\r\n
-E0001=従来の書式が既に使われていて自動でmucomDotNET形式に移行できませんでした。Driverタグを使用してmucomDotNETを予め宣言してください。
+
+;mc.cs 0100
+W0100=PSGパートに指定できる音色番号は0～9までです(値:{0})
 
 ;PmdException.cs 0300
 E0300=[行:{0} 桁:{1}]{2}

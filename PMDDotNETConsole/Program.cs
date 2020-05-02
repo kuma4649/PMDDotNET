@@ -156,6 +156,12 @@ namespace PMDDotNET.Console
                     s++;
                 }
 
+                byte[] ffFileBuf = null;
+                if (!string.IsNullOrEmpty(ffFile) && File.Exists(ffFile))
+                {
+                    ffFileBuf = File.ReadAllBytes(ffFile);
+                    compiler.SetFfFileBuf(ffFileBuf);
+                }
                 //compiler.SetCompileSwitch("IDE");
                 //compiler.SetCompileSwitch("SkipPoint=R19:C30");
 

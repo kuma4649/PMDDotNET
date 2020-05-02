@@ -18,6 +18,7 @@ namespace PMDDotNET.Compiler
         public string[] env = null;
         private Func<string, Stream> appendFileReaderCallback;
         private work work = null;
+        private byte[] ffBuf = null;
 
 
         public Compiler(iEncoding enc = null)
@@ -75,7 +76,7 @@ namespace PMDDotNET.Compiler
                     srcBuf = sr.ReadToEnd();
                 }
                 work = new work();
-                mc mc = new mc(this, mcArgs, srcBuf, null, work, env);
+                mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
                 return mc.compile_start();
                 
             }
@@ -171,6 +172,11 @@ namespace PMDDotNET.Compiler
             }
 
             return text;
+        }
+
+        public void SetFfFileBuf(byte[] ffFileBuf)
+        {
+            ffBuf = ffFileBuf;
         }
     }
 }

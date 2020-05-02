@@ -1,14 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>PMDDotNET.Console</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>PMDDotNET.Driver</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PMDDotNETCommon\PMDDotNETCommon.csproj" />
-    <ProjectReference Include="..\PMDDotNETCompiler\PMDDotNETCompiler.csproj" />
   </ItemGroup>
 
   <ItemGroup>
