@@ -1,4 +1,8 @@
 更新履歴
+TAG009 2020/05/03 3rd
+  Compiler
+    ・Filenameタグ検索時にincludeタグがあると内部でエラーがでて読み込みに失敗するバグを修正
+
 TAG008 2020/05/03 2nd
   Compiler
     ・Filenameタグに対応

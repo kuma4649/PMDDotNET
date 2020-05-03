@@ -181,7 +181,7 @@ namespace PMDDotNET.Console
                         srcText = sr.ReadToEnd();
 
                     string outFileName = "";
-                    Tuple<string, string>[] tags = compiler.GetTags(srcText);
+                    Tuple<string, string>[] tags = compiler.GetTags(srcText, appendFileReaderCallback);
                     if (tags != null && tags.Length > 0)
                     {
                         foreach (Tuple<string, string> tag in tags)

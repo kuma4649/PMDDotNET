@@ -116,8 +116,9 @@ namespace PMDDotNET.Compiler
             return ci;
         }
 
-        public Tuple<string, string>[] GetTags(string srcBuf)
+        public Tuple<string, string>[] GetTags(string srcBuf, Func<string, Stream> appendFileReaderCallback)
         {
+            this.appendFileReaderCallback = appendFileReaderCallback;
             List<string> lstTag = new List<string>();
             List<Tuple<string, string>> tags = new List<Tuple<string, string>>();
 
