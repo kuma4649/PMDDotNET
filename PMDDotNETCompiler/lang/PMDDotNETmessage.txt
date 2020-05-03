@@ -6,12 +6,43 @@
 ;I Info
 ;E Error
 
-;NOTE: PLEASE SOMEBODY PROOFREAD THIS. CAN YOU?
-;English Translation By Chromaryu(knight-ryu12)
-;Please improve this :|
-
 ;mc.cs 0100
 W0100=You can specify a tone number from 0 to 9 for the PSG part (value:{0}).
+E0100=Optional specification is wrong.
+E0101=There are unintelligible characters in the MML.
+E0102=The specified number is abnormal.
+E0103=MML file cannot be read.
+E0104=MML file cannot be written.
+E0105=FF file cannot be written.
+E0106=parameter not specified enough.
+E0107=Unavailable characters are specified.
+E0108=The specified note length is too long.
+E0109=No portmanteau end symbol }.
+E0110=There is no sound length specification after the L command.
+E0111=Hard LFO cannot be used in the sound effect part.
+E0112=The tempo command cannot be used in the sound effect part.
+E0113=No portmanteau start sign {.
+E0114=Incorrectly specified in the portamento command.
+E0115=Rest in portamento command.
+E0116=Specify immediately after the pitch command.
+E0117=This command is not available here.
+E0118=MML's size is too large.
+E0119=Over-sized after compilation.
+E0120=It is not possible to specify a sound length that exceeds 255steps when the W/S command is used.
+E0121=Specifies an unavailable pitch length.
+E0122=The tie is not specified immediately after the pitch instruction.
+E0123=No loop start symbol [.
+E0124=No instruction with a note length during infinite loop.
+E0125=There are more than two escape signs in one loop.
+E0126=The pitch is out of bounds.
+E0127=MML variable not defined.
+E0128=Specify either a voice file or the /V option.
+E0129=The R part is not defined as required.
+E0130=Tone is not defined.
+E0131=The length of the previous note has been compressed or processed.
+E0132=You can't use the tie slur in the R part.
+E0133=The number of variable length MML variable definitions has been exceeded by 256.
+E0134=: Cannot read a tone file {0}.
 
 ;common
 E0000=Exception message:\r\n{0}\r\nException stacktrace:\r\n{1}\r\n

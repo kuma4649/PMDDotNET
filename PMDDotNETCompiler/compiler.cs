@@ -236,6 +236,11 @@ namespace PMDDotNET.Compiler
         internal string ReadFileText(string mml_filename2)
         {
             Stream strm = appendFileReaderCallback(mml_filename2);
+            if (strm == null)
+            {
+                Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0135"), mml_filename2));
+                return "";
+            }
             string text;
             using (StreamReader sr = new StreamReader(strm, Encoding.GetEncoding("Shift_JIS")))
             {

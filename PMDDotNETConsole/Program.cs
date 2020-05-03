@@ -221,12 +221,22 @@ namespace PMDDotNET.Console
                         destFileName = desFile;
                     }
 
+                    bool isSuccess = false;
                     using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (FileStream destCompiledBin = new FileStream(destFileName, FileMode.Create, FileAccess.Write))
+                    //using (FileStream destCompiledBin = new FileStream(destFileName, FileMode.Create, FileAccess.Write))
+                    using (MemoryStream destCompiledBin = new MemoryStream())
                     using (Stream bufferedDestStream = new BufferedStream(destCompiledBin))
                     {
-                        compiler.Compile(sourceMML, bufferedDestStream, appendFileReaderCallback);
+                        isSuccess = compiler.Compile(sourceMML, bufferedDestStream, appendFileReaderCallback);
+
+                        if (isSuccess)
+                        {
+                            bufferedDestStream.Flush();
+                            byte[] destbuf = destCompiledBin.GetBuffer();
+                            File.WriteAllBytes(destFileName, destbuf);
+                        }
                     }
+
                 }
                 else
                 {

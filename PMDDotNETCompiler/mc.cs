@@ -1858,7 +1858,7 @@ namespace PMDDotNET.Compiler
             {
                 voice_seg.voice_buf = compiler.ReadFile(voice_seg.v_filename);
                 if (voice_seg.voice_buf == null)
-                    print_mes(mml_seg.warning_mes + mml_seg.ff_readerr_mes);
+                    print_mes(mml_seg.warning_mes + string.Format(msg.get("E0134"), voice_seg.v_filename));// mml_seg.ff_readerr_mes);
                 voiceTrancer(voice_seg.voice_buf);
             }
             catch
@@ -2986,7 +2986,7 @@ namespace PMDDotNET.Compiler
             //;------------------------------------------------------------------------------
             //;	File終端のEOFを削ってCR/LFが無ければ書き足す
             //;------------------------------------------------------------------------------
-            if (inc.Length > 1 && inc[inc.Length - 2] != 13 || inc[inc.Length - 1] != 10)
+            if (inc.Length > 1 && (inc[inc.Length - 2] != 13 || inc[inc.Length - 1] != 10))
             {
                 inc += "" + (char)mc.cr + "" + (char)mc.lf;
             }
@@ -8682,7 +8682,7 @@ namespace PMDDotNET.Compiler
             //; ------------------------------------------------------------------------------
             //; Error Messageの表示
             //; ------------------------------------------------------------------------------
-            print_mes(err_seg.errmes_4 + err_seg.err_table[dl]);
+            print_mes(err_seg.errmes_4 + msg.get(string.Format("E01{0:00}", dl)));// err_seg.err_table[dl]);
 
             //; ------------------------------------------------------------------------------
             //; エラー箇所の表示
