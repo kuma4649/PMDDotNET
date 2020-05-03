@@ -238,7 +238,7 @@ namespace PMDDotNET.Compiler
             Stream strm = appendFileReaderCallback(mml_filename2);
             if (strm == null)
             {
-                Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0135"), mml_filename2));
+                Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0201"), mml_filename2));
                 return "";
             }
             string text;

@@ -1,4 +1,8 @@
 更新履歴
+TAG015 2020/05/04
+  Compiler
+    ・mc ver4.8s相当に修正
+
 TAG014 2020/05/03 5th
   Compiler
     ・色々修正

@@ -96,7 +96,7 @@ namespace PMDDotNET.Compiler
 #endif
 		public int timerb = 0;//b
 		public int octave = 4;//b
-		public int length = 0;//b
+		public int leng = 0;//b
 		public int zenlen = 96;//b
 		public int deflng = 24;//b
 		public int deflng_k = 24;//b
@@ -308,6 +308,17 @@ namespace PMDDotNET.Compiler
 		public byte[] loptbl = new byte[32 * 2];// loopnest * 2];
 		public byte[] lextbl = new byte[32 * 2];// loopnest * 2];
 
+		//分散和音ワーク
+		public int bunsan_start;//w 開始オフセット
+		public byte bunsan_count;//b 音符数
+		public byte[] bunsan_work=new byte[16];// 音階x16
+		public byte bunsan_length;//b 全体の長さ
+		public byte bunsan_1cnt;//b 一音符の長さ
+		public byte bunsan_tieflag;//b タイフラグ
+		public byte bunsan_1loop;//b 一ループの長さ
+		public byte bunsan_gate;//b Gate
+		public byte bunsan_vol;//b 音量±
+
 		//prgbuf_start label   byte //構造体かな?
 
 		public int prgbuf_length = 26;
@@ -338,8 +349,9 @@ namespace PMDDotNET.Compiler
 
 		public Stack<int> hscomSI = new Stack<int>();
 
-        //mml_seg ends
+
+		//mml_seg ends
 
 
-    }
+	}
 }

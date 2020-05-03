@@ -21,14 +21,14 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //;
         //;	MML Compiler/Effect Compiler FOR PC-9801/88VA 
-        //;							ver 4.8
+        //;							ver 4.8r
         //;
         //;==============================================================================
         //	.186
 
-        public static string ver = "4.8p";// version
+        public static string ver = "4.8s";// version
         public static int vers = 0x48;
-        public static string date = "1997/03/15";// date
+        public static string date = "2020/01/22";// date
 
 #if !hyouka
         public int hyouka = 0;//1で評価版(save機能cut)
@@ -447,7 +447,8 @@ namespace PMDDotNET.Compiler
             rtloop,
             rtlp2,
 
-            exit
+            exit,
+            bunsan_end
         }
 
 
@@ -758,8 +759,8 @@ namespace PMDDotNET.Compiler
             m_seg.m_start = (byte)(mml_seg.opl_flg * 2 | mml_seg.x68_flg);// 音源flag set
 #endif
 
-            work.di = (mml_seg.max_part + 1) * 2;//KUMA: ?       //    mov di,2*[max_part+1]
-                                                 //        add di, offset m_buf
+            work.di = (mml_seg.max_part + 1) * 2;//KUMA: ? -> ver48sで理解w
+            work.di += 0;//offset m_buf
             if ((mml_seg.prg_flg & 1) != 0)
             {
                 work.di += 2;
@@ -1509,7 +1510,7 @@ namespace PMDDotNET.Compiler
             if ((mml_seg.prg_flg & 1) == 0) return enmPass2JumpTable.memo_write;
 
             work.si = 0;//offset m_buf
-            work.si += 2 * (mml_seg.max_part + 1);//KUMA:?
+            work.si += 2 * (mml_seg.max_part + 1);//KUMA:? -> v48sで理解w
             int dx = work.di;
             dx -= 0;//offset m_buf
             m_seg.m_buf.Set(work.si, new MmlDatum((byte)dx));
@@ -1858,7 +1859,7 @@ namespace PMDDotNET.Compiler
             {
                 voice_seg.voice_buf = compiler.ReadFile(voice_seg.v_filename);
                 if (voice_seg.voice_buf == null)
-                    print_mes(mml_seg.warning_mes + string.Format(msg.get("E0134"), voice_seg.v_filename));// mml_seg.ff_readerr_mes);
+                    print_mes(mml_seg.warning_mes + string.Format(msg.get("E0200"), voice_seg.v_filename));// mml_seg.ff_readerr_mes);
                 voiceTrancer(voice_seg.voice_buf);
             }
             catch
@@ -2476,7 +2477,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private void LFOExtend_set(string ah)
         {
-            if (ah == "0")
+            if (ah == "O")
             {
                 loopdef_set();
                 return;
@@ -4265,7 +4266,7 @@ namespace PMDDotNET.Compiler
 
         //3856-3869
         //;==============================================================================
-        //;	"{" Command[Portament_start]
+        //;	"{" Command [Portament_start] / "{{" Command [分散和音開始]
         //;==============================================================================
         private enmPass2JumpTable porta_start()
         {
@@ -4279,6 +4280,14 @@ namespace PMDDotNET.Compiler
             m_seg.m_buf.Set(work.di++, new MmlDatum(0xda));
             mml_seg.porta_flag = 1;
 
+            //; 分散和音開始アドレスをセット  4.8r
+            mml_seg.bunsan_start = 0;
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != '{') return enmPass2JumpTable.olc0;
+            work.si++;
+            mml_seg.bunsan_start = work.di;
+
+            //pst_end:
             return enmPass2JumpTable.olc0;
         }
 
@@ -4286,13 +4295,16 @@ namespace PMDDotNET.Compiler
 
         //3870-3937
         //;==============================================================================
-        //;	"}" Command[Portament_end]
+        //;	"}" Command [Portament_end] / "}}" Command [分散和音終了]
         //;==============================================================================
         private enmPass2JumpTable porta_end()
         {
             bool cy;
             int bx;
             byte al;
+
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != '}') return bunsan_end();      // 4.8r
 
             if (mml_seg.skip_flag != 0) goto pe_skip;
             if (mml_seg.porta_flag != 1)
@@ -4335,7 +4347,7 @@ namespace PMDDotNET.Compiler
                 error('}', 8, work.si);
             }
 
-            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
             if (ch != ',') goto pe_exit;
 
             //; ディレイ指定
@@ -4375,6 +4387,351 @@ namespace PMDDotNET.Compiler
                 error('}', 8, work.si);
             }
             futen_skip();
+
+            // ------ディレイスキップ処理を挿入 2019 / 12 / 28
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') return enmPass2JumpTable.olc03;
+
+            work.si++;
+            cy = lngset2(out bx, out al);
+            if (cy)
+            {
+                error('}', 6, work.si);
+            }
+            futen_skip();
+            // ------ここまで
+            return enmPass2JumpTable.olc03;
+        }
+
+
+
+        //;==============================================================================
+        //;	"}}" Command[分散和音終了]	4.8r
+        //;	{{cdeg
+        //    }
+        //}
+        //lng[, cnt[, tie[, gate[, vol]]]]
+        //;==============================================================================
+        private enmPass2JumpTable bunsan_end()
+        {
+            bool cy;
+            int bx;
+            byte al, dl;
+
+            work.si++;
+
+            if (mml_seg.skip_flag != 0) return bunsan_skip();
+
+            // 和音数のチェック
+            work.bx = mml_seg.bunsan_start;
+            if (work.bx == 0)
+            {
+                error('}', 34, work.si);
+            }
+
+            int cx = work.di;
+            if (cx - work.bx == 0)
+            {
+                cx -= work.bx;
+                error('}', 35, work.si);//音なし
+            }
+            cx -= work.bx;
+
+            if ((cx & 1) != 0)
+            {
+                cx >>= 1;// cx = 分散和音数
+                error('}', 35, work.si);// 間が奇数バイトでエラー
+            }
+            cx >>= 1;// cx = 分散和音数
+
+            if (cx >= 17) error('}', 35, work.si);// 17音以上でエラー
+
+            mml_seg.bunsan_count = (byte)cx;
+
+            // bunsan_work に音階をセットしていく
+
+            work.bp = 0;//offset bunsan_work
+
+            //bend_loop:;
+            do
+            {
+                work.al = (byte)m_seg.m_buf.Get(work.bx).dat;
+                if ((work.al & 0x80) != 0) error('}', 35, work.si);//音階ではない
+
+                mml_seg.bunsan_work[work.bp] = work.al;
+                work.bx += 2;
+                work.bp++;
+
+            } while (work.di != work.bx);
+
+            //	パラメータ取り込み
+            cy = lngset2(out bx, out al);//prm1 全体音長
+            if ((bx & 0xff00) != 0) error('}', 35, work.si);
+
+            lngcal();
+            cy = futen();
+            if (cy) error('}', 35, work.si);
+
+            mml_seg.bunsan_length = work.al;
+            work.al = 0;
+            mml_seg.bunsan_vol = 0;// 音量 def = ±0
+            mml_seg.bunsan_gate = 0;//ゲート def = 0
+            work.al++;
+            mml_seg.bunsan_1cnt = work.al;//1cnt def = % 1
+            mml_seg.bunsan_tieflag = work.al;//Tie def = ON(1)
+
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') goto bunsan_main;
+
+            work.si++;
+
+            cy = lngset2(out bx, out al);//prm2 1音符長
+            if (cy) goto bunsan_prm3;
+            if ((bx & 0xff00) != 0) error('}', 35, work.si);
+
+            lngcal();
+            cy = futen();
+            if (cy) error('}', 35, work.si);
+
+            mml_seg.bunsan_1cnt = work.al;
+
+        bunsan_prm3:;
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') goto bunsan_main;
+
+            work.si++;
+
+            cy = lngset2(out bx, out al);//prm3 タイフラグ
+            if (cy) goto bunsan_prm4;
+
+            if ((bx & 0xff00) != 0) error('}', 35, work.si);
+            if (work.al >= 2) error('}', 35, work.si);
+
+            mml_seg.bunsan_tieflag = work.al;
+
+        bunsan_prm4:;
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') goto bunsan_main;
+
+            work.si++;
+
+            cy = lngset2(out bx, out al);//prm4 ゲート長
+            if (cy) goto bunsan_prm5;
+
+            if ((bx & 0xff00) != 0) error('}', 35, work.si);
+            if (work.al >= mml_seg.bunsan_length) error('}', 35, work.si);
+
+            mml_seg.bunsan_gate = work.al;
+            mml_seg.bunsan_length -= work.al;
+
+        bunsan_prm5:;
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') goto bunsan_main;
+
+            work.si++;
+
+            cy = getnum(out bx, out dl);// prm5 音量±
+            mml_seg.bunsan_vol = dl;
+
+        //	分散和音展開
+        bunsan_main:;
+            work.di = mml_seg.bunsan_start;
+            work.di--;//ポルタコマンドをつぶす
+
+            //ループ回数チェック
+            work.al = mml_seg.bunsan_1cnt;
+            int ax = mml_seg.bunsan_count * work.al;//AX = 音符数 x 一音符の長さ = 1ループの長さ
+            work.al = (byte)ax;
+            if ((ax & 0xff00) != 0) error('}', 35, work.si);
+            mml_seg.bunsan_1loop = work.al;
+
+            cx = 0;
+            cx = mml_seg.bunsan_length;
+
+            int tmp = cx;// AX = 全体の長さ / CX = 1ループの長さ
+            cx = ax;
+            ax = tmp;
+            if (cx >= ax) goto bunsan_last;//1ループに満たない場合
+
+            work.al = (byte)(ax / cx);//AL = 全体の長さ \ 1ループの長さ = ループ回数
+            work.ah = (byte)(ax % cx);
+            if (mml_seg.bunsan_tieflag == 0) goto bunsan_setloop;
+
+            if (work.ah != 0) goto bunsan_setloop;//タイありで割り切れた場合は
+            work.al--;//ループ回数 -1
+
+        bunsan_setloop:;
+            if (work.al == 1) goto bunsan_nonloop;//ループ1回ならループ不要
+
+            byte al_p = work.al;
+            byte ah_p = work.ah;
+
+            work.al = 0xf9;//"[" Loop Start
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            work.bx = work.di;// BX = 戻り先
+            work.di += 2;
+
+            int bx_p = work.bx;
+            bunsan_set1loop();
+            work.bx = bx_p;
+
+            work.al = 0xf8;//"]" Loop End
+
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+            work.ah = ah_p;
+            work.al = al_p;
+
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+            mml_seg.bunsan_1loop *= work.al;
+            mml_seg.bunsan_length -= work.al;
+            ax = work.bx;
+            ax -= 0;//offset m_buf
+
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)ax));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(ax >> 8)));
+
+            ax = work.di - 4;  //    lea ax,[di-4]
+            ax -= 0;//offset m_buf
+            m_seg.m_buf.Set(work.bx + 0, new MmlDatum((byte)ax));
+            m_seg.m_buf.Set(work.bx + 1, new MmlDatum((byte)(ax >> 8)));//戻り先セット
+
+            work.ah = (byte)(ax >> 8);
+            work.al = (byte)al;
+
+            goto bunsan_last;
+
+        //	1ループでいいのでループ不要
+        bunsan_nonloop:;
+            bunsan_set1loop();
+
+            work.al = mml_seg.bunsan_1loop;
+            mml_seg.bunsan_length -= work.al;
+
+        //	ループ後最終セット
+        bunsan_last:;
+            if (mml_seg.bunsan_length == 0) goto bunsan_exit;// タイなしの場合ここで0になることがある
+
+            work.bx = 0;//offset bunsan_work
+
+        bunsan_last_loop:;
+            work.al = mml_seg.bunsan_work[work.bx];
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            work.bx++;
+            work.al = mml_seg.bunsan_1cnt;
+            work.ah = mml_seg.bunsan_length;
+
+            if (work.al >= work.ah) goto bunsan_lastnote;
+
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            mml_seg.bunsan_length -= work.al;
+
+            if (mml_seg.bunsan_tieflag != 1) goto bunsan_last_loop;
+
+            work.al = 0xfb;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+            goto bunsan_last_loop;
+
+        bunsan_lastnote:;
+            work.al = work.ah;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+        //	分散和音終了処理
+        bunsan_exit:;
+            work.ah = mml_seg.bunsan_gate;// Gateがある場合は休符追加
+            if (work.ah == 0) goto bunsan_exit2;
+            work.al = 0xf;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            work.al = work.ah;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+        bunsan_exit2:;
+            work.al = 0;
+            work.ah = 0;
+
+            mml_seg.bunsan_start = 0;
+            mml_seg.porta_flag = 0;
+
+            return enmPass2JumpTable.olc0;
+        }
+
+        //	1ループ分音階をセット
+        private void bunsan_set1loop()
+        {
+            work.bx = 0;//offset bunsan_work
+            int cx = 0;
+            cx = mml_seg.bunsan_count;//CX=音符数
+
+            //bunsan_s1l_loop:;
+            do
+            {
+                work.al = mml_seg.bunsan_work[work.bx];
+                m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));//音階セット
+                work.bx++;
+                work.al = mml_seg.bunsan_1cnt;
+                m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));//長さセット
+
+                if (mml_seg.bunsan_tieflag == 1)
+                {
+                    work.al = 0xfb;//"&"セット
+                    m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+                }
+                //bunsan_s1l_fin:;
+                cx--;
+            } while (cx > 0);
+
+            work.ah = mml_seg.bunsan_vol;
+            if (work.ah == 0) goto bunsan_s1l_exit;
+            work.al = 0xe3;//)x
+            if ((work.ah & 0x80) == 0) goto bunsan_sl1_volset;
+            work.al--;//(x
+            work.ah = (byte)-work.ah;
+
+        bunsan_sl1_volset:;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            work.al = work.ah;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+        bunsan_s1l_exit:;
+            return;
+
+            //bunsan_error:			;分散和音／エラー時の処理
+            //各々で処理
+        }
+
+        private enmPass2JumpTable bunsan_skip()//分散和音／スキップ時の処理
+        {
+            int bx;
+            byte al, dl;
+
+            lngset2(out bx, out al);
+            futen_skip();
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') return enmPass2JumpTable.olc03;
+
+            work.si++;
+            lngset2(out bx, out al);
+            futen_skip();
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') return enmPass2JumpTable.olc03;
+
+            work.si++;
+            lngset2(out bx, out al);
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') return enmPass2JumpTable.olc03;
+
+            work.si++;
+            lngset2(out bx, out al);
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',') return enmPass2JumpTable.olc03;
+
+            work.si++;
+            getnum(out bx, out dl);
+
+            //bskip_end:
             return enmPass2JumpTable.olc03;
         }
 
@@ -4490,6 +4847,9 @@ namespace PMDDotNET.Compiler
             int bx;
             byte al,dl;
 
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch == 'E') return ssgeg_set();
+
             work.dx = (byte)'S' * 0x100 + (byte)work.dx;
             get_clock();
 
@@ -4499,7 +4859,7 @@ namespace PMDDotNET.Compiler
             mml_seg.ss_tie = 1;
             mml_seg.ss_depth = -1;
 
-            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
             if (ch != ',') goto ss_exit;
 
             work.si++;
@@ -4548,6 +4908,134 @@ namespace PMDDotNET.Compiler
 
             cy = lngset(out bx, out al);// dummy
             return enmPass2JumpTable.olc03;
+        }
+
+
+
+        //;==============================================================================
+        //;	"SE" Command[SSGEG指定] →yコマンド変換
+        //;	SEslot,num
+        //;==============================================================================
+        private enmPass2JumpTable ssgeg_set()
+        {
+            bool cy;
+            int bx;
+            byte al;
+
+            //	mov dx,"S"*256+17
+#if !efc
+            if (mml_seg.ongen >= mml_seg.psg)//FMでなければエラー
+            {
+                error('S', 17, work.si);
+            }
+#endif
+            work.al = (byte)mml_seg.opl_flg;// OPL/OPMではエラー
+            if ((work.al | mml_seg.x68_flg) != 0)
+            {
+                error('S', 17, work.si);
+            }
+
+            work.si++;
+
+            cy = lngset2(out bx, out al);
+            if (cy)
+            {
+                error('S', 6, work.si);
+            }
+
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
+            if (ch != ',')
+            {
+                error('S', 6, work.si);
+            }
+
+            if (work.al == 0)
+            {
+                error('S', 2, work.si);
+            }
+            if (work.al >= 16)
+            {
+                error('S', 2, work.si);
+            }
+
+            work.si++;
+
+            byte al_p = work.al;
+            byte ah_p = work.ah;
+
+            cy = lngset2(out bx, out al);//AL=num
+            int cx = ah_p * 0x100 + al_p;//CL=slot
+
+            if (cy)
+            {
+                error('S', 6, work.si);
+            }
+
+            //    mov dl,2
+
+            if (work.al >= 16)
+            {
+                error('S', 2, work.si);
+            }
+
+            byte dh = (byte)mml_seg.part;// DHにFMのSSGEG reg取得
+            dh--;
+            if (dh < 6) goto sss_notfm3ex;
+            dh = 2;//6以上はFM3exのみ
+
+        sss_notfm3ex:;
+            if (dh < 3) goto sss_notfm2;
+            dh -= 3;//FM2ならpart -3
+
+        sss_notfm2:;
+            dh += 0x90;//SSGEG $90 + [part]
+            if ((cx & 1) == 0)
+            {
+                cx = (cx & 0xff00) | (((byte)cx) >> 1);                // 指定slotに対応したyコマンド発行
+                goto sss_slot2;
+            }
+            cx = (cx & 0xff00) | (((byte)cx) >> 1);
+            sss_set1slot(dh);
+
+        sss_slot2:;
+            dh += 8;
+            if ((cx & 1) == 0)
+            {
+                cx = (cx & 0xff00) | (((byte)cx) >> 1);
+                goto sss_slot3;
+            }
+            cx = (cx & 0xff00) | (((byte)cx) >> 1);
+            sss_set1slot(dh);
+
+        sss_slot3:;
+            dh -= 4;
+            if ((cx & 1) == 0)
+            {
+                cx = (cx & 0xff00) | (((byte)cx) >> 1);
+                goto sss_slot4;
+            }
+            cx = (cx & 0xff00) | (((byte)cx) >> 1);
+            sss_set1slot(dh);
+
+        sss_slot4:;
+            dh += 8;
+            if ((cx & 1) == 0)
+            {
+                cx = (cx & 0xff00) | (((byte)cx) >> 1);
+                goto sss_fin;
+            }
+            cx = (cx & 0xff00) | (((byte)cx) >> 1);
+            sss_set1slot(dh);
+
+        sss_fin:;
+            return enmPass2JumpTable.olc0;
+        }
+
+        private void sss_set1slot(byte dh)
+        {
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0xef));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(dh));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
         }
 
 
@@ -4933,7 +5421,7 @@ namespace PMDDotNET.Compiler
             if (ch != '.') goto not_futen_rew;
 
             work.al = (byte)m_seg.m_buf.Get(work.di).dat;
-            mml_seg.length = work.al;
+            mml_seg.leng = work.al;
             goto futen_rew;
 
         not_futen_rew:;
@@ -5399,7 +5887,7 @@ namespace PMDDotNET.Compiler
             //;==============================================================================
             //;	音長 DATA SET
             //;==============================================================================
-            work.al = (byte)mml_seg.length;
+            work.al = (byte)mml_seg.leng;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             mml_seg.prsok |= 1;// 音長flagをset
             mml_seg.prsok &= 0xf3;//音長+タイ,ポルタflagをreset
@@ -5816,7 +6304,7 @@ namespace PMDDotNET.Compiler
             work.di--;
             m_seg.m_buf.Set(work.di - 1, new MmlDatum(ah));//r&r -> rr に変更
         prs200:;
-            mml_seg.length = work.al;
+            mml_seg.leng = work.al;
             return;
 
         restprs:;
@@ -5850,17 +6338,18 @@ namespace PMDDotNET.Compiler
         //5058-5067
         //;==============================================================================
         //;	数値の読み出し（書かれていない時は１）
-        //;		output bx/al/[length]
+        //;		output bx/al/[leng]
         //;==============================================================================
         private bool lngset(out int bx, out byte al)
         {
             if (!lngset2(out bx, out al)) return false;
 
             bx = 1;
+            //lnexit相当
             al = (byte)1;
             work.bx = 1;
             work.al = (byte)1;
-            mml_seg.length = 1;
+            mml_seg.leng = 1;
             return true;
         }
 
@@ -5870,7 +6359,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //;	[si] から数値を読み出す
         //;	数字が書かれていない場合は[deflng] の値が返り、cy=1になる
-        //;		output al/bx/[length]
+        //;		output al/bx/[leng]
         //;==============================================================================
         private bool lngset2(out int bx, out byte al)
         {
@@ -5904,7 +6393,7 @@ namespace PMDDotNET.Compiler
                     bx = mml_seg.deflng & 0xff;
                     mml_seg.calflg = 1;
                     al = (byte)bx;
-                    mml_seg.length = al;
+                    mml_seg.leng = al;
                     work.al = al;
                     work.bx = bx;
                     return true;
@@ -5917,7 +6406,7 @@ namespace PMDDotNET.Compiler
                     {
                         //lnexit:;
                         al = (byte)bx;
-                        mml_seg.length = al;
+                        mml_seg.leng = al;
                         //lngset_ret:
                         work.al = al;
                         work.bx = bx;
@@ -5940,7 +6429,7 @@ namespace PMDDotNET.Compiler
             }
 
             al = (byte)bx;
-            mml_seg.length = al;
+            mml_seg.leng = al;
             work.al = al;
             work.bx = bx;
             return cy;
@@ -5981,15 +6470,15 @@ namespace PMDDotNET.Compiler
 
         //5168-5219
         //;==============================================================================
-        //;	符点(.)があるかを見て、あれば[length] を1.5倍する。
+        //;	符点(.)があるかを見て、あれば[leng] を1.5倍する。
         //;	符点が２個以上あっても可
-        //;		output al/bl/[length]
+        //;		output al/bl/[leng]
         //;==============================================================================
         private bool futen()
         {
             char ch;
 
-            work.al = (byte)mml_seg.length;
+            work.al = (byte)mml_seg.leng;
             int ax = work.al;
             work.bx = ax;
             //ftloop:;
@@ -6010,7 +6499,7 @@ namespace PMDDotNET.Compiler
             if ((ax & 0xff00) != 0) goto ft1;// 音長 255 OVER
             work.bx = ax;
             work.al = (byte)ax;
-            mml_seg.length = (byte)ax;
+            mml_seg.leng = (byte)ax;
             //    clc
             return false;
 
@@ -6034,7 +6523,7 @@ namespace PMDDotNET.Compiler
             if ((ax & 0xff00) != 0) goto ft1;// 音長 255 OVER
 
             work.bx = ax;
-            mml_seg.length = (byte)ax;
+            mml_seg.leng = (byte)ax;
             work.al = (byte)ax;
             mml_seg.prsok |= 2;//直前＝加工された音長
             //  stc
@@ -6225,15 +6714,15 @@ namespace PMDDotNET.Compiler
         //5325-5347
         //;==============================================================================
         //;	音長から具体的な長さを得る
-        //;		INPUTS	-- [length]
+        //;		INPUTS	-- [leng]
         //        to 音長
         //;			-- [zenlen]
         //        to 全音符の長さ
-        //; OUTPUTS	-- al,[length]
+        //; OUTPUTS	-- al,[leng]
         //;==============================================================================
         private void lngcal()
         {
-            work.al = (byte)mml_seg.length;
+            work.al = (byte)mml_seg.leng;
             if (work.al == 0)
             {
                 error(0, 21, work.si);// LENGTH=0 ... ERROR
@@ -6245,12 +6734,12 @@ namespace PMDDotNET.Compiler
             work.al = (byte)mml_seg.zenlen;
             int ax = work.al;
 
-            int d = ax / mml_seg.length;
-            if (ax % mml_seg.length != 0)
+            int d = ax / mml_seg.leng;
+            if (ax % mml_seg.leng != 0)
             {
                 error(0, 21, work.si);// 音長が全音符の公約数でない
             }
-            mml_seg.length = (byte)d;
+            mml_seg.leng = (byte)d;
         }
 
 
@@ -7227,7 +7716,7 @@ namespace PMDDotNET.Compiler
 
             if (cy)
             {
-                bx = mml_seg.loop_def;//bl
+                work.bx = mml_seg.loop_def;//bl
                 edl00b();
             }
             else
