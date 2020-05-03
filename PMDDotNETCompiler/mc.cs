@@ -4061,7 +4061,7 @@ namespace PMDDotNET.Compiler
             work.al = 0;
 
             ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
-            if (ch != 'd') goto not_car_set;
+            if (ch != ',') goto not_car_set;
             work.si++;
             cy = lngset(out bx, out al);
 
