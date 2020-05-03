@@ -6027,7 +6027,7 @@ namespace PMDDotNET.Compiler
 
             work.bx = ax;
             mml_seg.length = (byte)ax;
-
+            work.al = (byte)ax;
             mml_seg.prsok |= 2;//直前＝加工された音長
             //  stc
             return true;

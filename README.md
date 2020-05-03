@@ -33,6 +33,8 @@ PMD.NETはMITライセンスとします。
  ・KAJA さん  
  ・mucom さん  
  ・ぼうきち さん  
+ ・M.S さん  
+ ・TAN-Y さん  
 
  ・PMD / MC  
  ・Visual Studio Community 2019  

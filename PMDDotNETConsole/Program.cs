@@ -167,14 +167,58 @@ namespace PMDDotNET.Console
 
                 if (!isXml)
                 {
+                    //デフォルトはソースファイル名の拡張子を.Mに変更したものにする
                     string destFileName = "";
                     if (!string.IsNullOrEmpty(srcFile))
                     {
                         destFileName = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(srcFile)), string.Format("{0}.M", Path.GetFileNameWithoutExtension(srcFile)));
-                        if (desFile != null)
+                    }
+
+                    //TagからFilenameを得る
+                    string srcText;
+                    using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (StreamReader sr = new StreamReader(sourceMML, Encoding.GetEncoding("Shift_JIS")))
+                        srcText = sr.ReadToEnd();
+
+                    string outFileName = "";
+                    Tuple<string, string>[] tags = compiler.GetTags(srcText);
+                    if (tags != null && tags.Length > 0)
+                    {
+                        foreach (Tuple<string, string> tag in tags)
                         {
-                            destFileName = desFile;
+                            Log.WriteLine(LogLevel.TRACE, string.Format("{0}\t: {1}", tag.Item1, tag.Item2));
+
+                            //出力ファイル名を得る
+                            if (tag.Item1.ToUpper().IndexOf("#FI") != 0) continue;//mcは3文字まで判定している為
+                            outFileName = tag.Item2;
                         }
+                    }
+
+                    //TagにFileName指定がある場合はそちらを適用する
+                    if (!string.IsNullOrEmpty(outFileName))
+                    {
+                        if (outFileName[0] != '.')
+                        {
+                            //ファイル名指定の場合
+                            destFileName = Path.Combine(
+                                Path.GetDirectoryName(Path.GetFullPath(srcFile))
+                                , outFileName);
+                        }
+                        else
+                        {
+                            //拡張子のみの指定の場合
+                            destFileName = Path.Combine(
+                                Path.GetDirectoryName(Path.GetFullPath(srcFile))
+                                , string.Format("{0}{1}"
+                                , Path.GetFileNameWithoutExtension(srcFile)
+                                , outFileName));
+                        }
+                    }
+
+                    //最終的にdesFileの指定がある場合は、そちらを優先する
+                    if (desFile != null)
+                    {
+                        destFileName = desFile;
                     }
 
                     using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))

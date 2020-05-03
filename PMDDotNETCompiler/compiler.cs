@@ -20,6 +20,9 @@ namespace PMDDotNET.Compiler
         private work work = null;
         private byte[] ffBuf = null;
 
+        public string outFileName { get; private set; }
+
+
 
         public Compiler(iEncoding enc = null)
         {
@@ -67,14 +70,15 @@ namespace PMDDotNET.Compiler
 
         public MmlDatum[] Compile(Stream sourceMML, Func<string, Stream> appendFileReaderCallback)
         {
+            using (StreamReader sr = new StreamReader(sourceMML, Encoding.GetEncoding("Shift_JIS")))
+            {
+                srcBuf = sr.ReadToEnd();
+            }
+
             this.appendFileReaderCallback = appendFileReaderCallback;
 
             try
             {
-                using (StreamReader sr = new StreamReader(sourceMML, Encoding.GetEncoding("Shift_JIS")))
-                {
-                    srcBuf = sr.ReadToEnd();
-                }
                 work = new work();
                 mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
                 return mc.compile_start();
@@ -108,9 +112,75 @@ namespace PMDDotNET.Compiler
 
         public CompilerInfo GetCompilerInfo()
         {
-            throw new NotImplementedException();
+            CompilerInfo ci = new CompilerInfo();
+            return ci;
         }
 
+        public Tuple<string, string>[] GetTags(string srcBuf)
+        {
+            List<string> lstTag = new List<string>();
+            List<Tuple<string, string>> tags = new List<Tuple<string, string>>();
+
+            try
+            {
+                string[] srcList = srcBuf.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string lin in srcList)
+                {
+                    if (string.IsNullOrEmpty(lin)) continue;
+                    if (lin[0] != '#') continue;
+
+                    lstTag.Add(lin);
+                    if (lin.ToUpper().IndexOf("#INCLUDE") != 0) continue;
+
+                    GetTagReca(lstTag, lin);
+                }
+
+                foreach (string tag in lstTag)
+                {
+                    if (string.IsNullOrEmpty(tag)) continue;
+                    int i = 0;
+                    for (; i < tag.Length; i++)
+                    {
+                        if (tag[i] == '\t' || tag[i] == ' ') break;
+                    }
+                    if (i == tag.Length) continue;
+
+                    string k = tag.Substring(0, i).Trim();
+                    string v = tag.Substring(i + 1).Trim();
+                    if (string.IsNullOrEmpty(k)) continue;
+                    if (string.IsNullOrEmpty(v)) continue;
+
+                    Tuple<string, string> keyVal = new Tuple<string, string>(k, v);
+                    tags.Add(keyVal);
+                }
+            }
+            catch 
+            {
+                ;
+            }
+
+            return tags.ToArray();
+        }
+
+        private void GetTagReca(List<string> lstTag, string lin)
+        {
+            if (lin.Length < 9) return;
+
+            string inc = ReadFileText(lin.Substring(8).Trim());
+            if (string.IsNullOrEmpty(inc)) return;
+
+            string[] incList = inc.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string ilin in incList)
+            {
+                if (string.IsNullOrEmpty(ilin)) continue;
+                if (ilin[0] != '#') continue;
+
+                lstTag.Add(ilin);
+                if (ilin.ToUpper().IndexOf("#INCLUDE") != 0) continue;
+
+                GetTagReca(lstTag, ilin);
+            }
+        }
 
         public bool Compile(Stream sourceMML, Stream destCompiledBin, Func<string, Stream> appendFileReaderCallback)
         {
