@@ -37,14 +37,14 @@ namespace PMDDotNET.Compiler
             enmPart_ends ret;
             ret = enmPart_ends.calc_start;
 
-            List<byte> dst = new List<byte>();
-            dst.Add(0);
-            for (int i = 0; i < m_seg.m_buf.Count; i++)
-            {
-                MmlDatum o = m_seg.m_buf.Get(i);
-                dst.Add((byte)(o == null ? 0xff : o.dat));
-            }
-            System.IO.File.WriteAllBytes("c:\\temp\\debug", dst.ToArray());
+            //List<byte> dst = new List<byte>();
+            //dst.Add(0);
+            //for (int i = 0; i < m_seg.m_buf.Count; i++)
+            //{
+            //    MmlDatum o = m_seg.m_buf.Get(i);
+            //    dst.Add((byte)(o == null ? 0xff : o.dat));
+            //}
+            //System.IO.File.WriteAllBytes("c:\\temp\\debug", dst.ToArray());
 
             do
             {
