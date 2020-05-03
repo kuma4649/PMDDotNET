@@ -232,7 +232,7 @@ namespace PMDDotNET.Console
                         if (isSuccess)
                         {
                             bufferedDestStream.Flush();
-                            byte[] destbuf = destCompiledBin.GetBuffer();
+                            byte[] destbuf = destCompiledBin.ToArray();
                             File.WriteAllBytes(destFileName, destbuf);
                         }
                     }
