@@ -5484,9 +5484,9 @@ namespace PMDDotNET.Compiler
                 work.di -= 2;
 
             no_dec_di:;
-                //    push dx
+                int dx_p = work.dx;
                 ss_set();
-            //    pop dx
+                work.dx = dx_p;
             ge_ss1:;
                 if ((mml_seg.ge_tie & 1) == 0) goto ge_not_tie;
                 m_seg.m_buf.Set(work.di++, new MmlDatum((byte)0xfb));//"&"
@@ -5636,7 +5636,7 @@ namespace PMDDotNET.Compiler
             work.dx = (byte)m_seg.m_buf.Get(work.di + 0).dat;
             work.dx += (byte)m_seg.m_buf.Get(work.di + 1).dat * 0x100;
 
-            work.dx = (byte)(work.dx >> 8) | (work.dx << 8); // Dh=Onkai/Dl=Length
+            work.dx = ((byte)(work.dx >> 8) | (work.dx << 8)) & 0xffff; // Dh=Onkai/Dl=Length
             work.al = (byte)mml_seg.ss_depth;
             if ((work.al & 0x80) == 0) goto ss_plus;
 
@@ -5727,7 +5727,11 @@ namespace PMDDotNET.Compiler
             bh--;
             work.al = bh;
             work.al &= 0xf;
-            if (work.al != 0xf) return;
+            if (work.al != 0xf)
+            {
+                work.bx = (bh << 8) | (byte)work.bx;
+                return;
+            }
             bh &= 0xf0;
             bh |= 0xb;
             if ((bh & 0x80) != 0)
@@ -5748,7 +5752,11 @@ namespace PMDDotNET.Compiler
             bh++;
             work.al = bh;
             work.al &= 0xf;
-            if (work.al != 0xc) return;
+            if (work.al != 0xc)
+            {
+                work.bx = (bh << 8) | (byte)work.bx;
+                return;
+            }
             bh &= 0xf0;
             bh += 0x10;
 
