@@ -554,21 +554,14 @@ namespace PMDDotNET.Compiler
             if (loop_length+1 == 0) goto pe_00;
             msg += loop_mes;
 
-
-
-
-
             //mc.print_mes(loop_mes);
             int n = all_length - loop_length;
-            if (n - max_loop < 0)
+            if (max_loop<n)
             {
                 max_loop = n;
             }
             //not_over_loop:;
             msg += string.Format("{0}", n);
-
-
-
 
         pe_00:;
             mc.print_mes(msg);

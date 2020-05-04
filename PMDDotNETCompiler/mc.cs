@@ -7602,7 +7602,7 @@ namespace PMDDotNET.Compiler
         vd_ppz:;
             work.al = 0xf5;
         vd_main:;
-            char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a;
+            char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (ch == '+') goto vd_main2;
             if (ch == '-') goto vd_main2;
             work.al++;

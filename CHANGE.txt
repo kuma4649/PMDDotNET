@@ -1,7 +1,7 @@
 更新履歴
 TAG022 2020/05/04 xxth
   Compiler
-    ・Remarkの情報がうまく出力できていなかったのを修正
+    ・Remarkの情報がうまく出力できていなかったのを修正x2
 
 TAG021 2020/05/04 7th
   Compiler
