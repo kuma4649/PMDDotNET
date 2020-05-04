@@ -6962,7 +6962,7 @@ namespace PMDDotNET.Compiler
             work.si++;
             work.dx = ((byte)'q') * 0x100 + (byte)work.dx;
             get_clock();
-            work.dx = work.al + (byte)(work.dx >> 8) * 0x100;
+            work.dx = 0xb300 + work.al;
             return enmPass2JumpTable.parset;
         }
 
