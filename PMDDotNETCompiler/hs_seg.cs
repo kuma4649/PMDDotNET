@@ -10,6 +10,6 @@ namespace PMDDotNET.Compiler
         public byte[] hsbuf2 = new byte[2 * 256];
         public byte[] hsbuf3 = new byte[32 * 256];// hs_length * 256];
         public int hsbuf_end;// label   byte
-
+        internal byte[] currentBuf;
     }
 }

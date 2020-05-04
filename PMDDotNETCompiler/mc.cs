@@ -617,6 +617,10 @@ namespace PMDDotNET.Compiler
             {
                 hs_seg.hsbuf2[i] = 0;
             }
+            for (int i = 0; i < hs_seg.hsbuf3.Length; i++)
+            {
+                hs_seg.hsbuf3[i] = 0;
+            }
 
             for (int i = 0; i < 128 * 8; i++)
             {
@@ -3155,6 +3159,7 @@ namespace PMDDotNET.Compiler
             //hsset2:;
             int ax = work.al * 2;
             ax += 0;//offset hsbuf2
+            hs_seg.currentBuf = hs_seg.hsbuf2;
             work.bx = ax;
             goto hsset_main;
 
@@ -3164,12 +3169,13 @@ namespace PMDDotNET.Compiler
             work.si = si_pp;
             if (!cy) goto hsset_main;// 上書き
             work.bx = 0;//offset hsbuf3
+            hs_seg.currentBuf = hs_seg.hsbuf3;
 
             int cx = 256;
             //hsset3_loop:;
             do
             {
-                if ((hs_seg.hsbuf3[work.bx] | hs_seg.hsbuf3[work.bx + 1]) == 0) goto hsset3b;
+                if ((hs_seg.currentBuf[work.bx] | hs_seg.currentBuf[work.bx + 1]) == 0) goto hsset3b;
                 work.bx += hs_seg.hs_length;
                 cx--;
             } while (cx > 0);
@@ -3187,7 +3193,7 @@ namespace PMDDotNET.Compiler
             {
                 alc = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
                 if (alc < '!') goto hsset3c;
-                hs_seg.hsbuf3[work.di++] = (byte)alc;
+                hs_seg.currentBuf[work.di++] = (byte)alc;
                 cx--;
             } while (cx > 0);
             //hsset3b_loop2:;
@@ -3213,8 +3219,8 @@ namespace PMDDotNET.Compiler
                     goto hsset_fin;
                 }
             } while (alc >= (char)(' ' + 1));
-            hs_seg.hsbuf3[work.bx + 0] = (byte)work.si;
-            hs_seg.hsbuf3[work.bx + 1] = (byte)(work.si >> 8);
+            hs_seg.currentBuf[work.bx + 0] = (byte)work.si;
+            hs_seg.currentBuf[work.bx + 1] = (byte)(work.si >> 8);
         hsset_fin:;
             work.si = si_p;
 
@@ -8998,6 +9004,7 @@ namespace PMDDotNET.Compiler
             //hscom2:;
             ax = work.al * 2;
             work.bx = 0;//offset hsbuf2
+            hs_seg.currentBuf = hs_seg.hsbuf2;
             work.bx += ax;
             goto hscom_main;
 
@@ -9018,7 +9025,7 @@ namespace PMDDotNET.Compiler
             work.bx = work.dx;
 
         hscom_main:;
-            ax = hs_seg.hsbuf3[work.bx] + hs_seg.hsbuf3[work.bx + 1] * 0x100;
+            ax = hs_seg.currentBuf[work.bx] + hs_seg.currentBuf[work.bx + 1] * 0x100;
 
             //    assume es:m_seg
 
@@ -9060,6 +9067,7 @@ namespace PMDDotNET.Compiler
             byte ah = 0;
             work.dx = -1;
             work.bx = 0;//offset hsbuf3
+            hs_seg.currentBuf = hs_seg.hsbuf3;
             work.di = work.bx + 2;
             int cx = 256;
             //hscom3_loop:;
@@ -9068,7 +9076,7 @@ namespace PMDDotNET.Compiler
                 int cx_p = cx;
                 int si_p = work.si;
 
-                if ((hs_seg.hsbuf3[work.bx] | hs_seg.hsbuf3[work.bx + 1]) == 0) goto hscom3_next;
+                if ((hs_seg.currentBuf[work.bx] | hs_seg.currentBuf[work.bx + 1]) == 0) goto hscom3_next;
                 cx = hs_seg.hs_length - 2;
                 work.al = 0;
 
@@ -9078,10 +9086,10 @@ namespace PMDDotNET.Compiler
                 {
                     ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
                     if (ch < '!') goto hscom3_chk;
-                    if (hs_seg.hsbuf3[work.di] == 0) goto hscom3_next2;// 変数定義側が先に終わった場合は最小確認
+                    if (hs_seg.currentBuf[work.di] == 0) goto hscom3_next2;// 変数定義側が先に終わった場合は最小確認
 
                     byte s = (byte)(work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
-                    byte d = hs_seg.hsbuf3[work.di++];
+                    byte d = hs_seg.currentBuf[work.di++];
                     if (s != d) goto hscom3_next;
 
                     work.al++;
@@ -9098,7 +9106,7 @@ namespace PMDDotNET.Compiler
                 goto hscom3_found;
 
             hscom3_chk:;
-                if (hs_seg.hsbuf3[work.di] == 0) goto hscom3_found;
+                if (hs_seg.currentBuf[work.di] == 0) goto hscom3_found;
                 goto hscom3_next;
 
             hscom3_next2:;
