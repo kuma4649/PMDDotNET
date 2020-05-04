@@ -6711,7 +6711,7 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
 
             mml_seg.zenlen = work.al;
-            mml_seg.deflng = (byte)((sbyte)work.al >> 2);
+            mml_seg.deflng = (byte)(work.al >> 2);
             return syousetu_lng_set_2();
         }
 
