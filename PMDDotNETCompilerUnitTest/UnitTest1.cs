@@ -13,10 +13,39 @@ namespace PMDDotNETCompilerUnitTest
     [TestClass]
     public class UnitTest1
     {
+        private static string otherLangFilename = Path.Combine("lang", "PMDDotNETmessage.{0}.txt");
+        private static string englishFilename = Path.Combine("lang", "PMDDotNETmessage.txt");
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            string[] lines = null;
+            try
+            {
+                string path = Path.GetDirectoryName((typeof(UnitTest1).Assembly.Location));
+                string lang = System.Globalization.CultureInfo.CurrentCulture.Name;
+                string file = Path.Combine(path, string.Format(otherLangFilename, lang));
+                file = file.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+                if (!File.Exists(file))
+                {
+                    file = Path.Combine(path, englishFilename);
+                    file = file.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+                }
+                lines = File.ReadAllLines(file);
+            }
+            catch
+            {
+                ;//ˆ¬‚è‚Â‚Ô‚·
+            }
+
+            PMDDotNET.Common.msg.MakeMessageDic(lines);
+        }
+
         [TestMethod]
         public void MultiMMLTest()
         {
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole(configure =>
@@ -33,19 +62,7 @@ namespace PMDDotNETCompilerUnitTest
             var mmllistfile = Path.Combine(mmlfilesDir, "MMLFiles.txt");
             if (File.Exists(mmllistfile))
             {
-                var lines = new List<string>();
-                using (var sr = new StreamReader(mmllistfile, Encoding.UTF8))
-                {
-                    while (true)
-                    {
-                        var l = sr.ReadLine();
-                        if (l == null)
-                        {
-                            break;
-                        }
-                        lines.Add(l);
-                    }
-                }
+                var lines = File.ReadAllLines(mmllistfile);
 
                 foreach(var item in lines)
                 {
