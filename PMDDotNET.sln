@@ -22,9 +22,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETConsole", "PMDDotN
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETConsole.Net4", "PMDDotNETConsole.Net4\PMDDotNETConsole.Net4.csproj", "{A8B4E80E-8D44-4EDB-83B0-873F729C8627}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETDriver", "PMDDotNETDriver\PMDDotNETDriver.csproj", "{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETDriver", "PMDDotNETDriver\PMDDotNETDriver.csproj", "{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETPlayer", "PMDDotNETPlayer\PMDDotNETPlayer.csproj", "{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETCompilerTestService", "PMDDotNETCompilerTestService\PMDDotNETCompilerTestService.csproj", "{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETCompilerUnitTest", "PMDDotNETCompilerUnitTest\PMDDotNETCompilerUnitTest.csproj", "{C482C57B-4996-4511-AAF8-95ADE3B1F298}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +60,14 @@ Global
 		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -23,10 +23,12 @@ namespace PMDDotNETCompilerTestService
 
                 var psi = new ProcessStartInfo()
                 {
-                    FileName = Path.Combine(tooldirFull, "msdos"),
+                    FileName = Path.Combine(tooldirFull, "msdos.exe"),
                     Arguments = string.Format("{0} /v {1}", Path.Combine(tooldirFull, "MC"), fname),
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
                 };
 
                 using (var p = Process.Start(psi))

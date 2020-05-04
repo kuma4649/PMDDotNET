@@ -143,7 +143,7 @@ namespace PMDDotNETCompilerTestService
                 LogFiles(errorfiles);
             }
 
-            return errorfiles.Count > 0;
+            return errorfiles.Count == 0;
         }
     }
 }
