@@ -20,7 +20,7 @@ namespace PMDDotNET.Console
         {
             Log.writeLine = WriteLine;
 #if DEBUG
-            Log.level = LogLevel.INFO;//.INFO;
+            Log.level = LogLevel.TRACE;//.INFO;
             Log.off = 0;
 #else
             Log.level = LogLevel.INFO;

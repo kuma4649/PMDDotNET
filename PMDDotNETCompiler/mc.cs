@@ -161,6 +161,11 @@ namespace PMDDotNET.Compiler
             lc = new lc(this, work, m_seg);
             mml_seg = new mml_seg();
             mml_seg.mml_buf = srcBuf;
+            //行末がEOFの場合は改行を追加する
+            if (srcBuf.Length > 1 && srcBuf.LastIndexOf("\r\n") != srcBuf.Length - 2)
+            {
+                mml_seg.mml_buf += "\r\n";
+            }
             voiceTrancer(ffBuf);
             setupComTbl();
             setupRcomtbl();
@@ -3514,6 +3519,10 @@ namespace PMDDotNET.Compiler
                 do
                 {
                     al = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
+                    if (al >= (char)0x80)
+                    {
+                        continue;
+                    }
 
                     if (al == 9) continue;
                     if (al == ' ') continue;
@@ -3604,6 +3613,10 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable one_line_compile()
         {
+#if DEBUG
+            int n = mml_seg.mml_buf.IndexOf("\r\n", work.si);
+            Log.WriteLine(LogLevel.DEBUG, mml_seg.mml_buf.Substring(work.si, n - work.si));
+#endif
             char al = (char)0;
             do
             {
@@ -6568,7 +6581,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private bool numget(out byte al)
         {
-            char ch = mml_seg.mml_buf[work.si++];
+            char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
             al = (byte)(ch - '0');
             if (ch < '0')
             {
@@ -8942,6 +8955,8 @@ namespace PMDDotNET.Compiler
             work.al |= 0x80;
             goto rs02;
         rs01:;
+            var o = m_seg.m_buf.Get(work.di - 2);
+            if (o == null) goto rs02;
             byte cch = (byte)m_seg.m_buf.Get(work.di - 2).dat;
             if (cch != 0xeb) goto rs02;
             cch = (byte)m_seg.m_buf.Get(work.di - 1).dat;
