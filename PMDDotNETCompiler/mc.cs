@@ -4583,7 +4583,7 @@ namespace PMDDotNET.Compiler
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
 
-            mml_seg.bunsan_1loop *= work.al;
+            work.al *= mml_seg.bunsan_1loop;
             mml_seg.bunsan_length -= work.al;
             ax = work.bx;
             ax -= 0;//offset m_buf
@@ -4621,12 +4621,14 @@ namespace PMDDotNET.Compiler
             work.al = mml_seg.bunsan_1cnt;
             work.ah = mml_seg.bunsan_length;
 
-            if (work.al >= work.ah) goto bunsan_lastnote;
+            if (work.al >= work.ah) 
+                goto bunsan_lastnote;
 
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             mml_seg.bunsan_length -= work.al;
 
-            if (mml_seg.bunsan_tieflag != 1) goto bunsan_last_loop;
+            if (mml_seg.bunsan_tieflag != 1) 
+                goto bunsan_last_loop;
 
             work.al = 0xfb;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));

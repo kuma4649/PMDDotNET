@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "/v C:\\Users\\kuma\\Desktop\\pmd\\creis.mml"
+      "commandLineArgs": "/v C:\\Users\\kuma\\Desktop\\pmd\\nch_time.mml"
     }
   }
 }
