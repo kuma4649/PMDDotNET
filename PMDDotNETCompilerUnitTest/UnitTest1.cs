@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -24,8 +26,35 @@ namespace PMDDotNETCompilerUnitTest
             });
             var logger = loggerFactory.CreateLogger<PMDCompileTestService>();
             var service = new PMDCompileTestService(logger);
-            
-            Assert.IsTrue(service.MultiTest(GetMMLDir(), GetToolDir()));
+
+            var mmlfilesDir = GetMMLDir();
+            Assert.IsTrue(service.MultiTest(mmlfilesDir, GetToolDir()));
+
+            var mmllistfile = Path.Combine(mmlfilesDir, "MMLFiles.txt");
+            if (File.Exists(mmllistfile))
+            {
+                var lines = new List<string>();
+                using (var sr = new StreamReader(mmllistfile, Encoding.UTF8))
+                {
+                    while (true)
+                    {
+                        var l = sr.ReadLine();
+                        if (l == null)
+                        {
+                            break;
+                        }
+                        lines.Add(l);
+                    }
+                }
+
+                foreach(var item in lines)
+                {
+                    if (Directory.Exists(item))
+                    {
+                        Assert.IsTrue(service.MultiTest(item, GetToolDir()));
+                    }
+                }
+            }
         }
 
         private static string GetToolDir()
