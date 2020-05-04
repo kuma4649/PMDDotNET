@@ -4304,7 +4304,7 @@ namespace PMDDotNET.Compiler
             byte al;
 
             char ch = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a);
-            if (ch != '}') return bunsan_end();      // 4.8r
+            if (ch == '}') return bunsan_end();      // 4.8r
 
             if (mml_seg.skip_flag != 0) goto pe_skip;
             if (mml_seg.porta_flag != 1)
@@ -4430,16 +4430,14 @@ namespace PMDDotNET.Compiler
             }
 
             int cx = work.di;
-            if (cx - work.bx == 0)
+            if (cx == work.bx)
             {
-                cx -= work.bx;
                 error('}', 35, work.si);//音なし
             }
             cx -= work.bx;
 
             if ((cx & 1) != 0)
             {
-                cx >>= 1;// cx = 分散和音数
                 error('}', 35, work.si);// 間が奇数バイトでエラー
             }
             cx >>= 1;// cx = 分散和音数
@@ -4599,7 +4597,7 @@ namespace PMDDotNET.Compiler
             m_seg.m_buf.Set(work.bx + 1, new MmlDatum((byte)(ax >> 8)));//戻り先セット
 
             work.ah = (byte)(ax >> 8);
-            work.al = (byte)al;
+            work.al = (byte)ax;
 
             goto bunsan_last;
 
@@ -4662,8 +4660,7 @@ namespace PMDDotNET.Compiler
         private void bunsan_set1loop()
         {
             work.bx = 0;//offset bunsan_work
-            int cx = 0;
-            cx = mml_seg.bunsan_count;//CX=音符数
+            int cx = mml_seg.bunsan_count;//CX=音符数
 
             //bunsan_s1l_loop:;
             do

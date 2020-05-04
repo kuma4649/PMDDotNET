@@ -42,7 +42,11 @@ E0130=Tone is not defined.
 E0131=The length of the previous note has been compressed or processed.
 E0132=You can't use the tie slur in the R part.
 E0133=The number of variable length MML variable definitions has been exceeded by 256.
-E0134=: Cannot read a tone file {0}.
+E0134=dispersion chord starters {{ There is no
+E0135=Incorrectly specified in the distributed chord command.
+
+E0200=: Cannot read a tone file ({0}).
+E0201=Failed to read the file ({0}).
 
 ;common
 E0000=Exception message:\r\n{0}\r\nException stacktrace:\r\n{1}\r\n
