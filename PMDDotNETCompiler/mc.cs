@@ -1478,15 +1478,15 @@ namespace PMDDotNET.Compiler
             lc.lc_proc(al);
 
             work.si = 0;//offset max_all;
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_all[0]));// TC/LC書き込み(4.8a～)
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_all[0] >> 8)));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_all[1]));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_all[1] >> 8)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_all));// TC/LC書き込み(4.8a～)
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_all >> 8)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_all >> 16)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_all >> 24)));
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_loop[0]));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_loop[0] >> 8)));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_loop[1]));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_loop[1] >> 8)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)lc.max_loop));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_loop >> 8)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_loop >> 16)));
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(lc.max_loop >> 24)));
 
         tclc_towns_chk:;
             work.bp = work.di;
@@ -7125,6 +7125,7 @@ namespace PMDDotNET.Compiler
         vsetma:;
             work.al = (byte)work.bx;
             int ax = work.al * (byte)work.bx;//    mul bl
+            work.al = (byte)ax;
             if (ax < 256) goto vsetmb;
             work.al = 255;
         vsetmb:;

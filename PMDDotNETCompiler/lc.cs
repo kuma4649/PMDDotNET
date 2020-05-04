@@ -118,10 +118,8 @@ namespace PMDDotNET.Compiler
 
         private enmPart_ends part_loop2()
         {
-            all_length[0] = 0;
-            all_length[1] = 0;
-            loop_length[0] = -1;
-            loop_length[1] = -1;
+            all_length = 0;
+            loop_length = -1;
             loop_flag = 0;
 
             //;==============================================================================
@@ -187,8 +185,7 @@ namespace PMDDotNET.Compiler
                     al = (byte)m_seg.m_buf.Get(work.si++).dat;
                     //byte ah = 0;
 
-                    all_length[0] += al;
-                    all_length[1] += 0;//dummy本来はcarryが加算される
+                    all_length += al;
                 } while (true);
 
                 //cl_00:;
@@ -250,10 +247,8 @@ namespace PMDDotNET.Compiler
         private enmPart_ends partk_start()
         {
             part_chr = 'K';
-            all_length[0] = 0;
-            all_length[1] = 0;
-            loop_length[0] = -1;
-            loop_length[1] = -1;
+            all_length = 0;
+            loop_length = -1;
             loop_flag = 0;
 
             work.si = (int)(m_seg.m_buf.Get(work.bp).dat + (m_seg.m_buf.Get(work.bp + 1).dat * 0x100));
@@ -366,7 +361,7 @@ namespace PMDDotNET.Compiler
                     }
                     //rl_01:;
                     al = (byte)m_seg.m_buf.Get(work.si++).dat;
-                    all_length[0] += al;
+                    all_length += al;
 
                 } while (true);
                 //;==============================================================================
@@ -434,7 +429,7 @@ namespace PMDDotNET.Compiler
             work.si += 2;
 
             byte al = (byte)m_seg.m_buf.Get(work.si++).dat;
-            all_length[0] += al;
+            all_length += al;
         }
 
 
@@ -445,8 +440,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private void loop_set()
         {
-            int ax = all_length[0];
-            loop_length[0] = ax;
+            loop_length = all_length;
         }
 
 
@@ -538,16 +532,15 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private void print_length()
         {
-            if (all_length[0] == 0) return;// データ無し
+            if (all_length == 0) return;// データ無し
             string msg = part_mes+part_chr+ part_chr_n;
-            int ax = all_length[0];
-            int dx = all_length[1];
-            int bx = max_all[0];
-            int cx = max_all[1];
-            if (bx - ax < 0)
+            int ax = all_length & 0xffff;
+            int dx = (all_length >> 16) & 0xffff;
+            int bx = max_all & 0xffff;
+            int cx = (max_all>>16) & 0xffff;
+            if (max_all - all_length < 0)
             {
-                max_all[0] = ax;
-                max_all[1] = dx;
+                max_all = all_length;// ax | dx * 0x10000;
             }
             //not_over_all:;
             msg += string.Format("{0}", ax);
@@ -555,22 +548,28 @@ namespace PMDDotNET.Compiler
             mc.print_mes(loop_mes2);
             return;
         pe_loop:;
-            dx = loop_length[1];
-            ax = loop_length[0];
+            dx = (loop_length >> 16) & 0xffff;
+            ax = loop_length & 0xffff;
             ax++;
-            if (ax == 0) goto pe_00;
+            if (loop_length+1 == 0) goto pe_00;
             msg += loop_mes;
+
+
+
+
+
             //mc.print_mes(loop_mes);
-            ax = all_length[0];
-            dx = all_length[1];
-            ax -= loop_length[0];
-            bx = max_loop[0];
-            if (bx - ax < 0)
+            int n = all_length - loop_length;
+            if (n - max_loop < 0)
             {
-                max_loop[0] = ax;
+                max_loop = n;
             }
             //not_over_loop:;
-            msg += string.Format("{0}", ax);
+            msg += string.Format("{0}", n);
+
+
+
+
         pe_00:;
             mc.print_mes(msg);
             //mc.print_mes(_crlf_mes);
@@ -690,10 +689,10 @@ namespace PMDDotNET.Compiler
         //private string _crlf_mes = "\r\n$";
 
         public byte print_flag = 0;
-        public int[] all_length = new int[2] { 0, 0 };
-        public int[] loop_length = new int[2] { 0, 0 };
-        public int[] max_all = new int[2] { 0, 0 };
-        public int[] max_loop = new int[2] { 0, 0 };
+        public int all_length = 0;// new int[2] { 0, 0 };
+        public int loop_length = 0;// new int[2] { 0, 0 };
+        public int max_all = 0;// new int[2] { 0, 0 };
+        public int max_loop = 0;// new int[2] { 0, 0 };
 
         public int[] fm3_adr = new int[3] { 0, 0, 0 };
         public int[] pcm_adr = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
