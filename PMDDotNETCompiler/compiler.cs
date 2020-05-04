@@ -70,9 +70,26 @@ namespace PMDDotNET.Compiler
 
         public MmlDatum[] Compile(Stream sourceMML, Func<string, Stream> appendFileReaderCallback)
         {
-            using (StreamReader sr = new StreamReader(sourceMML, Encoding.GetEncoding("Shift_JIS")))
+            using (var ms = ReadAllBytesToMemoryStream(sourceMML))
             {
-                srcBuf = sr.ReadToEnd();
+                ms.Seek(0, SeekOrigin.Begin);
+                int c = 0;
+                int offset = 0;
+                while ((c = ms.ReadByte()) >= 0)
+                {
+                    if (c == 0x1a)
+                    {
+                        ms.SetLength(offset);
+                        break;
+                    }
+                    offset++;
+                }
+                ms.Seek(0, SeekOrigin.Begin);
+
+                using (StreamReader sr = new StreamReader(ms, Encoding.GetEncoding("Shift_JIS")))
+                {
+                    srcBuf = sr.ReadToEnd();
+                }
             }
 
             this.appendFileReaderCallback = appendFileReaderCallback;
@@ -209,22 +226,28 @@ namespace PMDDotNET.Compiler
 		/// </summary>
 		private byte[] ReadAllBytes(Stream stream)
         {
+            using (var ms = ReadAllBytesToMemoryStream(stream))
+            {
+                return ms?.ToArray();
+            }
+        }
+
+		private MemoryStream ReadAllBytesToMemoryStream(Stream stream)
+        {
             if (stream == null) return null;
 
             var buf = new byte[8192];
-            using (var ms = new MemoryStream())
+            var ms = new MemoryStream();
+            while (true)
             {
-                while (true)
+                var r = stream.Read(buf, 0, buf.Length);
+                if (r < 1)
                 {
-                    var r = stream.Read(buf, 0, buf.Length);
-                    if (r < 1)
-                    {
-                        break;
-                    }
-                    ms.Write(buf, 0, r);
+                    break;
                 }
-                return ms.ToArray();
+                ms.Write(buf, 0, r);
             }
+            return ms;
         }
 
         internal byte[] ReadFile(string v_filename)
