@@ -2104,7 +2104,7 @@ namespace PMDDotNET.Compiler
                     composer_set();
                     break;
                 case "A":
-                    arranger_set(ref ah);
+                    arranger_set(ah);
                     break;
                 case "M":
                     memo_set();
@@ -2373,11 +2373,12 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //;	#Arranger
         //;==============================================================================
-        private void arranger_set(ref string ah)
+        private void arranger_set(string ah)
         {
             if (ah == "D")
             {
-                adpcm_set(ref ah);
+                adpcm_set(ah);
+                return;
             }
 
             mml_seg.arranger_adr = work.si;
@@ -2389,7 +2390,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //;	#ADPCM	on/off
         //;==============================================================================
-        private void adpcm_set(ref string ah)
+        private void adpcm_set(string ah)
         {
             string al = mml_seg.mml_buf[work.si++].ToString().ToUpper();//小文字＞大文字変換
 
