@@ -44,7 +44,7 @@ namespace PMDDotNETCompilerUnitTest
         }
 
         [TestMethod]
-        public void MultiMMLTest()
+        public void 複数のMMLコンパイルテスト()
         {
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
