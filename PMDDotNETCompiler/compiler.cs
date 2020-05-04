@@ -239,7 +239,8 @@ namespace PMDDotNET.Compiler
             if (strm == null)
             {
                 Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0201"), mml_filename2));
-                return "";
+                throw new FileNotFoundException(mml_filename2);
+                //return "";
             }
             string text;
             using (StreamReader sr = new StreamReader(strm, Encoding.GetEncoding("Shift_JIS")))
