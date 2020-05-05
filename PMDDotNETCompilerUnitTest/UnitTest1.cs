@@ -64,7 +64,7 @@ namespace PMDDotNETCompilerUnitTest
             var service = new PMDCompileTestService(logger);
 
             var mmlfilesDir = GetMMLDir();
-            Assert.IsTrue(service.MultiTest(mmlfilesDir, GetToolDir()));
+            Assert.IsTrue(service.MultiTest(mmlfilesDir, GetToolDir(), logdir));
 
             var mmllistfile = Path.Combine(mmlfilesDir, "MMLFiles.txt");
             if (File.Exists(mmllistfile))
@@ -75,7 +75,7 @@ namespace PMDDotNETCompilerUnitTest
                 {
                     if (Directory.Exists(item))
                     {
-                        Assert.IsTrue(service.MultiTest(item, GetToolDir()));
+                        Assert.IsTrue(service.MultiTest(item, GetToolDir(), logdir));
                     }
                 }
             }
