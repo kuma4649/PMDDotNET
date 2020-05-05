@@ -349,7 +349,6 @@ namespace PMDDotNET.Compiler
 
 		public Stack<int> hscomSI = new Stack<int>();
 
-
 		//mml_seg ends
 
 

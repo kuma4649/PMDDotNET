@@ -60,8 +60,8 @@ namespace PMDDotNET.Compiler
         public int split = 0;//音色データがＳＰＬＩＴ形式かどうか
         public int tempo_old_flag = 0;//テンポ処理 新旧flag
         public int pmdvector = 0x60;//VRTC.割り込み
-        public static byte cr = 13;
-        public static byte lf = 10;
+        public static char cr = (char)13;
+        public static char lf = (char)10;
         public static char eof = '$';
 
         //;==============================================================================
@@ -211,9 +211,7 @@ namespace PMDDotNET.Compiler
             }
 
 
-
             enmPass2JumpTable ret = enmPass2JumpTable.Pass1;
-
             do
             {
                 ret = Jumper(ret);
@@ -223,10 +221,24 @@ namespace PMDDotNET.Compiler
 
             } while (true);
 
+
+
+            //コンパイル完了
+
+
+            //音色データ取得
+            outVoiceBuf = write_ff();
+
+            //.Mファイルデータの整形(m_bufが出力データの実態になるよう、m_startをはじめに追加する)
             List < MmlDatum > dst = new List<MmlDatum>();
             dst.Add(new MmlDatum(m_seg.m_start));
             for (int i = 0; i < m_seg.m_buf.Count; i++) dst.Add(m_seg.m_buf.Get(i));
             for (int i = 0; i < dst.Count; i++) m_seg.m_buf.Set(i, dst[i]);
+
+            //コンパイル完了(メッセージを表示するのみ)
+            compile_fin();
+
+
 
             return m_seg.m_buf.GetByteArray();
         }
@@ -1071,6 +1083,9 @@ namespace PMDDotNET.Compiler
             }
 
 #endif
+
+            Log.WriteLine(LogLevel.DEBUG, string.Format("Part: {0} compile start" , (char)('A' - 1 + mml_seg.part) ));
+
             return enmPass2JumpTable.cloop;
         }
 
@@ -1088,7 +1103,6 @@ namespace PMDDotNET.Compiler
 
             byte ah_b, al_b;
             char al = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
-
             if (al == 0x1a) 
                 return enmPass2JumpTable.part_end;
             if (al < (' ' + 1)) goto c_fin;
@@ -1102,7 +1116,10 @@ namespace PMDDotNET.Compiler
             if ((mml_seg.skip_flag & 2) == 0)
             {
 
-                if (al == '!') return enmPass2JumpTable.hsset;
+                if (al == '!')
+                {
+                    return enmPass2JumpTable.hsset;
+                }
                 if (al == '"')
                 {
                     mml_seg.skip_flag ^= 1;
@@ -1135,7 +1152,10 @@ namespace PMDDotNET.Compiler
             al_b = (byte)al;
             ah_b = (byte)mml_seg.part;
             ah_b += (byte)(char)('A' - 1);
-            if (al_b == ah_b) return enmPass2JumpTable.one_line_compile;
+            if (al_b == ah_b)
+            {
+                return enmPass2JumpTable.one_line_compile;
+            }
 #endif
             goto c_next;
 
@@ -1807,7 +1827,86 @@ namespace PMDDotNET.Compiler
             }
 
 #endif
+
+            //;==============================================================================
+            //; 容量オーバーcheck
+            //;==============================================================================
+            if (m_seg.mbuf_end != 0x7f)
+            {
+                error((char)0, 19, 0);// 容量オーバー
+            }
+
             return enmPass2JumpTable.exit;
+        }
+
+
+
+        //1413-1561
+#if !hyouka
+        //;==============================================================================
+        //;	.ffの書き込み
+        //;==============================================================================
+        private byte[] write_ff()
+        {
+            List<byte> vBuf = null;
+
+            if ((mml_seg.prg_flg & 2) == 0) return null; //KUMA: .Mファイルの出力は戻り先で。
+
+            if (mml_seg.ff_flg == 0)
+            {
+                //not_ff: //ここに移動
+                print_mes(mml_seg.warning_mes
+                + mml_seg.not_ff_mes);
+                return null;
+            }
+
+            int cx = 8 * 1024;
+            if (mml_seg.opl_flg == 1) cx = 4 * 1024;
+
+            //wf_go:;
+            try
+            {
+                //int ax = 0;//offset v_filename
+                work.dx = 0;//offset voice_buf
+                vBuf = new List<byte>();
+                do
+                {
+                    vBuf.Add(voice_seg.voice_buf[work.dx++]);
+                    cx--;
+                } while (cx > 0);
+            }
+            catch
+            {
+                error((char)0, 5, 0);
+            }
+
+            return vBuf.ToArray(); //KUMA: .Mファイルの出力は戻り先で。
+        }
+
+        //;==============================================================================
+        //;	Disk Write
+        //;==============================================================================
+        //write_disk:
+        // KUMA: ここでは不要
+        // KUMA: ファイルを出力するときは
+        // KUMA:   save_flgをチェック。0の場合は出力不要
+        // KUMA:   ファイル名は m_filename
+        // KUMA:   ファイルサイズは 1 + m_seg.m_buf.length
+        // KUMA:   出力失敗時は error((char)0 , 4 , 0)
+#else
+        //;
+        //;	評価版／音色データエリアにコンパイル後の音色データを転送
+        //;
+        // KUMA: 不要
+#endif
+
+        //;==============================================================================
+        //;	Compile 終了
+        //;==============================================================================
+        private void compile_fin()
+        {
+            print_mes(mml_seg.finmes);
+            //KUMA: コンパイラからPMDを呼び出し再生する機能は省略
         }
 
 
@@ -1820,6 +1919,7 @@ namespace PMDDotNET.Compiler
                 work.si++;
             } while (work.si - 1 < mml_seg.mml_buf.Length
             && ((work.si - 1 < mml_seg.mml_buf.Length) ? mml_seg.mml_buf[work.si - 1] : 0x1a) != 0xa);
+
         }
 
 
@@ -2907,11 +3007,12 @@ namespace PMDDotNET.Compiler
             char v = (char)0;
             do
             {
-                v = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a); //小文字＞大文字変換
+                v = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
                 val += v;
-            } while (v < 0x20);
+            } while (v >= 0x20);
+            if (val.Length > 1) val = val.Substring(0, val.Length - 1);
 
-            get_option(val);
+            get_option(val.Trim().ToUpper());
         }
 
 
@@ -3614,10 +3715,17 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable one_line_compile()
         {
+
 #if DEBUG
             int n = mml_seg.mml_buf.IndexOf("\r\n", work.si);
-            Log.WriteLine(LogLevel.DEBUG, mml_seg.mml_buf.Substring(work.si, n - work.si));
+            int r = work.si;
+            calc_line(ref r);
+            Log.WriteLine(LogLevel.DEBUG, string.Format("{0}({1}) \t{2}"
+                , System.IO.Path.GetFileName(mml_seg.mml_filename)
+                , mml_seg.line
+                , mml_seg.mml_buf.Substring(work.si, n - work.si)));
 #endif
+
             char al = (char)0;
             do
             {
@@ -9427,7 +9535,6 @@ namespace PMDDotNET.Compiler
         //7649
         private string[] kankyo_seg;
 
-
-
+        public byte[] outVoiceBuf = null;//音色出力用バッファ(ファイル名はv_filename)
     }
 }
