@@ -83,7 +83,7 @@ namespace PMDDotNET.Compiler
         public void print_mes(string qq)
         {
             //コンソールへメッセージ表示
-            string[] a = qq.Split(new string[] { "" + mc.cr + mc.lf }, StringSplitOptions.None);
+            string[] a = qq.Split(new string[] { "" + (char)mc.cr + (char)mc.lf }, StringSplitOptions.None);
             foreach (string s in a)
                 musicDriverInterface.Log.WriteLine(musicDriverInterface.LogLevel.INFO, s);
         }
@@ -1380,7 +1380,6 @@ namespace PMDDotNET.Compiler
             {
                 do
                 {
-                    ret = Jumper(ret);
 
                     if (ret == enmPass2JumpTable.exit) break;
                     if (ret == enmPass2JumpTable.hscom_exit)
@@ -1395,6 +1394,8 @@ namespace PMDDotNET.Compiler
                             break;
                         }
                     }
+
+                    ret = Jumper(ret);
 
                 } while (ret != enmPass2JumpTable.forceReturn);
 
@@ -3673,7 +3674,9 @@ namespace PMDDotNET.Compiler
         {
             do
             {
-                work.al = (byte)(work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
+                char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a;
+                if (ch == '　') continue;
+                work.al = (byte)ch;
                 if (work.al == 9) continue;//tab
                 if (work.al == (byte)' ') continue;
                 if (work.al < (byte)' ') goto notend;
@@ -5313,7 +5316,7 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable octrev()
         {
             Tuple<string,Func<enmPass2JumpTable>> dmy = comtbl[ou00];
-            comtbl[od00] = comtbl[od00];
+            comtbl[ou00] = comtbl[od00];
             comtbl[od00] = dmy;
 
             return enmPass2JumpTable.olc03;
