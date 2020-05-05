@@ -5739,8 +5739,8 @@ namespace PMDDotNET.Compiler
 
             if (mml_seg.ongen < mml_seg.psg) goto fmpt;
 
-            work.bx = mml_seg.pitch / 128;//PSG/PCMの時はPITCHを128で割る
-            if (work.bx >= 0) goto bp6;
+            work.bx = mml_seg.pitch >> 7;//PSG/PCMの時はPITCHを128で割る
+            if ((work.bx&0x8000) == 0) goto bp6;
             work.bx++;
             goto bp6;
 

@@ -37,7 +37,7 @@ namespace PMDDotNETCompilerTestService
 
             var outputFileName = GetOutputFileName(compiler, mmlFilePath, fnAppendFileReaderCallback);
 
-            using (var fs = new FileStream(fullpath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = new FileStream(fullpath, FileMode.Open, FileAccess.Read,FileShare.Read))
             using (var ms = new MemoryStream())
             {
                 compiler.mcArgs = new string[] { "/v", fname };
