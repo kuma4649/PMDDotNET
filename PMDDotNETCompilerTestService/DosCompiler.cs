@@ -71,7 +71,7 @@ namespace PMDDotNETCompilerTestService
                             stdout :
                             string.Format("stdout:{0}{1}{0}stderr:{2}", Environment.NewLine, stdout, stderr);
 
-                        return new CompileResult(succeeded: p.ExitCode == 0, compiledBinary: compiledBinary, log: log ?? string.Empty);
+                        return new CompileResult(p.ExitCode, compiledBinary: compiledBinary, log: log ?? string.Empty);
                     }
                     finally
                     {
