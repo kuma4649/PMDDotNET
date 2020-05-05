@@ -1,4 +1,9 @@
 更新履歴
+TAG025 2020/05/05 3rd
+  Compiler
+    ・Xコマンドのバグ再修正
+    ・lfoSwitchのバグ修正
+
 TAG024 2020/05/05 2nd
   Compiler
     ・Xコマンドのバグを修正
