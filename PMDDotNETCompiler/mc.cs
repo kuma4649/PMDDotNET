@@ -5315,9 +5315,16 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable octrev()
         {
-            Tuple<string,Func<enmPass2JumpTable>> dmy = comtbl[ou00];
-            comtbl[ou00] = comtbl[od00];
-            comtbl[od00] = dmy;
+            if (comtbl[ou00].Item1 == ">")
+            {
+                comtbl[ou00] = new Tuple<string, Func<enmPass2JumpTable>>("<", octup);
+                comtbl[od00] = new Tuple<string, Func<enmPass2JumpTable>>(">", octdown);
+            }
+            else
+            {
+                comtbl[ou00] = new Tuple<string, Func<enmPass2JumpTable>>(">", octup);
+                comtbl[od00] = new Tuple<string, Func<enmPass2JumpTable>>("<", octdown);
+            }
 
             return enmPass2JumpTable.olc03;
         }
@@ -8444,7 +8451,7 @@ namespace PMDDotNET.Compiler
             work.ah = 0xf1;
             if (work.al == 'A') goto lfoswitch_main2;
             work.ah = 0xbe;
-            if (work.al == 'A') goto lfoswitch_main2;
+            if (work.al == 'B') goto lfoswitch_main2;
             work.si--;
         lfoswitch_main2:;
             ah_p = work.ah;
