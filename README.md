@@ -33,6 +33,7 @@ PMD.NETはMITライセンスとします。
  ・KAJA さん  
  ・TAN-Y さん  
  ・UME-3 さん  
+ ・C60 さん  
  ・mucom さん  
  ・ぼうきち さん  
  ・M.S さん  
