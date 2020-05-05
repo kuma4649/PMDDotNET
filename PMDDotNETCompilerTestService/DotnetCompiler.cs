@@ -11,7 +11,7 @@ namespace PMDDotNETCompilerTestService
         public static (CompileResult result, string outputFileName) Compile(string mmlFilePath)
         {
             var log = new StringBuilder();
-            Log.writeLine = (level, msg) => log.AppendFormat("[{0,-7}] {1}\n", level, msg);
+            Log.writeLine = (level, msg) => log.AppendFormat("[{0,-7}] {1}{2}", level, msg, Environment.NewLine);
 
             var fullpath = Path.GetFullPath(mmlFilePath);
             var dir = Path.GetDirectoryName(fullpath) ?? Environment.CurrentDirectory;
