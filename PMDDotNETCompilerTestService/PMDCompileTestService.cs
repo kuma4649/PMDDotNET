@@ -13,13 +13,15 @@ namespace PMDDotNETCompilerTestService
             public CompareResult CompareResult { get; }
             public CompileStatus DotNetResult { get; }
             public CompileStatus DosResult { get; }
+            public string? CompiledFilesDir { get; }
 
-            public TestResult(string mmlFilePath, CompareResult compareResult, CompileStatus dotnetResult, CompileStatus dosResult)
+            public TestResult(string mmlFilePath, CompareResult compareResult, CompileStatus dotnetResult, CompileStatus dosResult, string? compiledFilesdir)
             {
                 MMLFilePath = mmlFilePath;
                 CompareResult = compareResult;
                 DotNetResult = dotnetResult;
                 DosResult = dosResult;
+                CompiledFilesDir = compiledFilesdir;
             }
 
             public bool IsPerfect =>
@@ -45,7 +47,7 @@ namespace PMDDotNETCompilerTestService
             _logger = logger;
         }
 
-        public TestResult SingleTest(string mmlFilePath, string tooldir)
+        public TestResult SingleTest(string mmlFilePath, string tooldir, string? logdir)
         {
             _logger.LogInformation("---- Test Start - {0}", mmlFilePath);
             try
@@ -61,11 +63,46 @@ namespace PMDDotNETCompilerTestService
                 var compareResult = dotnet.result.Compare(dos);
                 _logger.LogInformation("Compare Result: {0}", compareResult);
 
+                string? compiledFilesDir = null;
+                if (logdir != null && compareResult == CompareResult.Unmatch)
+                {
+                    var basename = Path.GetFileNameWithoutExtension(mmlFilePath);
+                    var dir = Path.Combine(logdir, basename);
+                    for (int i = 2; i < 100; i++)
+                    {
+                        if (!Directory.Exists(dir))
+                        {
+                            compiledFilesDir = dir;
+                            break;
+                        }
+                        dir = Path.Combine(logdir, string.Format("{0}{1}", basename, i));
+                    }
+                    if (compiledFilesDir != null)
+                    {
+                        Directory.CreateDirectory(compiledFilesDir);
+
+                        static void WriteFile(string path, byte[]? bin)
+                        {
+                            if (bin != null && bin.Length > 0)
+                            {
+                                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                                {
+                                    fs.Write(bin, 0, bin.Length);
+                                }
+                            }
+                        }
+
+                        WriteFile(Path.Combine(compiledFilesDir, "dotnet.m"), dotnet.result.CompiledBinary);
+                        WriteFile(Path.Combine(compiledFilesDir, "dos.m"), dos.CompiledBinary);
+                    }
+                }
+
                 return new TestResult(
                     mmlFilePath: mmlFilePath,
                     compareResult: compareResult,
                     dotnetResult: dotnet.result.Status,
-                    dosResult: dos.Status);
+                    dosResult: dos.Status,
+                    compiledFilesdir: compiledFilesDir);
             }
             catch (Exception e)
             {
@@ -74,7 +111,8 @@ namespace PMDDotNETCompilerTestService
                     mmlFilePath: mmlFilePath,
                     compareResult: CompareResult.Unspecified,
                     dotnetResult: CompileStatus.Exception,
-                    dosResult: CompileStatus.Exception);
+                    dosResult: CompileStatus.Exception,
+                    compiledFilesdir: null);
             }
             finally
             {
@@ -82,7 +120,7 @@ namespace PMDDotNETCompilerTestService
             }
         }
 
-        public bool MultiTest(string mmlFileDir, string tooldir)
+        public bool MultiTest(string mmlFileDir, string tooldir, string? logdir)
         {
             var mmls = Directory.EnumerateFiles(mmlFileDir, "*.mml", SearchOption.AllDirectories);
 
@@ -92,7 +130,7 @@ namespace PMDDotNETCompilerTestService
             var errorfiles = new List<TestResult>();
             foreach (var mml in mmls)
             {
-                var r = SingleTest(mml, tooldir);
+                var r = SingleTest(mml, tooldir, logdir);
 
                 if (!r.IsPerfect)
                 {
@@ -121,7 +159,14 @@ namespace PMDDotNETCompilerTestService
             {
                 foreach (var item in list)
                 {
-                    _logger.LogInformation("{0}, Compare = {1}, .NET = {2}, DOS = {3}", item.MMLFilePath, item.CompareResult, item.DotNetResult, item.DosResult);
+                    if (item.CompiledFilesDir != null)
+                    {
+                        _logger.LogInformation("{0}, Compare = {1}, .NET = {2}, DOS = {3}, Binary = {4}", item.MMLFilePath, item.CompareResult, item.DotNetResult, item.DosResult, item.CompiledFilesDir);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("{0}, Compare = {1}, .NET = {2}, DOS = {3}", item.MMLFilePath, item.CompareResult, item.DotNetResult, item.DosResult);
+                    }
                 }
             }
 
