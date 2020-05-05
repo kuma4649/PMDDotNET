@@ -545,7 +545,7 @@ namespace PMDDotNET.Compiler
             //not_over_all:;
             msg += string.Format("{0}", ax);
             if (loop_flag != 1) goto pe_loop;
-            mc.print_mes(loop_mes2);
+            if(print_flag!=0) mc.print_mes(loop_mes2);
             return;
         pe_loop:;
             dx = (loop_length >> 16) & 0xffff;
@@ -564,7 +564,7 @@ namespace PMDDotNET.Compiler
             msg += string.Format("{0}", n);
 
         pe_00:;
-            mc.print_mes(msg);
+            if (print_flag != 0) mc.print_mes(msg);
             //mc.print_mes(_crlf_mes);
             //pe_01:;
         }
