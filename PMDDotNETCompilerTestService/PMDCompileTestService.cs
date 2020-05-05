@@ -13,14 +13,16 @@ namespace PMDDotNETCompilerTestService
             public CompareResult CompareResult { get; }
             public CompileStatus DotNetResult { get; }
             public CompileStatus DosResult { get; }
+            public int DosExitCode { get; }
             public string? CompiledFilesDir { get; }
 
-            public TestResult(string mmlFilePath, CompareResult compareResult, CompileStatus dotnetResult, CompileStatus dosResult, string? compiledFilesdir)
+            public TestResult(string mmlFilePath, CompareResult compareResult, CompileStatus dotnetResult, int dosExitCode, CompileStatus dosResult, string? compiledFilesdir)
             {
                 MMLFilePath = mmlFilePath;
                 CompareResult = compareResult;
                 DotNetResult = dotnetResult;
                 DosResult = dosResult;
+                DosExitCode = dosExitCode;
                 CompiledFilesDir = compiledFilesdir;
             }
 
@@ -102,6 +104,7 @@ namespace PMDDotNETCompilerTestService
                     compareResult: compareResult,
                     dotnetResult: dotnet.result.Status,
                     dosResult: dos.Status,
+                    dosExitCode: dos.ExitCode,
                     compiledFilesdir: compiledFilesDir);
             }
             catch (Exception e)
@@ -112,6 +115,7 @@ namespace PMDDotNETCompilerTestService
                     compareResult: CompareResult.Unspecified,
                     dotnetResult: CompileStatus.Exception,
                     dosResult: CompileStatus.Exception,
+                    dosExitCode: 0,
                     compiledFilesdir: null);
             }
             finally
@@ -127,6 +131,7 @@ namespace PMDDotNETCompilerTestService
             var count = 0;
             var allowfiles = new List<TestResult>();
             var warningfiles = new List<TestResult>();
+            var doserrorfiles = new List<TestResult>();
             var errorfiles = new List<TestResult>();
             foreach (var mml in mmls)
             {
@@ -142,6 +147,10 @@ namespace PMDDotNETCompilerTestService
                     {
                         warningfiles.Add(r);
                     }
+                    else if (r.DosResult == CompileStatus.Failed)
+                    {
+                        doserrorfiles.Add(r);
+                    }
                     else
                     {
                         errorfiles.Add(r);
@@ -153,6 +162,7 @@ namespace PMDDotNETCompilerTestService
             _logger.LogInformation("Test Files: {0} files", count);
             _logger.LogInformation("Allowed Files: {0} files", allowfiles.Count);
             _logger.LogInformation("Warning Files: {0} files", warningfiles.Count);
+            _logger.LogInformation("DOS Compiler Error Files: {0} files", doserrorfiles.Count);
             _logger.LogInformation("Error Files: {0} files", errorfiles.Count);
 
             void LogFiles(List<TestResult> list)
@@ -180,6 +190,15 @@ namespace PMDDotNETCompilerTestService
             {
                 _logger.LogInformation("Warning Files List:");
                 LogFiles(warningfiles);
+            }
+
+            if (doserrorfiles.Count > 0)
+            {
+                _logger.LogInformation("DOS Compiler Error Files List:");
+                foreach (var item in doserrorfiles)
+                {
+                    _logger.LogInformation("{0}, Compare = {1}, .NET = {2}, DOS = {3} (exitcode = {4})", item.MMLFilePath, item.CompareResult, item.DotNetResult, item.DosResult, item.DosExitCode);
+                }
             }
 
             if (errorfiles.Count > 0)

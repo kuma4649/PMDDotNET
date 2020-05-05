@@ -24,12 +24,20 @@ namespace PMDDotNETCompilerTestService
     {
         public CompileStatus Status { get; }
 
+        public int ExitCode { get; }
+
         public byte[]? CompiledBinary { get; }
 
         public string Log { get; }
 
-        public CompileResult(bool succeeded, byte[]? compiledBinary, string log)
+        public CompileResult(bool succeeded, byte[]? compiledBinary, string log) :
+            this(succeeded ? 0 : 1, compiledBinary, log)
         {
+        }
+
+        public CompileResult(int exitCode, byte[]? compiledBinary, string log)
+        {
+            var succeeded = exitCode == 0;
             if (succeeded)
             {
                 if (log.IndexOf("Warning", StringComparison.CurrentCultureIgnoreCase) < 0)
@@ -52,6 +60,7 @@ namespace PMDDotNETCompilerTestService
                     Status = CompileStatus.Exception;
                 }
             }
+            ExitCode = exitCode;
             CompiledBinary = compiledBinary;
             Log = log;
         }
