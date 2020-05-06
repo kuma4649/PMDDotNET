@@ -55,6 +55,24 @@ namespace PMDDotNETCompilerTestService
                 {
                     compiler.mcArgs = new string[] { fname };
                 }
+
+                var envs = new List<string>();
+                void AddEnv(string envname)
+                {
+                    var env = Environment.GetEnvironmentVariable(envname, EnvironmentVariableTarget.User);
+                    if (!string.IsNullOrEmpty(env))
+                    {
+                        envs.Add(string.Format("{0}={1}", envname, env));
+                    }
+                }
+
+                AddEnv("ARRANGER");
+                AddEnv("COMPOSER");
+                AddEnv("USER");
+                AddEnv("MCOPT");
+                AddEnv("PMD");
+                compiler.env = envs.ToArray();
+
                 var r = compiler.Compile(fs, ms, fnAppendFileReaderCallback);
                 ms.Flush();
 
