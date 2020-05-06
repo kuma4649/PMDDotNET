@@ -98,12 +98,20 @@ namespace PMDDotNETCompilerTestService
 
         public int GetMemoOffset(byte[] array)
         {
-            if (array.Length < 0x1a || array[1] != 0x1a)
+            if (array.Length < 0x1a)
             {
-                return 0;
+                return array.Length;
             }
 
-            return array[0x19] + array[0x1a] * 256 - 4 + 1;
+            if (array[1] == 0x1a)
+            {
+                var offset = array[0x19] + array[0x1a] * 256 - 4 + 1;
+                offset = array[offset] + array[offset + 1] * 256 + 1;
+                offset = array[offset] + array[offset + 1] * 256;
+                return offset;
+            }
+
+            return array.Length;
         }
     }
 }
