@@ -58,7 +58,7 @@ namespace PMDDotNETCompilerTestService
                 var r = compiler.Compile(fs, ms, fnAppendFileReaderCallback);
                 ms.Flush();
 
-                return (new CompileResult(succeeded: r, compiledBinary: ms?.ToArray(), log: log.ToString()), outputFileName);
+                return (new CompileResult(succeeded: r, compiledBinary: ms?.ToArray(), log: log.ToString(), memoWriteAddress: compiler.memo_writeAddress), outputFileName);
             }
         }
 
