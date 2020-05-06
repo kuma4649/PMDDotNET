@@ -118,6 +118,8 @@ namespace PMDDotNET.Console
 
         }
 
+        private static Common.Environment env = null;
+
         static void Compile(string[] args,int argIndex)
         {
             try
@@ -127,23 +129,17 @@ namespace PMDDotNET.Console
                 for(int i = argIndex; i < args.Length; i++)
                     lstMcArg.Add(args[i]);
 
-
-
                 Compiler.Compiler compiler = new Compiler.Compiler();
                 compiler.Init();
                 compiler.mcArgs = lstMcArg.ToArray();
-                string arranger = Environment.GetEnvironmentVariable("arranger", EnvironmentVariableTarget.User);
-                if (arranger != null) arranger = "ARRANGER=" + arranger;
-                string composer = Environment.GetEnvironmentVariable("composer", EnvironmentVariableTarget.User);
-                if (composer != null) composer = "COMPOSER=" + composer;
-                string user = Environment.GetEnvironmentVariable("user", EnvironmentVariableTarget.User);
-                if (user != null) user = "USER=" + user;
-                string mcopt = Environment.GetEnvironmentVariable("mcopt", EnvironmentVariableTarget.User);
-                if (mcopt != null) user = "MCOPT=" + mcopt;
-                compiler.env = new string[]
-                {
-                    arranger,composer,user,mcopt
-                };
+
+                env = new Common.Environment();
+                env.AddEnv("arranger");
+                env.AddEnv("composer");
+                env.AddEnv("user");
+                env.AddEnv("mcopt");
+                env.AddEnv("pmd");
+                compiler.env = env.GetEnv();
 
                 //各種ファイルネームを得る
                 int s = 0;
@@ -282,10 +278,24 @@ namespace PMDDotNET.Console
         private static Stream appendFileReaderCallback(string arg)
         {
 
-            string fn = Path.Combine(
+            string fn;
+            fn = Path.Combine(
                 Path.GetDirectoryName(srcFile)
                 , arg
                 );
+
+            string[] envPaths= env.GetEnvVal("pmd");
+            if (envPaths != null)
+            {
+                int i = 0;
+                while (!File.Exists(fn) && i < envPaths.Length)
+                {
+                    fn = Path.Combine(
+                        envPaths[i++]
+                        , arg
+                        );
+                }
+            }
 
             FileStream strm;
             try

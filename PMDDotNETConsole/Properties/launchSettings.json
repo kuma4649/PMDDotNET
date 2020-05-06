@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-LOGLEVEL=DEBUG /v /c D:\\testpmd\\HBM214BB.MML"
+      "commandLineArgs": "-LOGLEVEL=DEBUG /v /c D:\\testpmd\\AD3PMD01.MML"
     }
   }
 }

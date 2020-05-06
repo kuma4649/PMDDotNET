@@ -31,5 +31,20 @@
                 cl = (byte)value;
             }
         }
+
+        public byte dl;
+        public byte dh;
+        public ushort dx
+        {
+            get
+            {
+                return (ushort)(dh * 0x100 + dl);
+            }
+            set
+            {
+                dh = (byte)(value >> 8);
+                dl = (byte)value;
+            }
+        }
     }
 }
