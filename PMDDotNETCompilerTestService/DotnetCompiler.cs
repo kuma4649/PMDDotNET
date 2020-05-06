@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using musicDriverInterface;
@@ -8,7 +9,7 @@ namespace PMDDotNETCompilerTestService
 {
     public class DotnetCompiler
     {
-        public static (CompileResult result, string outputFileName) Compile(string mmlFilePath)
+        public static (CompileResult result, string outputFileName) Compile(string mmlFilePath, string[]? options)
         {
             var log = new StringBuilder();
             Log.writeLine = (level, msg) => log.AppendFormat("[{0,-7}] {1}{2}", level, msg, Environment.NewLine);
@@ -40,7 +41,20 @@ namespace PMDDotNETCompilerTestService
             using (var fs = new FileStream(fullpath, FileMode.Open, FileAccess.Read,FileShare.Read))
             using (var ms = new MemoryStream())
             {
-                compiler.mcArgs = new string[] { "/v", fname };
+                if (options != null)
+                {
+                    var tmp = new List<string>(options.Length + 1);
+                    foreach (var item in options)
+                    {
+                        tmp.Add(item);
+                    }
+                    tmp.Add(fname);
+                    compiler.mcArgs = tmp.ToArray();
+                }
+                else
+                {
+                    compiler.mcArgs = new string[] { fname };
+                }
                 var r = compiler.Compile(fs, ms, fnAppendFileReaderCallback);
                 ms.Flush();
 

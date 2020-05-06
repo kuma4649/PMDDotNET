@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
+using System.Text;
 
 namespace PMDDotNETCompilerTestService
 {
     public class DosCompiler
     {
-        public static CompileResult Compile(string mmlFilePath, string outputFileName, string tooldir)
+        public static CompileResult Compile(string mmlFilePath, string[]? options, string outputFileName, string tooldir)
         {
             var tooldirFull = Path.GetFullPath(tooldir);
             var currentDir = Environment.CurrentDirectory;
@@ -24,12 +25,28 @@ namespace PMDDotNETCompilerTestService
                 var psi = new ProcessStartInfo()
                 {
                     FileName = Path.Combine(tooldirFull, "msdos.exe"),
-                    Arguments = string.Format("{0} /v {1}", Path.Combine(tooldirFull, "MC"), fname),
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 };
+
+                string option;
+                if (options != null && options.Length > 0)
+                {
+                    var tmp = new StringBuilder();
+                    foreach(var item in options)
+                    {
+                        tmp.AppendFormat(" {0}", item);
+                    }
+                    option = tmp.ToString();
+                }
+                else
+                {
+                    option = " ";
+                }
+                psi.Arguments = string.Format("{0}{1} {2}", Path.Combine(tooldirFull, "MC"), option, fname);
+
 
                 using (var p = Process.Start(psi))
                 {
