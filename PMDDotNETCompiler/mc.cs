@@ -1968,18 +1968,25 @@ namespace PMDDotNET.Compiler
             try
             {
                 voice_seg.voice_buf = compiler.ReadFile(voice_seg.v_filename);
-                if (voice_seg.voice_buf == null)
-                    print_mes(mml_seg.warning_mes + string.Format(msg.get("E0200"), voice_seg.v_filename));// mml_seg.ff_readerr_mes);
-                voiceTrancer(voice_seg.voice_buf);
             }
             catch
             {
+                voice_seg.voice_buf = null;
+            }
+
+            if (voice_seg.voice_buf == null)
+            {
+                print_mes(mml_seg.warning_mes + string.Format(msg.get("E0200"), voice_seg.v_filename));// mml_seg.ff_readerr_mes);
+            }
+            else
+            {
+                voiceTrancer(voice_seg.voice_buf);
+#if !hyouka
+                mml_seg.prg_flg |= 1;
+#endif
             }
 
 
-#if !hyouka
-            mml_seg.prg_flg |= 1;
-#endif
         }
 
 
