@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace PMDDotNETCompilerTestService
@@ -49,16 +50,26 @@ namespace PMDDotNETCompilerTestService
             _logger = logger;
         }
 
-        public TestResult SingleTest(string mmlFilePath, string tooldir, string? logdir)
+        public TestResult SingleTest(string mmlFilePath, string[]? options, string tooldir, string? logdir)
         {
             _logger.LogInformation("---- Test Start - {0}", mmlFilePath);
+            if (options != null && options.Length > 0)
+            {
+                var tmp = new StringBuilder();
+                foreach(var item in options)
+                {
+                    tmp.AppendFormat(" {0}", item);
+                }
+
+                _logger.LogInformation("Compile Option:{0}", tmp.ToString());
+            }
             try
             {
-                var dotnet = DotnetCompiler.Compile(mmlFilePath);
+                var dotnet = DotnetCompiler.Compile(mmlFilePath, options);
                 _logger.LogInformation(".NET Compile Result: {0}", dotnet.result.Status);
                 dotnet.result.WriteLog(_logger);
 
-                var dos = DosCompiler.Compile(mmlFilePath, dotnet.outputFileName, tooldir);
+                var dos = DosCompiler.Compile(mmlFilePath, options, dotnet.outputFileName, tooldir);
                 _logger.LogInformation("DOS Compile Result: {0}", dos.Status);
                 dos.WriteLog(_logger);
 
@@ -124,7 +135,7 @@ namespace PMDDotNETCompilerTestService
             }
         }
 
-        public bool MultiTest(string mmlFileDir, string tooldir, string? logdir)
+        public bool MultiTest(string mmlFileDir, string[]? options, string tooldir, string? logdir)
         {
             var mmls = Directory.EnumerateFiles(mmlFileDir, "*.mml", SearchOption.AllDirectories);
 
@@ -135,7 +146,7 @@ namespace PMDDotNETCompilerTestService
             var errorfiles = new List<TestResult>();
             foreach (var mml in mmls)
             {
-                var r = SingleTest(mml, tooldir, logdir);
+                var r = SingleTest(mml, options, tooldir, logdir);
 
                 if (!r.IsPerfect)
                 {
