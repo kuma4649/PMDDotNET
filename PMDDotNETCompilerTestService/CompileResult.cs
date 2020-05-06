@@ -30,12 +30,14 @@ namespace PMDDotNETCompilerTestService
 
         public string Log { get; }
 
-        public CompileResult(bool succeeded, byte[]? compiledBinary, string log) :
-            this(succeeded ? 0 : 1, compiledBinary, log)
+        public int? MemoWriteAddress { get; }
+
+        public CompileResult(bool succeeded, byte[]? compiledBinary, string log, int? memoWriteAddress = null) :
+            this(succeeded ? 0 : 1, compiledBinary, log, memoWriteAddress)
         {
         }
 
-        public CompileResult(int exitCode, byte[]? compiledBinary, string log)
+        public CompileResult(int exitCode, byte[]? compiledBinary, string log, int? memoWriteAddress = null)
         {
             var succeeded = exitCode == 0;
             if (succeeded)
@@ -63,6 +65,7 @@ namespace PMDDotNETCompilerTestService
             ExitCode = exitCode;
             CompiledBinary = compiledBinary;
             Log = log;
+            MemoWriteAddress = memoWriteAddress < 0 ? new int?() : memoWriteAddress;
         }
 
         public void WriteLog(ILogger logger)
@@ -89,29 +92,44 @@ namespace PMDDotNETCompilerTestService
             {
                 if (CompiledBinary[i] != target.CompiledBinary[i])
                 {
-                    return i >= GetMemoOffset(CompiledBinary) ? CompareResult.Match_WithoutMemo : CompareResult.Unmatch;
+                    var offset = GetMemoOffset(CompiledBinary) ?? MemoWriteAddress ?? target.MemoWriteAddress ?? size;
+
+                    return i >= offset ? CompareResult.Match_WithoutMemo : CompareResult.Unmatch;
                 }
             }
 
             return CompiledBinary.Length == target.CompiledBinary.Length ? CompareResult.Match : CompareResult.Match_NotEqualLength;
         }
 
-        public int GetMemoOffset(byte[] array)
+        public static int? GetMemoOffset(byte[] array)
         {
-            if (array.Length < 0x1a)
-            {
-                return array.Length;
-            }
-
-            if (array[1] == 0x1a)
+/*
+            //  正攻法 (/v あり時のみ)
+            if (array.Length >= 0x1a && array[1] == 0x1a)
             {
                 var offset = array[0x19] + array[0x1a] * 256 - 4 + 1;
                 offset = array[offset] + array[offset + 1] * 256 + 1;
                 offset = array[offset] + array[offset + 1] * 256;
                 return offset;
             }
+*/
+            if (array.Length >= 4)
+            {
+                var offset = array[array.Length - 4] + array[array.Length - 3] * 256;
+                offset++;
+                while (offset < array.Length - 2)
+                {
+                    if (array[offset] == 0)
+                    {
+                        offset++;
+                        offset = array[offset] + array[offset + 1] * 256;
+                        return offset;
+                    }
+                    offset++;
+                }
+            }
 
-            return array.Length;
+            return new int?();
         }
     }
 }
