@@ -21,8 +21,8 @@ namespace PMDDotNET.Compiler
         private byte[] ffBuf = null;
 
         public string outFileName { get; private set; }
-
-
+        public int memo_writeAddress { get; private set; } = -1;
+        public int vdat_setAddress { get; private set; } = -1;
 
         public Compiler(iEncoding enc = null)
         {
@@ -98,7 +98,11 @@ namespace PMDDotNET.Compiler
             {
                 work = new work();
                 mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
-                return mc.compile_start();
+                MmlDatum[] ret = mc.compile_start();
+                memo_writeAddress = mc.memo_writeAddress;
+                vdat_setAddress = mc.vdat_setAddress;
+
+                return ret;
                 
             }
             catch(PmdDosExitException)
