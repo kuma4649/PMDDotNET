@@ -1980,11 +1980,11 @@ namespace PMDDotNET.Compiler
             }
             else
             {
-                voiceTrancer(voice_seg.voice_buf);
 #if !hyouka
                 mml_seg.prg_flg |= 1;
 #endif
             }
+            voiceTrancer(voice_seg.voice_buf);
 
 
         }
