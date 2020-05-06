@@ -156,6 +156,12 @@ namespace PMDDotNET.Console
                     s++;
                 }
 
+                if (string.IsNullOrEmpty(srcFile))
+                {
+                    Log.WriteLine(LogLevel.ERROR, msg.get("E0601"));
+                    return;
+                }
+
                 byte[] ffFileBuf = null;
                 if (!string.IsNullOrEmpty(ffFile) && File.Exists(ffFile))
                 {
