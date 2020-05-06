@@ -59,6 +59,11 @@ namespace PMDDotNETCompilerUnitTest
         private void TestMain(string[]? options)
         {
             var logdir = GetLogDir();
+            while (Directory.Exists(logdir))
+            {
+                System.Threading.Thread.Sleep(1000);
+                logdir = GetLogDir();
+            }
             Directory.CreateDirectory(logdir);
             var logwriter = File.CreateText(Path.Combine(logdir, "log.txt"));
             using var listener = new TextWriterTraceListener(logwriter.BaseStream);
