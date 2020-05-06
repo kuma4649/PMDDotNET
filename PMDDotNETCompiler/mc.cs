@@ -1547,6 +1547,8 @@ namespace PMDDotNET.Compiler
         {
             if ((mml_seg.prg_flg & 1) == 0) return enmPass2JumpTable.memo_write;
 
+            musicDriverInterface.Log.WriteLine(LogLevel.DEBUG, string.Format("vdat_setAddress:{0}", work.di));
+
             work.si = 0;//offset m_buf
             work.si += 2 * (mml_seg.max_part + 1);//KUMA:? -> v48sで理解w
             int dx = work.di;
@@ -1652,6 +1654,8 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable memo_write()
         {
+            Log.WriteLine(LogLevel.DEBUG, string.Format("memo_writeAddress:{0}", work.di));
+
 #if !efc
             work.bx = 0;// mml_seg.ppzfile_adr;
             int cx = 3;// #PPZFile / #PPSFile / #PCMFile
