@@ -18,6 +18,15 @@ namespace PMDDotNET.Compiler
         private hs_seg hs_seg = null;
         private voice_seg voice_seg = null;
 
+
+
+        //DotNET独自パラメータ
+        public byte[] outVoiceBuf = null;//音色出力用バッファ(ファイル名はv_filename)
+        public int memo_writeAddress { get; private set; } = -1;
+        public int vdat_setAddress { get; private set; } = -1;
+
+
+
         //;==============================================================================
         //;
         //;	MML Compiler/Effect Compiler FOR PC-9801/88VA 
@@ -1548,6 +1557,7 @@ namespace PMDDotNET.Compiler
             if ((mml_seg.prg_flg & 1) == 0) return enmPass2JumpTable.memo_write;
 
             musicDriverInterface.Log.WriteLine(LogLevel.DEBUG, string.Format("vdat_setAddress:{0}", work.di));
+            vdat_setAddress = work.di;
 
             work.si = 0;//offset m_buf
             work.si += 2 * (mml_seg.max_part + 1);//KUMA:? -> v48sで理解w
@@ -1655,6 +1665,7 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable memo_write()
         {
             Log.WriteLine(LogLevel.DEBUG, string.Format("memo_writeAddress:{0}", work.di));
+            memo_writeAddress = work.di;
 
 #if !efc
             work.bx = 0;// mml_seg.ppzfile_adr;
@@ -9554,6 +9565,5 @@ namespace PMDDotNET.Compiler
         //7649
         private string[] kankyo_seg;
 
-        public byte[] outVoiceBuf = null;//音色出力用バッファ(ファイル名はv_filename)
     }
 }
