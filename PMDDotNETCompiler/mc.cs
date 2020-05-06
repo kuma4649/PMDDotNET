@@ -7429,7 +7429,7 @@ namespace PMDDotNET.Compiler
             cx = 4;
             if (work.bx > 9)
             {
-                Log.WriteLine(LogLevel.WARNING,
+                musicDriverInterface.Log.WriteLine(LogLevel.WARNING,
                     string.Format(msg.get("W0100"), work.bx)
                     );
                 work.bx = 0;

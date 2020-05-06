@@ -24,6 +24,7 @@ namespace PMDDotNET.Console
             Log.off = 0;
 #else
             Log.level = LogLevel.INFO;
+            Log.off = 0;
 #endif
             int fnIndex = AnalyzeOption(args);
 
