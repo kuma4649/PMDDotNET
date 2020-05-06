@@ -21,13 +21,36 @@ namespace PMDDotNETCompilerTestService
             var compiler = new Compiler();
             compiler.Init();
 
+            var includePaths = new List<string>();
+            includePaths.Add(dir);
+            var envpmd = Environment.GetEnvironmentVariable("PMD", EnvironmentVariableTarget.User);
+            if (!string.IsNullOrEmpty(envpmd))
+            {
+                var envpmds = envpmd.Split(";");
+                foreach(var item in envpmds)
+                {
+                    var path = Path.GetFullPath(item.Trim());
+                    if (Directory.Exists(path))
+                    {
+                        includePaths.Add(path);
+                    }
+                }
+            }
+
             Func<string?, Stream?> fnAppendFileReaderCallback = fname =>
             {
                 try
                 {
                     if (fname != null)
                     {
-                        return new FileStream(Path.Combine(dir, fname), FileMode.Open, FileAccess.Read, FileShare.Read);
+                        foreach (var item in includePaths)
+                        {
+                            var path = Path.Combine(item, fname);
+                            if (File.Exists(path))
+                            {
+                                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                            }
+                        }
                     }
                 }
                 catch
@@ -70,7 +93,6 @@ namespace PMDDotNETCompilerTestService
                 AddEnv("COMPOSER");
                 AddEnv("USER");
                 AddEnv("MCOPT");
-                AddEnv("PMD");
                 compiler.env = envs.ToArray();
 
                 var r = compiler.Compile(fs, ms, fnAppendFileReaderCallback);
