@@ -27,7 +27,7 @@ namespace PMDDotNET.Console
 #endif
             int fnIndex = AnalyzeOption(args);
 
-            if (args == null || args.Length < 1)
+            if (args == null || args.Length-fnIndex < 1 )
             {
                 WriteLine(LogLevel.ERROR, msg.get("E0600"));
                 return;
@@ -296,10 +296,11 @@ namespace PMDDotNET.Console
 
         private static int AnalyzeOption(string[] args)
         {
+            if (args == null) return 0;
             if (args.Length < 1) return 0;
 
             int i = 0;
-            while (args[i] != null && args[i].Length > 0 && args[i][0] == '-')
+            while (args.Length > i && args[i] != null && args[i].Length > 0 && args[i][0] == '-')
             {
                 string op = args[i].Substring(1).ToUpper();
                 if (op == "LOGLEVEL=FATAL")
@@ -326,10 +327,10 @@ namespace PMDDotNET.Console
                 {
                     Log.level = LogLevel.TRACE;
                 }
-                else if (op == "OFFLOG=WARNING")
-                {
-                    Log.off = (int)LogLevel.WARNING;
-                }
+                //else if (op == "OFFLOG=WARNING")
+                //{
+                //    Log.off = (int)LogLevel.WARNING;
+                //}
                 else if (op == "XML")
                 {
                     isXml = true;

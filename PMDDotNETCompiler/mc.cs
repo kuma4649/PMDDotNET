@@ -88,6 +88,14 @@ namespace PMDDotNET.Compiler
                 musicDriverInterface.Log.WriteLine(musicDriverInterface.LogLevel.INFO, s);
         }
 
+        public void print_mes_err(string qq)
+        {
+            //コンソールへメッセージ表示
+            string[] a = qq.Split(new string[] { "" + (char)mc.cr + (char)mc.lf }, StringSplitOptions.None);
+            foreach (string s in a)
+                musicDriverInterface.Log.WriteLine(musicDriverInterface.LogLevel.ERROR, s);
+        }
+
         public void print_chr(string qq)
         {
             //コンソールへ文字表示
@@ -9328,7 +9336,7 @@ namespace PMDDotNET.Compiler
             //; ------------------------------------------------------------------------------
             //; Error Messageの表示
             //; ------------------------------------------------------------------------------
-            print_mes(err_seg.errmes_4 + msg.get(string.Format("E01{0:00}", dl)));// err_seg.err_table[dl]);
+            print_mes_err(err_seg.errmes_4 + msg.get(string.Format("E01{0:00}", dl)));// err_seg.err_table[dl]);
 
             //; ------------------------------------------------------------------------------
             //; エラー箇所の表示
