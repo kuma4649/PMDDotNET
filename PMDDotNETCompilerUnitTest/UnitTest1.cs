@@ -60,7 +60,7 @@ namespace PMDDotNETCompilerUnitTest
         {
             var logdir = GetLogDir();
             Directory.CreateDirectory(logdir);
-            using var logwriter = File.CreateText(Path.Combine(logdir, "log.txt"));
+            var logwriter = File.CreateText(Path.Combine(logdir, "log.txt"));
             using var listener = new TextWriterTraceListener(logwriter.BaseStream);
 
             using var loggerFactory = LoggerFactory.Create(builder =>
