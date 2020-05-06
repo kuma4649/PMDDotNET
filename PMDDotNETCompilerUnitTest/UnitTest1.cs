@@ -22,16 +22,16 @@ namespace PMDDotNETCompilerUnitTest
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
-            string[] lines = null;
+            string[]? lines = null;
             try
             {
-                string path = Path.GetDirectoryName((typeof(UnitTest1).Assembly.Location));
-                string lang = System.Globalization.CultureInfo.CurrentCulture.Name;
-                string file = Path.Combine(path, string.Format(otherLangFilename, lang));
+                var path = Path.GetDirectoryName((typeof(UnitTest1).Assembly.Location));
+                var lang = System.Globalization.CultureInfo.CurrentCulture.Name;
+                var file = Path.Combine(path ?? string.Empty, string.Format(otherLangFilename, lang));
                 file = file.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
                 if (!File.Exists(file))
                 {
-                    file = Path.Combine(path, englishFilename);
+                    file = Path.Combine(path ?? string.Empty, englishFilename);
                     file = file.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
                 }
                 lines = File.ReadAllLines(file);
@@ -45,7 +45,18 @@ namespace PMDDotNETCompilerUnitTest
         }
 
         [TestMethod]
-        public void 複数のMMLコンパイルテスト()
+        public void 複数のMMLコンパイルテスト_Vあり()
+        {
+            TestMain(new string[] { "/v" });
+        }
+
+        [TestMethod]
+        public void 複数のMMLコンパイルテスト_Vなし()
+        {
+            TestMain(null);
+        }
+
+        private void TestMain(string[]? options)
         {
             var logdir = GetLogDir();
             Directory.CreateDirectory(logdir);
@@ -64,7 +75,7 @@ namespace PMDDotNETCompilerUnitTest
             var service = new PMDCompileTestService(logger);
 
             var mmlfilesDir = GetMMLDir();
-            Assert.IsTrue(service.MultiTest(mmlfilesDir, GetToolDir(), logdir));
+            Assert.IsTrue(service.MultiTest(mmlfilesDir, options, GetToolDir(), logdir));
 
             var mmllistfile = Path.Combine(mmlfilesDir, "MMLFiles.txt");
             if (File.Exists(mmllistfile))
@@ -75,7 +86,7 @@ namespace PMDDotNETCompilerUnitTest
                 {
                     if (Directory.Exists(item))
                     {
-                        Assert.IsTrue(service.MultiTest(item, GetToolDir(), logdir));
+                        Assert.IsTrue(service.MultiTest(item, options, GetToolDir(), logdir));
                     }
                 }
             }
