@@ -15,6 +15,8 @@ namespace PMDDotNET.Console
         private static string ffFile;
         private static string desFile;
         private static bool isXml = false;
+        private static Common.Environment env = null;
+
 
         static void Main(string[] args)
         {
@@ -50,77 +52,7 @@ namespace PMDDotNET.Console
             }
         }
 
-        static void WriteLine(LogLevel level, string msg)
-        {
-            System.Console.WriteLine("[{0,-7}] {1}", level, msg);
-        }
-
-        static void WriteLine(string msg)
-        {
-            System.Console.WriteLine(msg);
-        }
-
-        static void Compile(string srcFile)
-        {
-            try
-            {
-                Program.srcFile = srcFile;
-
-                Compiler.Compiler compiler = new Compiler.Compiler();
-                compiler.Init();
-
-                compiler.mcArgs = new string[]
-                {
-                    srcFile
-                };
-
-                if (!isXml)
-                {
-                    string destFileName = Path.Combine(
-                        Path.GetDirectoryName(Path.GetFullPath(srcFile))
-                        , string.Format("{0}.m", Path.GetFileNameWithoutExtension(srcFile)));
-
-                    using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    using (FileStream destCompiledBin = new FileStream(destFileName, FileMode.Create, FileAccess.Write))
-                    using (Stream bufferedDestStream = new BufferedStream(destCompiledBin))
-                    {
-                        compiler.Compile(sourceMML, bufferedDestStream, appendFileReaderCallback);
-                    }
-                }
-                else
-                {
-                    string destFileName = Path.Combine(
-                        Path.GetDirectoryName(Path.GetFullPath(srcFile))
-                        , string.Format("{0}.xml", Path.GetFileNameWithoutExtension(srcFile)));
-                    MmlDatum[] dest = null;
-
-                    using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        dest = compiler.Compile(sourceMML, appendFileReaderCallback);
-                    }
-
-                    XmlSerializer serializer = new XmlSerializer(typeof(MmlDatum[]), typeof(MmlDatum[]).GetNestedTypes());
-                    using (StreamWriter sw = new StreamWriter(destFileName, false, Encoding.UTF8))
-                    {
-                        serializer.Serialize(sw, dest);
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine(LogLevel.FATAL, ex.Message);
-                Log.WriteLine(LogLevel.FATAL, ex.StackTrace);
-            }
-            finally
-            {
-            }
-
-        }
-
-        private static Common.Environment env = null;
-
-        static void Compile(string[] args,int argIndex)
+        private static void Compile(string[] args,int argIndex)
         {
             try
             {
@@ -237,12 +169,18 @@ namespace PMDDotNET.Console
                             bufferedDestStream.Flush();
                             byte[] destbuf = destCompiledBin.ToArray();
                             File.WriteAllBytes(destFileName, destbuf);
+                            if (compiler.outFFFileBuf != null)
+                            {
+                                string outfn = Path.Combine(Path.GetDirectoryName(destFileName), compiler.outFFFileName);
+                                File.WriteAllBytes(outfn, compiler.outFFFileBuf);
+                            }
                         }
                     }
 
                 }
                 else
                 {
+
                     string destFileName = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(srcFile)), string.Format("{0}.xml", Path.GetFileNameWithoutExtension(srcFile)));
                     if (desFile != null)
                     {
@@ -262,6 +200,8 @@ namespace PMDDotNET.Console
                     }
 
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -273,7 +213,6 @@ namespace PMDDotNET.Console
             }
 
         }
-
 
         private static Stream appendFileReaderCallback(string arg)
         {
@@ -361,6 +300,11 @@ namespace PMDDotNET.Console
             }
 
             return i;
+        }
+
+        private static void WriteLine(LogLevel level, string msg)
+        {
+            System.Console.WriteLine("[{0,-7}] {1}", level, msg);
         }
 
     }

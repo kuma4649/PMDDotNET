@@ -10,19 +10,35 @@ namespace PMDDotNET.Compiler
 {
     public class Compiler : iCompiler
     {
+
+
+        //入力データ
+
         public iEncoding enc = null;
-        private string srcBuf = null;
-        private bool isIDE=false;
-        private Point skipPoint=Point.Empty;
         public string[] mcArgs = null;
         public string[] env = null;
+
+
+
+        //出力データ
+
+        public int memo_writeAddress { get; private set; } = -1;
+        public int vdat_setAddress { get; private set; } = -1;
+        public mml_seg mml_seg = null;
+        public voice_seg voice_seg = null;
+        public byte[] outFFFileBuf { get; private set; } = null;
+        public string outFFFileName { get; private set; } = null;
+
+
+        //内部
+        private string srcBuf = null;
+        private bool isIDE = false;
+        private Point skipPoint = Point.Empty;
         private Func<string, Stream> appendFileReaderCallback;
         private work work = null;
         private byte[] ffBuf = null;
 
-        public string outFileName { get; private set; }
-        public int memo_writeAddress { get; private set; } = -1;
-        public int vdat_setAddress { get; private set; } = -1;
+
 
         public Compiler(iEncoding enc = null)
         {
@@ -98,9 +114,18 @@ namespace PMDDotNET.Compiler
             {
                 work = new work();
                 mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
+
                 MmlDatum[] ret = mc.compile_start();
                 memo_writeAddress = mc.memo_writeAddress;
                 vdat_setAddress = mc.vdat_setAddress;
+                mml_seg = mc.mml_seg;
+                voice_seg = mc.voice_seg;
+
+                outFFFileBuf = null; if (mc.outVoiceBuf != null)
+                {
+                    outFFFileBuf = mc.outVoiceBuf;
+                    outFFFileName= voice_seg.v_filename;
+                }
 
                 return ret;
                 
@@ -129,6 +154,27 @@ namespace PMDDotNET.Compiler
             }
 
             return null;
+        }
+
+        public bool Compile(Stream sourceMML, Stream destCompiledBin, Func<string, Stream> appendFileReaderCallback)
+        {
+            var dat = Compile(sourceMML, appendFileReaderCallback);
+            if (dat == null)
+            {
+                return false;
+            }
+            foreach (MmlDatum md in dat)
+            {
+                if (md == null)
+                {
+                    destCompiledBin.WriteByte(0);
+                }
+                else
+                {
+                    destCompiledBin.WriteByte((byte)md.dat);
+                }
+            }
+            return true;
         }
 
         public CompilerInfo GetCompilerInfo()
@@ -184,6 +230,39 @@ namespace PMDDotNET.Compiler
             return tags.ToArray();
         }
 
+        public void SetFfFileBuf(byte[] ffFileBuf)
+        {
+            ffBuf = ffFileBuf;
+        }
+
+
+
+        internal byte[] ReadFile(string filename)
+        {
+            Stream strm = appendFileReaderCallback(filename);
+            return ReadAllBytes(strm);
+        }
+
+        internal string ReadFileText(string mml_filename2)
+        {
+            Stream strm = appendFileReaderCallback(mml_filename2);
+            if (strm == null)
+            {
+                Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0201"), mml_filename2));
+                throw new FileNotFoundException(mml_filename2);
+                //return "";
+            }
+            string text;
+            using (StreamReader sr = new StreamReader(strm, Encoding.GetEncoding("Shift_JIS")))
+            {
+                text = sr.ReadToEnd();
+            }
+
+            return text;
+        }
+
+
+
         private void GetTagReca(List<string> lstTag, string lin)
         {
             if (lin.Length < 9) return;
@@ -202,27 +281,6 @@ namespace PMDDotNET.Compiler
 
                 GetTagReca(lstTag, ilin);
             }
-        }
-
-        public bool Compile(Stream sourceMML, Stream destCompiledBin, Func<string, Stream> appendFileReaderCallback)
-        {
-            var dat = Compile(sourceMML, appendFileReaderCallback);
-            if (dat == null)
-            {
-                return false;
-            }
-            foreach (MmlDatum md in dat)
-            {
-                if (md == null)
-                {
-                    destCompiledBin.WriteByte(0);
-                }
-                else
-                {
-                    destCompiledBin.WriteByte((byte)md.dat);
-                }
-            }
-            return true;
         }
 
         /// <summary>
@@ -254,33 +312,5 @@ namespace PMDDotNET.Compiler
             return ms;
         }
 
-        internal byte[] ReadFile(string v_filename)
-        {
-            Stream strm = appendFileReaderCallback(v_filename);
-            return ReadAllBytes(strm);
-        }
-
-        internal string ReadFileText(string mml_filename2)
-        {
-            Stream strm = appendFileReaderCallback(mml_filename2);
-            if (strm == null)
-            {
-                Log.WriteLine(LogLevel.ERROR, string.Format(msg.get("E0201"), mml_filename2));
-                throw new FileNotFoundException(mml_filename2);
-                //return "";
-            }
-            string text;
-            using (StreamReader sr = new StreamReader(strm, Encoding.GetEncoding("Shift_JIS")))
-            {
-                text = sr.ReadToEnd();
-            }
-
-            return text;
-        }
-
-        public void SetFfFileBuf(byte[] ffFileBuf)
-        {
-            ffBuf = ffFileBuf;
-        }
     }
 }

@@ -13,10 +13,10 @@ namespace PMDDotNET.Compiler
         private work work = null;
         private lc lc = null;
         private m_seg m_seg = null;
-        private mml_seg mml_seg = null;
         private fnumdat_seg fnumdat_seg = null;
         private hs_seg hs_seg = null;
-        private voice_seg voice_seg = null;
+        public mml_seg mml_seg = null;
+        public voice_seg voice_seg = null;
 
 
 
@@ -216,11 +216,11 @@ namespace PMDDotNET.Compiler
             //コンパイルプロセス開始
             {
                 int i = ReadOption();
-                ReadMMLFileName(i);
+                ReadMMLFileName(i++);
                 //ReadMML();//不要
                 ChangeMMLToMFileName();
                 TransVoiceDataFromPMD();
-                get_ff();
+                get_ff(i);
                 clear_voicetable();
                 CheckPrgFlgOnEfc();
                 InitVariableBuffer();
@@ -604,9 +604,13 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //; 	コマンドラインから.ffのファイル名を取り込む
         //;==============================================================================
-        private void get_ff()
+        private void get_ff(int i)
         {
-            //なにもしない
+            if (i < args.Length)
+            {
+                mml_seg.ff_flg = 1;
+                voice_seg.v_filename = args[i];
+            }
         }
 
 

@@ -35,15 +35,14 @@ namespace PMDDotNET.Compiler
 		+ "Option: "
 		+ "/V  Compile with Tonedatas & Messages & Filenames" + mc.cr + mc.lf
 		+ "        /VW Write Tonedata after Compile" + mc.cr + mc.lf
-		+ "        "
-		+ "/N  Compile on OPN   Mode(Default)" + mc.cr + mc.lf
-		+ "        /L  Compile on OPL   Mode" + mc.cr + mc.lf
-		+ "        /M  Compile on OPM   Mode" + mc.cr + mc.lf
-		+ "        /T  Compile on TOWNS Mode" + mc.cr + mc.lf
-		+ "        /P  Play after Compile Complete" + mc.cr + mc.lf
-		+ "        /S  Not Write Compiled File & Play" + mc.cr + mc.lf
-		+ "        /A  Not Set ADPCM_File before Play" + mc.cr + mc.lf
-		+ "        /O  Not Put Title Messages after Play" + mc.cr + mc.lf
+		+ "        /N  Compile on OPN   Mode(Default)" + mc.cr + mc.lf
+		+ "        /L  (unsupported) Compile on OPL   Mode" + mc.cr + mc.lf
+		+ "        /M  (unsupported) Compile on OPM   Mode" + mc.cr + mc.lf
+		+ "        /T  (unsupported) Compile on TOWNS Mode" + mc.cr + mc.lf
+		+ "        /P  (unsupported) Play after Compile Complete" + mc.cr + mc.lf
+		+ "        /S  (unsupported) Not Write Compiled File & Play" + mc.cr + mc.lf
+		+ "        /A  (unsupported) Not Set ADPCM_File before Play" + mc.cr + mc.lf
+		+ "        /O  (unsupported) Not Put Title Messages after Play" + mc.cr + mc.lf
 		+ "        /C  Calculate & Put Total Length of Parts" + mc.cr + mc.lf
 		//+ mc.eof
 		;
