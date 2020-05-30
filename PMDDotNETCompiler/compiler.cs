@@ -312,5 +312,9 @@ namespace PMDDotNET.Compiler
             return ms;
         }
 
+        public GD3Tag GetGD3TagInfo(byte[] srcBuf)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

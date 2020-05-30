@@ -13,5 +13,15 @@ namespace PMDDotNET.Driver
 
             throw new NotImplementedException();
         }
+
+        internal void OutPort(ushort dx, byte al)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal bool GetGraphKey()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

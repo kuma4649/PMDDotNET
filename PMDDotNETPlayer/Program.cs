@@ -144,7 +144,8 @@ namespace PMDDotNET.Player
 
                 //if (loadADPCMOnly) return 0;
 
-                drv.StartRendering((int)SamplingRate, (int)opnaMasterClock);
+                drv.StartRendering((int)SamplingRate
+                    , new Tuple<string, int>[] { new Tuple<string, int>("YM2608", (int)opnaMasterClock) });
 
                 switch (device)
                 {

@@ -5,4 +5,10 @@
     <RootNamespace>PMDDotNET.Common</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="musicDriverInterface">
+      <HintPath>..\lib\musicDriverInterface.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

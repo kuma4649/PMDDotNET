@@ -47,7 +47,18 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// ドライバ固有のタグを取得
+        /// </summary>
         public List<Tuple<string, string>> GetTags()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// GD3タグを取得(一般的な曲情報)
+        /// </summary>
+        public GD3Tag GetGD3TagInfo(byte[] srcBuf)
         {
             throw new NotImplementedException();
         }
@@ -94,43 +105,6 @@ namespace PMDDotNET.Driver
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
 
-            //bool notSoundBoard2 = (bool)((object[])addtionalOption)[0];
-            //bool isLoadADPCM = (bool)((object[])addtionalOption)[1];
-            //bool loadADPCMOnly = (bool)((object[])addtionalOption)[2];
-
-            //work = new Work();
-            //header = new MUBHeader(srcBuf, enc);
-            //work.mData = GetDATA();
-            //tags = GetTags();
-            //GetFileNameFromTag();
-            //work.fmVoice = GetFMVoiceFromFile(appendFileReaderCallback);
-            //pcm = GetPCMFromSrcBuf() ?? GetPCMDataFromFile(appendFileReaderCallback);
-            //work.pcmTables = GetPCMTable();
-            //work.isDotNET = IsDotNETFromTAG();
-
-            //WriteOPNA = chipWriteRegister;
-            //WaitSendOPNA = chipWaitSend;
-
-            ////PCMを送信する
-            //if (pcm != null)
-            //{
-            //    if (isLoadADPCM)
-            //    {
-            //        ChipDatum[] pcmSendData = GetPCMSendData();
-
-            //        var sw = new System.Diagnostics.Stopwatch();
-            //        sw.Start();
-            //        foreach (ChipDatum dat in pcmSendData) { WriteRegister(dat); }
-            //        sw.Stop();
-
-            //        WaitSendOPNA(sw.ElapsedMilliseconds, pcmSendData.Length);
-            //    }
-            //}
-
-            //if (loadADPCMOnly) return;
-
-            //music2 = new Music2(work, WriteRegister);
-            //music2.notSoundBoard2 = notSoundBoard2;
         }
 
         public void MusicSTART(int musicNumber)
@@ -158,7 +132,7 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
-        public void StartRendering(int renderingFreq = 44100, int chipMasterClock = 7987200)
+        public void StartRendering(int renderingFreq, Tuple<string, int>[] chipsMasterClock)
         {
             throw new NotImplementedException();
         }
@@ -173,6 +147,10 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
+        public int GetNowLoopCounter()
+        {
+            throw new NotImplementedException();
+        }
 
 
         private static Func<string, Stream> CreateAppendFileReaderCallback(string dir)
@@ -194,5 +172,7 @@ namespace PMDDotNET.Driver
                 return null;
             };
         }
+
+
     }
 }
