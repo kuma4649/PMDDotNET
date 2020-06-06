@@ -11,6 +11,10 @@ namespace PMDDotNET.Driver
         private PW pw = null;
         private x86Register r = null;
         private Pc98 pc98 = null;
+        private PPZDRV ppz = null;
+        private PCMDRV86 pcmdrv86 = null;
+        private PPSDRV ppsdrv = null;
+        private EFCDRV efcdrv = null;
 
         public PMD(MmlDatum[] mmlData)
         {
@@ -18,6 +22,10 @@ namespace PMDDotNET.Driver
             pw.md = mmlData;
             r = new x86Register();
             pc98 = new Pc98();
+            ppz = new PPZDRV();
+            pcmdrv86 = new PCMDRV86();
+            ppsdrv = new PPSDRV();
+            efcdrv = new EFCDRV();
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -247,7 +255,7 @@ namespace PMDDotNET.Driver
                 {
                     r.ax = 0x1800;
                     pw.adpcm_emulate = r.al;
-                    ppz8_call();// ADPCMEmulate OFF
+                    ppz.ppz8_call();// ADPCMEmulate OFF
                     r.bx = (ushort)pw.part10;//offset part10	//PCMを
                     pw.partWk[r.bx].partmask |= 0x10;//Mask(bit4)
                 }
@@ -273,11 +281,11 @@ namespace PMDDotNET.Driver
                 if (pw.ppz_call_seg != 0)
                 {
                     r.ax = 0x1901;
-                    ppz_vec();// 常駐解除禁止
+                    ppz.intrpt();// 常駐解除禁止
                     r.ah = 0;
-                    ppz_vec();
+                    ppz.intrpt();
                     r.ah = 6;
-                    ppz_vec();
+                    ppz.intrpt();
                 }
                 //not_init_ppz8:
             }
@@ -707,7 +715,7 @@ namespace PMDDotNET.Driver
                     {
                         r.al = r.cl;
                         r.al--;
-                        ppz8_call();
+                        ppz.ppz8_call();
                         r.cx--;
                     } while (r.cx != 0);
                 }
@@ -770,6 +778,163 @@ namespace PMDDotNET.Driver
 
 
 
+        //897-1024
+        //;==============================================================================
+        //;	MUSIC PLAYER MAIN[FROM TIMER - B]
+        //;==============================================================================
+        private void mmain()
+        {
+            pw.loop_work = 3;
+
+            if (pw.x68_flg != 0) goto mmain_fm;
+
+
+            r.di = (ushort)pw.part7;//offset part7
+            pw.partb = 1;
+            psgmain();//; SSG1
+
+            r.di = (ushort)pw.part8;//offset part8
+            pw.partb = 2;
+            psgmain();//; SSG2
+
+            r.di = (ushort)pw.part9;//offset part9
+            pw.partb = 3;
+            psgmain();//; SSG3
+
+
+        mmain_fm:;
+            if (pw.board2 != 0)
+            {
+                sel46();
+
+                r.di = (ushort)pw.part4;//offset part4
+                pw.partb = 1;
+                fmmain();//; FM4 OPNA
+
+                r.di = (ushort)pw.part5;//offset part5
+                pw.partb = 2;
+                fmmain();//; FM5 OPNA
+
+                r.di = (ushort)pw.part6;//offset part6
+                pw.partb = 3;
+                fmmain();//; FM6 OPNA
+
+                sel44();
+            }
+
+
+            r.di = (ushort)pw.part1;//offset part1
+            pw.partb = 1;
+            fmmain();//; FM1
+
+            r.di = (ushort)pw.part2;//offset part2
+            pw.partb = 2;
+            fmmain();//; FM2
+
+            r.di = (ushort)pw.part3;//offset part3
+            pw.partb = 3;
+            fmmain();//; FM3
+
+
+            r.di = (ushort)pw.part3b;//offset part3b
+            fmmain();//; FM3 拡張１
+
+            r.di = (ushort)pw.part3c;//offset part3c
+            fmmain();//; FM3 拡張２
+
+            r.di = (ushort)pw.part3d;//offset part3d
+            fmmain();//; FM3 拡張３
+
+
+            if (pw.x68_flg != 0) goto mmain_exit;
+
+
+            r.di = (ushort)pw.part11;//offset part11
+            rhythmmain();//; RHYTHM
+
+
+            if (pw.board2 != 0)
+            {
+                r.di = (ushort)pw.part10;//offset part10
+                pcmmain();//; ADPCM/PCM(IN "pcmdrv.asm"/"pcmdrv86.asm")
+            }
+
+
+            if (pw.ppz != 0)
+            {
+                r.di = (ushort)pw.part10a;//offset part10a
+                pw.partb = 0;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10b;//offset part10b
+                pw.partb = 1;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10c;//offset part10c
+                pw.partb = 2;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10d;//offset part10d
+                pw.partb = 3;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10e;//offset part10e
+                pw.partb = 4;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10f;//offset part10f
+                pw.partb = 5;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10g;//offset part10g
+                pw.partb = 6;
+                ppz.ppzmain();
+
+                r.di = (ushort)pw.part10h;//offset part10h
+                pw.partb = 7;
+                ppz.ppzmain();
+            }
+
+
+        mmain_exit:;
+
+            if (pw.loop_work != 0) goto mmain_loop;
+            return;
+
+        mmain_loop:;
+
+            r.cx = (ushort)pw.max_part1;
+            r.bx = 0;//offset part_data_table
+
+        //mm_din0:;
+            do
+            {
+                r.di = (ushort)pw.part_data_table[r.bx];//[bx]; di = part workarea
+                r.bx++;
+
+                if (pw.partWk[r.di].loopcheck == 3) goto mm_notset;
+                pw.partWk[r.di].loopcheck = 0;
+
+            mm_notset:;
+                r.cx--;
+            } while (r.cx != 0);
+
+            if (pw.loop_work == 3) goto mml_fin;
+
+            pw.status2++;
+            if (pw.status2 != 0xff)//; -1にはさせない
+                goto mml_ret;
+
+            pw.status2 = 1;
+        mml_ret:;
+            return;
+
+        mml_fin:;
+            pw.status2 = 0xff;// -1;
+        }
+
+
+
         //1026-1035
         //;==============================================================================
         //;	裏ＦＭセレクト
@@ -781,6 +946,565 @@ namespace PMDDotNET.Driver
             r.ax = (ushort)pw.fm2_port2;
             pw.fm_port2 = r.ax;
             pw.fmsel = 1;
+        }
+
+
+
+        //1036-1046
+        //;==============================================================================
+        //;	表に戻す
+        //;==============================================================================
+        private void sel44()
+        {
+            r.ax = (ushort)pw.fm1_port1;
+            pw.fm_port1 = r.ax;
+            r.ax = (ushort)pw.fm1_port2;
+            pw.fm_port2 = r.ax;
+            pw.fmsel = 0;
+        }
+
+
+
+        //1047-1210
+        //;==============================================================================
+        //;	ＦＭ音源演奏メイン
+        //;==============================================================================
+        //private void fmmain_ret()
+        //{
+            //	ret
+        //}
+
+        private void fmmain()
+        {
+            r.si = (ushort)pw.part_data_table[r.di]; //; si = PART DATA ADDRESS
+            if (r.si == 0) return;
+
+            if (pw.partWk[r.di].partmask != 0)
+            {
+                if (fmmain_nonplay()) goto mp10;
+                else goto mnp_ret;
+            }
+
+            //; 音長 -1
+            pw.partWk[r.di].leng--;
+            r.al = pw.partWk[r.di].leng;
+
+            //; KEYOFF CHECK & Keyoff
+            if (pw.partWk[r.di].keyoff_flag != 3)//; 既にkeyoffしたか？
+                goto mp0;
+
+            if (r.al > pw.partWk[r.di].qdat)//; Q値 => 残りLength値時 keyoff
+                goto mp0;
+
+            keyoff();//; ALは壊さない
+            pw.partWk[r.di].keyoff_flag = 0xff;//-1
+
+        mp0:;//; LENGTH CHECK
+            if (r.al != 0) goto mpexit;
+
+            mp10:;
+            pw.partWk[r.di].lfoswi &= 0xf7;//; Porta off
+
+        mp1:;//; DATA READ
+
+            r.al = (byte)pw.md[r.si++].dat;
+            if (r.al < 0x80) goto mp2;
+            if (r.al == 0x80) goto mp15;
+
+            //; ELSE COMMANDS
+            commands();
+            goto mp1;
+
+        //; END OF MUSIC["L"があった時はそこに戻る]
+        mp15:;
+            r.si--;
+            pw.partWk[r.di].address = r.si;//mov[di],si
+            pw.partWk[r.di].loopcheck = 3;
+            pw.partWk[r.di].onkai = 0xff;//-1
+            r.bx = pw.partWk[r.di].partloop;
+            if (r.bx == 0) goto mpexit;
+
+            //; "L"があった時
+            r.si = r.bx;
+            pw.partWk[r.di].loopcheck = 1;
+            goto mp1;
+
+        mp2:;//; F-NUMBER SET
+            lfoinit();
+            oshift();
+            fnumset();
+
+            r.al = (byte)pw.md[r.si++].dat;
+            pw.partWk[r.di].leng = r.al;
+            calc_q();
+
+            //porta_return:;
+            if (pw.partWk[r.di].volpush == 0) goto mp_new;
+            if (pw.partWk[r.di].onkai == 0xff) goto mp_new;
+            pw.volpush_flag--;
+            if (pw.volpush_flag == 0) goto mp_new;
+            pw.volpush_flag = 0;
+            pw.partWk[r.di].volpush = 0;
+        mp_new:;
+            volset();
+            otodasi();
+            keyon();
+            pw.partWk[r.di].keyon_flag++;
+            pw.partWk[r.di].address = r.si;
+            r.al = 0;
+            pw.tieflag = r.al;
+            pw.volpush_flag = r.al;
+            pw.partWk[r.di].keyoff_flag = r.al;
+            if (pw.md[r.si].dat != 0xfb)//; '&'が直後にあったらkeyoffしない
+                goto mnp_ret;
+            pw.partWk[r.di].keyoff_flag = 2;
+            goto mnp_ret;
+
+        mpexit:;//; LFO & Portament & Fadeout 処理 をして終了
+            if (pw.board2 != 0)
+            {
+                if (pw.partWk[r.di].hldelay_c != 0)
+                {
+                    pw.partWk[r.di].hldelay_c--;
+                    if (pw.partWk[r.di].hldelay_c == 0)
+                    {
+                        r.dh = pw.partb;
+                        r.dh += 0xb4 - 1;
+                        r.dl = pw.partWk[r.di].fmpan;
+                        opnset();
+                    }
+                }
+                //not_hldelay:;
+            }
+            if (pw.partWk[r.di].sdelay_c != 0)
+            {
+                pw.partWk[r.di].sdelay_c--;
+                if (pw.partWk[r.di].sdelay_c == 0)
+                {
+                    if ((pw.partWk[r.di].keyoff_flag & 1) == 0)//; 既にkeyoffしたか？
+                    {
+                        keyon();
+                    }
+                }
+            }
+            //not_sdelay:;
+            r.cl = pw.partWk[r.di].lfoswi;
+            if ((r.cl & r.cl) == 0)
+            {
+                //goto nolfosw;//飛ばずに処理
+                if (pw.fadeout_speed != 0)
+                {
+                    volset();
+                }
+                goto mnp_ret;
+            }
+            r.al = r.cl;
+            r.al &= 8;
+            pw.lfo_switch = r.al;
+            if ((r.cl & 3) != 0)
+            {
+                lfo();
+                if (r.carry)
+                {
+                    r.al = r.cl;
+                    r.al &= 3;
+                    pw.lfo_switch |= r.al;
+                }
+            }
+            //not_lfo:
+            if ((r.cl & 0x30) != 0)
+            {
+                // pushf
+                //    cli
+                lfo_change();
+                lfo();
+                if (r.carry)
+                {
+                    lfo_change();
+                    //    popf
+                    r.al = pw.partWk[r.di].lfoswi;
+                    r.al &= 0x30;
+                    pw.lfo_switch |= r.al;
+                }
+                else
+                {
+                    //not_lfo1:
+                    lfo_change();
+                    //    popf
+                }
+            }
+            //not_lfo2:
+            if ((pw.lfo_switch & 0x19) != 0)
+            {
+                if ((pw.lfo_switch & 8) != 0)
+                {
+                    porta_calc();
+                }
+                //not_porta:
+                otodasi();
+            }
+            //vols:
+            if ((pw.lfo_switch & 0x22) == 0)
+            {
+                //nolfosw:
+                if (pw.fadeout_speed == 0) goto mnp_ret;
+            }
+            //vol_set:
+            volset();
+        mnp_ret:;
+            r.al = pw.loop_work;
+            r.al &= pw.partWk[r.di].loopcheck;
+            pw.loop_work = r.al;
+            _ppz();
+            return;
+        }
+
+
+
+        //1268-1322
+        //;==============================================================================
+        //;	ＦＭ音源演奏メイン：パートマスクされている時
+        //;==============================================================================
+        // false : goto mnp_ret
+        // true : goto mp10
+        private bool fmmain_nonplay()
+        {
+            pw.partWk[r.di].keyoff_flag = 0xff;// -1
+            pw.partWk[r.di].leng--;
+            if (pw.partWk[r.di].leng != 0) return false;// goto mnp_ret;
+
+            if ((pw.partWk[r.di].partmask & 2) != 0)//; bit1(FM効果音中？)をcheck
+            {
+                if (pw.fm_effec_flag == 0)//	; 効果音終了したか？
+                {
+                    pw.partWk[r.di].partmask &= 0xfd;//;bit1をclear
+                    if (pw.partWk[r.di].partmask == 0) return true;// goto mp10;//;partmaskが0なら復活させる
+                }
+            }
+            //fmmnp_1:
+            do
+            {
+                do
+                {
+                    r.al = (byte)pw.md[r.si++].dat;
+                    if (r.al == 0x80) break;
+                    if (r.al < 0x80) return fmmnp_3();
+                    commands();
+                } while (true);
+
+                //fmmnp_2:
+                //	; END OF MUSIC["L"があった時はそこに戻る]
+                r.si--;
+                pw.partWk[r.di].address = r.si;
+                pw.partWk[r.di].loopcheck = 3;
+                pw.partWk[r.di].onkai = 0xff;//-1
+                r.bx = pw.partWk[r.di].partloop;
+                if ((r.bx & r.bx) == 0) return fmmnp_4();
+                //    ; "L"があった時
+                r.si = r.bx;
+                pw.partWk[r.di].loopcheck = 1;
+            } while (true);
+        }
+
+        private bool fmmnp_3()
+        {
+            pw.partWk[r.di].fnum = 0;//; 休符に設定
+            pw.partWk[r.di].onkai = 0xff;//-1
+            pw.partWk[r.di].onkai_def = 0xff;//-1
+
+            r.al = (byte)pw.md[r.si++].dat;
+            pw.partWk[r.di].leng = r.al;//;音長設定
+            pw.partWk[r.di].keyon_flag++;
+            pw.partWk[r.di].address = r.si;
+
+            pw.volpush_flag--;
+            if (pw.volpush_flag != 0)
+            {
+                pw.partWk[r.di].volpush = 0;
+            }
+            return fmmnp_4();
+        }
+
+        private bool fmmnp_4()
+        { 
+            pw.tieflag = 0;
+            pw.volpush_flag = 0;
+            return false;//	jmp mnp_ret
+        }
+
+
+
+        //1323-1459
+        //;==============================================================================
+        //;	ＳＳＧ音源 演奏 メイン
+        //;==============================================================================
+        //psgmain_ret:
+        //	ret
+
+        private void psgmain()
+        {
+            r.si = (ushort)pw.part_data_table[r.di]; //; si = PART DATA ADDRESS
+            if (r.si == 0) return;
+
+            if (pw.partWk[r.di].partmask != 0)
+            {
+                int ret = psgmain_nonplay();
+                switch (ret)
+                {
+                    case 0: goto mnp_ret;
+                    case 1: goto mp1cp;
+                    case 2: goto mp2p;
+                }
+            }
+
+            //; 音長 -1
+            pw.partWk[r.di].leng--;
+            r.al = pw.partWk[r.di].leng;
+
+            //; KEYOFF CHECK & Keyoff
+            if (pw.partWk[r.di].keyoff_flag != 3)//; 既にkeyoffしたか？
+                goto mp0p;
+
+            if (r.al > pw.partWk[r.di].qdat)//; Q値 => 残りLength値時 keyoff
+                goto mp0p;
+
+            keyoffp();//; ALは壊さない
+            pw.partWk[r.di].keyoff_flag = 0xff;//-1
+
+        mp0p:;//; LENGTH CHECK
+            if (r.al != 0) goto mpexitp;
+
+            pw.partWk[r.di].lfoswi &= 0xf7;//; Porta off
+
+        mp1p:;//; DATA READ
+
+            r.al = (byte)pw.md[r.si++].dat;
+            if (r.al < 0x80) goto mp2p;
+            if (r.al == 0x80) goto mp15p;
+
+            //; ELSE COMMANDS
+            mp1cp:;
+            commandsp();
+            goto mp1p;
+
+        //; END OF MUSIC["L"があった時はそこに戻る]
+        mp15p:;
+            r.si--;
+            pw.partWk[r.di].address = r.si;//mov[di],si
+            pw.partWk[r.di].loopcheck = 3;
+            pw.partWk[r.di].onkai = 0xff;//-1
+            r.bx = pw.partWk[r.di].partloop;
+            if (r.bx == 0) goto mpexitp;
+
+            //; "L"があった時
+            r.si = r.bx;
+            pw.partWk[r.di].loopcheck = 1;
+            goto mp1p;
+
+        mp2p:;//; TONE SET
+            lfoinitp();
+            oshiftp();
+            fnumsetp();
+
+            r.al = (byte)pw.md[r.si++].dat;
+            pw.partWk[r.di].leng = r.al;
+            calc_q();
+
+            //porta_returnp:
+            if (pw.partWk[r.di].volpush != 0)
+            {
+                if (pw.partWk[r.di].onkai != 0xff)
+                {
+                    pw.volpush_flag--;
+                    if (pw.volpush_flag != 0)
+                    {
+                        pw.volpush_flag = 0;
+                        pw.partWk[r.di].volpush = 0;
+                    }
+                }
+            }
+        //mp_newp:;
+            volsetp();
+            otodasip();
+            keyonp();
+            pw.partWk[r.di].keyon_flag++;
+            pw.partWk[r.di].address = r.si;
+            r.al = 0;
+            pw.tieflag = r.al;
+            pw.volpush_flag = r.al;
+            pw.partWk[r.di].keyoff_flag = r.al;
+            if (pw.md[r.si].dat != 0xfb)//; '&'が直後にあったらkeyoffしない
+                goto mnp_ret;
+            pw.partWk[r.di].keyoff_flag = 2;
+            goto mnp_ret;
+
+        mpexitp:;
+            r.cl = pw.partWk[r.di].lfoswi;
+            r.al = r.cl;
+            r.al &= 8;
+            pw.lfo_switch = r.al;
+
+            if ((r.cl & r.cl) == 0) goto volsp;
+
+            if ((r.cl & 3) != 0)
+            {
+                lfop();
+                if (r.carry)
+                {
+                    r.al = r.cl;
+                    r.al &= 3;
+                    pw.lfo_switch |= r.al;
+                }
+            }
+            //not_lfop:
+            if ((r.cl & 0x30) != 0)
+            {
+                // pushf
+                //    cli
+                lfo_change();
+                lfop();
+                if (r.carry)
+                {
+                    lfo_change();
+                    //    popf
+                    r.al = pw.partWk[r.di].lfoswi;
+                    r.al &= 0x30;
+                    pw.lfo_switch |= r.al;
+                }
+                else
+                {
+                    //not_lfo1:
+                    lfo_change();
+                    //    popf
+                }
+            }
+            //not_lfop2:
+            if ((pw.lfo_switch & 0x19) != 0)
+            {
+                if ((pw.lfo_switch & 8) != 0)
+                {
+                    porta_calc();
+                }
+                //not_porta:
+                otodasip();
+            }
+        volsp:;
+            soft_env();
+            if (!r.carry)
+            {
+                if ((pw.lfo_switch & 0x22) == 0)
+                {
+                    if (pw.fadeout_speed == 0) goto mnp_ret;
+                }
+            }
+            //volsp2:;
+            volsetp();
+
+        mnp_ret:;
+            r.al = pw.loop_work;
+            r.al &= pw.partWk[r.di].loopcheck;
+            pw.loop_work = r.al;
+            _ppz();
+            return;
+        }
+
+
+
+        //1460-1502
+        //;==============================================================================
+        //;	ＳＳＧ音源演奏メイン：パートマスクされている時
+        //;==============================================================================
+        // 0 : goto mnp_ret
+        // 1 : goto mp1cp;
+        // 2 : goto mp2p;
+        private int psgmain_nonplay()
+        {
+            pw.partWk[r.di].keyoff_flag = 0xff;// -1
+            pw.partWk[r.di].leng--;
+            if (pw.partWk[r.di].leng != 0) return 0;// goto mnp_ret;
+
+            pw.partWk[r.di].lfoswi &= 0xf7;//;Porta off
+                                           //psgmnp_1:
+            do
+            {
+                do
+                {
+                    r.al = (byte)pw.md[r.si++].dat;
+                    if (r.al == 0x80) break;
+                    if (r.al < 0x80) goto psgmnp_4;
+
+                    if (r.al != 0xda) goto psgmnp_3;//;Portament?
+                    ssgdrum_check();//;の場合だけSSG復活Check
+                    if (r.carry) return 1;// goto mp1cp;//;復活の場合はメインの処理へ
+                    psgmnp_3:;
+                    commandsp();
+                } while (true);
+
+                //    ; END OF MUSIC["L"があった時はそこに戻る]
+                //psgmnp_2:
+                r.si--;
+                pw.partWk[r.di].address = r.si;
+                pw.partWk[r.di].loopcheck = 3;
+                pw.partWk[r.di].onkai = 0xff;//-1
+                r.bx = pw.partWk[r.di].partloop;
+
+                if ((r.bx & r.bx) == 0)
+                {
+                    fmmnp_4();
+                    return 0;
+                }
+
+                //    ; "L"があった時
+                r.si = r.bx;
+                pw.partWk[r.di].loopcheck = 1;
+            } while (true);
+        psgmnp_4:;
+            ssgdrum_check();
+            if (!r.carry)
+            {
+                fmmnp_3();
+                return 0;
+            }
+
+            return 2;// goto mp2p;//; SSG復活
+        }
+
+
+
+        //1503-1532
+        //;==============================================================================
+        //;	SSGドラムを消してSSGを復活させるかどうかcheck
+        //;		input AL<- Command
+        //; output cy = 1 : 復活させる
+        //;==============================================================================
+        private void ssgdrum_check()
+        {
+            if ((pw.partWk[r.di].partmask & 1) != 0)//; bit0(SSGマスク中？)をcheck
+                goto sdrchk_2; //;SSGマスク中はドラムを止めない
+            if ((pw.partWk[r.di].partmask & 2) == 0)//;bit1(SSG効果音中？)をcheck
+                goto sdrchk_2; //;SSGドラムは鳴ってない
+            if (pw.effon >= 2)//; SSGドラム以外の効果音が鳴っているか？
+                goto sdrchk_2; //;普通の効果音は消さない
+            r.ah = r.al;       //;ALは壊さない
+            r.ah &= 0xf;//;0DAH(portament)の時は0AHなので大丈夫
+            if (r.ah == 0xf)//;休符？
+                goto sdrchk_2;// ; 休符の時はドラムは止めない
+            if (pw.effon != 1)//; SSGドラムはまだ再生中か？
+                goto sdrchk_1;//; 既に消されている
+            r.stack.Push(r.ax);
+            efcdrv.effend();//;SSGドラムを消す
+            r.ax=r.stack.Pop();
+
+        sdrchk_1:;
+            pw.partWk[r.di].partmask &= 0xfd;//;bit1をclear
+            if (pw.partWk[r.di].partmask != 0)
+                goto sdrchk_2;//;まだ何かでマスクされている
+            r.carry = true;
+            return;//;partmaskが0なら復活させる
+
+        sdrchk_2:;
+            r.carry = false;
+            return;
         }
 
 
@@ -811,20 +1535,6 @@ namespace PMDDotNET.Driver
             pw.tempo_48_push = r.al;
         }
 
-
-
-        //1036-1046
-        //;==============================================================================
-        //;	表に戻す
-        //;==============================================================================
-        private void sel44()
-        {
-            r.ax = (ushort)pw.fm1_port1;
-            pw.fm_port1 = r.ax;
-            r.ax = (ushort)pw.fm1_port2;
-            pw.fm_port2 = r.ax;
-            pw.fmsel = 0;
-        }
 
 
         //6001-6036
@@ -880,8 +1590,11 @@ namespace PMDDotNET.Driver
                 sel44();//mmainには飛ばない状況下なので大丈夫
                 r.ah = 2;
             }
+            oploop();
+        }
 
-            //oploop:
+        private void oploop()
+        { 
             if (pw.fm_effec_flag != 1) goto opi_nef;
             if (pw.board2 != 0)
             {
@@ -913,7 +1626,7 @@ namespace PMDDotNET.Driver
                 sel46();//mmainには飛ばない状況下なので大丈夫
                 r.ax = r.stack.Pop();
                 r.ah--;
-                if (r.ah != 0) goto oploop;
+                if (r.ah != 0) { oploop(); return; }
             }
 
             r.dx = 0x2800;// FM KEYOFF
@@ -951,7 +1664,7 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0) goto opi_nonppsdrv;
 
             r.ah = 0;
-            ppsdrv();// ppsdrv keyoff
+            ppsdrv.intrpt();// ppsdrv keyoff
 
         opi_nonppsdrv:
             r.dx = 0x07bf;// PSG KEYOFF
@@ -990,7 +1703,7 @@ namespace PMDDotNET.Driver
                 opnset46();//(NEC音源でも一応実行)
                 if (pw.pcm != 0)
                 {
-                    stop_86pcm();
+                    pcmdrv86.stop_86pcm();
                 }
             pcm_ef:;
                 if (pw.ppz != 0)
@@ -998,11 +1711,11 @@ namespace PMDDotNET.Driver
                     if (pw.ppz_call_seg != 0)
                     {
                         r.ah = 0x12;
-                        ppz_vec();// FIFO割り込み停止
+                        ppz.intrpt();// FIFO割り込み停止
                         r.ax = 0x0200;
                     ppz_off_loop:;
                         r.stack.Push(r.ax);
-                        ppz_vec();// ppz keyoff
+                        ppz.intrpt();// ppz keyoff
                         r.ax = r.stack.Pop();
                         r.al++;
                         if (r.al < 8) goto ppz_off_loop;
@@ -1111,6 +1824,26 @@ namespace PMDDotNET.Driver
             r.dx = r.stack.Pop();
             r.bx = r.stack.Pop();
             r.ax = r.stack.Pop();
+        }
+
+
+
+        //6249-6263
+        //;==============================================================================
+        //;	READ PSG 07H Port
+        //; cliしてから来ること
+        //;==============================================================================
+        private void get07()
+        {
+            r.stack.Push(r.dx);
+            r.dx = (ushort)pw.fm1_port1;
+            rdychk();
+            r.al = 7;
+            pc98.OutPort(r.dx, r.al);
+            _waitP();// ; PSG Read Wait
+            r.dx = (ushort)pw.fm1_port2;
+            r.al = pc98.InPort(r.dx);
+            r.dx = r.stack.Pop();
         }
 
 

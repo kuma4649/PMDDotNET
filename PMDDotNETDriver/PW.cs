@@ -399,8 +399,8 @@ namespace PMDDotNET.Driver
             public ushort address;// w?	; 2 ｴﾝｿｳﾁｭｳ ﾉ ｱﾄﾞﾚｽ
             public ushort partloop;// w? ; 2 ｴﾝｿｳ ｶﾞ ｵﾜｯﾀﾄｷ ﾉ ﾓﾄﾞﾘｻｷ
             public byte leng;// b? ; 1 ﾉｺﾘ LENGTH
-                             //qdat db	?       ; 1 gatetime(q/Q値を計算した値)
-                             //fnum dw	?       ; 2 ｴﾝｿｳﾁｭｳ ﾉ BLOCK/FNUM
+            public byte qdat;// b? ; 1 gatetime(q/Q値を計算した値)
+            public ushort fnum;// w? ; 2 ｴﾝｿｳﾁｭｳ ﾉ BLOCK/FNUM
                              //detune      dw?       ; 2 ﾃﾞﾁｭｰﾝ
                              //lfodat      dw?       ; 2 LFO DATA
                              //porta_num dw	?	; 2 ポルタメントの加減値（全体）
@@ -410,18 +410,18 @@ namespace PMDDotNET.Driver
                                //shift       db?       ; 1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
                                //delay db	?       ; 1 LFO[DELAY]
                                //speed       db?       ; 1	[SPEED]
-                               //        step db	?       ; 1	[STEP]
-                               //        time db	?       ; 1	[TIME]
-                               //        delay2 db	?       ; 1	[DELAY_2]
-                               //        speed2 db	?       ; 1	[SPEED_2]
-                               //        step2 db	?       ; 1	[STEP_2]
-                               //        time2 db	?       ; 1	[TIME_2]
-                               //        lfoswi db	?       ; 1 LFOSW.B0/tone B1/vol B2/同期 B3/porta
-                               //				;          B4/tone B5/vol B6/同期
-                               //volpush     db? 	; 1 Volume PUSHarea
-                               //mdepth db	?	; 1 M depth
-                               //mdspd db	?	; 1 M speed
-                               //mdspd2 db	?	; 1 M speed_2
+                               //step db	?       ; 1	[STEP]
+                               //time db	?       ; 1	[TIME]
+                               //delay2 db	?       ; 1	[DELAY_2]
+                               //speed2 db	?       ; 1	[SPEED_2]
+                               //step2 db	?       ; 1	[STEP_2]
+                               //time2 db	?       ; 1	[TIME_2]
+            public byte lfoswi;// b? ; 1 LFOSW.B0/tone B1/vol B2/同期 B3/porta
+                               //    ;          B4/tone B5/vol B6/同期
+            public byte volpush;// b? ; 1 Volume PUSHarea
+            public byte mdepth;// b? ; 1 M depth
+            public byte mdspd;// b? ; 1 M speed
+            public byte mdspd2;// b? ; 1 M speed_2
             public byte envf;// b? ; 1 PSG ENV. [START_FLAG] / -1でextend
                                //eenv_count  db?   ; 1 ExtendPSGenv/No=0 AR=1 DR=2 SR=3 RR=4
                                //eenv_ar db	?	; 1 		/AR		/旧pat
@@ -459,13 +459,13 @@ namespace PMDDotNET.Driver
                                   //_lfodat     dw?       ; 2 LFO DATA
                                   //_delay db	?       ; 1 LFO[DELAY]
                                   //_speed      db?       ; 1	[SPEED]
-                                  //        _step db	?       ; 1	[STEP]
-                                  //        _time db	?       ; 1	[TIME]
-                                  //        _delay2 db	?       ; 1	[DELAY_2]
-                                  //        _speed2 db	?       ; 1	[SPEED_2]
-                                  //        _step2 db	?       ; 1	[STEP_2]
-                                  //        _time2 db	?       ; 1	[TIME_2]
-                                  //        _mdepth db	?	; 1 M depth
+                                  //_step db	?       ; 1	[STEP]
+                                  //_time db	?       ; 1	[TIME]
+                                  //_delay2 db	?       ; 1	[DELAY_2]
+                                  //_speed2 db	?       ; 1	[SPEED_2]
+                                  //_step2 db	?       ; 1	[STEP_2]
+                                  //_time2 db	?       ; 1	[TIME_2]
+                                  //_mdepth db	?	; 1 M depth
                                   //_mdspd db	?	; 1 M speed
                                   //_mdspd2 db	?	; 1 M speed_2
                                   //_lfo_wave db	?	; 1 LFOの波形
@@ -475,16 +475,16 @@ namespace PMDDotNET.Driver
             public byte _mdc;// b? ; 1 M depth Counter(変動値)
             public byte _mdc2;// b? ; 1 M depth Counter
             public byte onkai;//b 1 演奏中の音階データ(0ffh:rest)
-                              //sdelay db	?	; 1 Slot delay
-                              //sdelay_c db	?	; 1 Slot delay counter
-                              //sdelay_m    db?	; 1 Slot delay Mask
-                              //alg_fb      db?	; 1 音色のalg/fb
+            public byte sdelay;//b?; 1 Slot delay
+            public byte sdelay_c;//b? ; 1 Slot delay counter
+            public byte sdelay_m;//b? ; 1 Slot delay Mask
+            public byte alg_fb;//b? ; 1 音色のalg/fb
             public byte keyon_flag;// b 1 新音階/休符データを処理したらinc
-                                   //qdat2       db?	; 1 q 最低保証値
-                                   //fnum2 dw	?	; 2 ppz8/pmd86用fnum値上位
+            public byte qdat2;// b? ; 1 q 最低保証値
+            public ushort fnum2;// w? ; 2 ppz8/pmd86用fnum値上位
             public byte onkai_def;// b 1 演奏中の音階データ(転調処理前 / ?fh:rest)
-                                  //shift_def db	?	; 1 マスター転調値
-                                  //qdat3       db?	; 1 q Random
+            public byte shift_def;// b? ; 1 マスター転調値
+            public byte qdat3;// b? ; 1 q Random
 
             //        db?	; dummy
         }//qq  ends
