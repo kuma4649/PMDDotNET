@@ -69,6 +69,7 @@ namespace PMDDotNET.Driver
         public ushort si { get; internal set; }
 
         public bool carry { get; internal set; }
+        public bool sign { get; internal set; }
 
         public Stack<ushort> stack = new Stack<ushort>();
     }

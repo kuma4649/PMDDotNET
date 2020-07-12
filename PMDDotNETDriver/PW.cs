@@ -11,6 +11,7 @@ namespace PMDDotNET.Driver
         public const string ver = "4.8s";
 
         public MmlDatum[] md { get; internal set; }
+        public Action[] currentCommandTable { get; internal set; }
 
         public int vers = 0x48;
         public string verc = "s";
@@ -109,10 +110,10 @@ namespace PMDDotNET.Driver
         public byte esc_sp_key = 0;// ESC +?? Key Code
         public byte grph_sp_key = 0;// GRPH+?? Key Code
         public byte rescut_cant = 0;// 常駐解除禁止フラグ
-        public int slot_detune1 = 0;//FM3 Slot Detune値 slot1
-        public int slot_detune2 = 0;// FM3 Slot Detune値 slot2
-        public int slot_detune3 = 0;// FM3 Slot Detune値 slot3
-        public int slot_detune4 = 0;// FM3 Slot Detune値 slot4
+        public ushort slot_detune1 = 0;//FM3 Slot Detune値 slot1
+        public ushort slot_detune2 = 0;// FM3 Slot Detune値 slot2
+        public ushort slot_detune3 = 0;// FM3 Slot Detune値 slot3
+        public ushort slot_detune4 = 0;// FM3 Slot Detune値 slot4
         public int wait_clock = 0;// FM ADDRESS-DATA間 Loop $の回数
         public int wait1_clock = 0;//loop $ １個の速度
         public byte ff_tempo = 0;//早送り時のTimerB値
@@ -209,6 +210,14 @@ namespace PMDDotNET.Driver
 
 
 
+        //PMD.ASM 4859
+        public byte[] vol_tbl = new byte[] { 0, 0, 0, 0 };
+
+
+
+        //PMD.ASM 5560
+        public ushort seed;
+
         //7972-8381
         //;==============================================================================
         //;	WORK AREA
@@ -224,12 +233,15 @@ namespace PMDDotNET.Driver
         public byte volpush_flag;//b 次の１音音量down用のflag
         public byte rhydmy;//b R part ダミー演奏データ
         public byte fmsel;//b FM 表か裏か flag
-        public byte omote_key1;//b FM keyondata表1
-        public byte omote_key2;//b  FM keyondata表2
-        public byte omote_key3;//b FM keyondata表3
-        public byte ura_key1;//b FM keyondata裏1
-        public byte ura_key2;//b FM keyondata裏2
-        public byte ura_key3;//b FM keyondata裏3
+        public byte[] fmKeyOnDataTbl = new byte[6];//KUMA: 以下６つのパラメータの実体
+        public byte[] omote_key = new byte[] { 0, 0, 0 };
+        public byte omote_key1Ptr = 0;//b FM keyondata表1
+        public byte omote_key2Ptr = 1;//b  FM keyondata表2
+        public byte omote_key3Ptr = 2;//b FM keyondata表3
+        public byte[] ura_key = new byte[] { 0, 0, 0 };
+        public byte ura_key1Ptr = 3;//b FM keyondata裏1
+        public byte ura_key2Ptr = 4;//b FM keyondata裏2
+        public byte ura_key3Ptr = 5;//b FM keyondata裏3
         public byte loop_work;//b Loop Work
         public byte ppsdrv_flag;//b ppsdrv flag
         public ushort prgdat_adr2;// w 曲データ中音色データ先頭番地(効果音用)
@@ -401,44 +413,49 @@ namespace PMDDotNET.Driver
             public byte leng;// b? ; 1 ﾉｺﾘ LENGTH
             public byte qdat;// b? ; 1 gatetime(q/Q値を計算した値)
             public ushort fnum;// w? ; 2 ｴﾝｿｳﾁｭｳ ﾉ BLOCK/FNUM
-                             //detune      dw?       ; 2 ﾃﾞﾁｭｰﾝ
-                             //lfodat      dw?       ; 2 LFO DATA
-                             //porta_num dw	?	; 2 ポルタメントの加減値（全体）
-                             //porta_num2 dw	?	; 2 ポルタメントの加減値（一回）
-                             //porta_num3 dw	?	; 2 ポルタメントの加減値（余り）
-            public byte volume;//b? ; 1 VOLUME
-                               //shift       db?       ; 1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
-                               //delay db	?       ; 1 LFO[DELAY]
-                               //speed       db?       ; 1	[SPEED]
-                               //step db	?       ; 1	[STEP]
-                               //time db	?       ; 1	[TIME]
-                               //delay2 db	?       ; 1	[DELAY_2]
-                               //speed2 db	?       ; 1	[SPEED_2]
-                               //step2 db	?       ; 1	[STEP_2]
-                               //time2 db	?       ; 1	[TIME_2]
+            public ushort detune;// w? ; 2 ﾃﾞﾁｭｰﾝ
+            //+10
+            public ushort lfodat;// w? ; 2 LFO DATA
+            public ushort porta_num;// w? ; 2 ポルタメントの加減値（全体）
+            public ushort porta_num2;// w? ; 2 ポルタメントの加減値（一回）
+            public ushort porta_num3;// w? ; 2 ポルタメントの加減値（余り）
+            public byte volume;// b? ; 1 VOLUME
+            public byte shift;// b? ; 1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
+            //+20
+            public byte delay;// b? ; 1 LFO[DELAY]
+            public byte speed;// b? ; 1 [SPEED]
+            public byte step;// b? ; 1 [STEP]
+            public byte time;// b? ; 1 [TIME]
+            public byte delay2;// b? ; 1 [DELAY_2]
+            public byte speed2;// b? ; 1 [SPEED_2]
+            public byte step2;// b? ; 1 [STEP_2]
+            public byte time2;// b? ; 1 [TIME_2]
             public byte lfoswi;// b? ; 1 LFOSW.B0/tone B1/vol B2/同期 B3/porta
                                //    ;          B4/tone B5/vol B6/同期
             public byte volpush;// b? ; 1 Volume PUSHarea
+            //+30
             public byte mdepth;// b? ; 1 M depth
             public byte mdspd;// b? ; 1 M speed
             public byte mdspd2;// b? ; 1 M speed_2
             public byte envf;// b? ; 1 PSG ENV. [START_FLAG] / -1でextend
-                               //eenv_count  db?   ; 1 ExtendPSGenv/No=0 AR=1 DR=2 SR=3 RR=4
-                               //eenv_ar db	?	; 1 		/AR		/旧pat
-                               //eenv_dr     db?	; 1		/DR		/旧pv2
-                               //eenv_sr     db?	; 1		/SR		/旧pr1
-                               //eenv_rr     db?	; 1		/RR		/旧pr2
-                               //eenv_sl     db?	; 1		/SL
-                               //eenv_al     db?	; 1		/AL
-                               //eenv_arc    db?	; 1		/ARのカウンタ	/旧patb
-                               //eenv_drc    db?	; 1		/DRのカウンタ
-                               //eenv_src    db?	; 1		/SRのカウンタ	/旧pr1b
-                               //eenv_rrc    db?	; 1		/RRのカウンタ	/旧pr2b
-                               //eenv_volume db?	; 1		/Volume値(0～15)/旧penv
-                               //extendmode  db?	; 1 B1/Detune B2/LFO B3/Env Normal/Extend
+            public byte eenv_count;// b? ; 1 ExtendPSGenv/No=0 AR=1 DR=2 SR=3 RR=4
+            public byte eenv_ar;// b? ; 1 /AR /旧pat
+            public byte eenv_dr;// b? ; 1 /DR /旧pv2
+            public byte eenv_sr;// b? ; 1 /SR /旧pr1
+            public byte eenv_rr;// b? ; 1 /RR /旧pr2
+            public byte eenv_sl;// b? ; 1 /SL
+            //+40
+            public byte eenv_al;// b? ; 1 /AL
+            public byte eenv_arc;// b? ; 1 /ARのカウンタ /旧patb
+            public byte eenv_drc;// b? ; 1 /DRのカウンタ
+            public byte eenv_src;// b? ; 1 /SRのカウンタ /旧pr1b
+            public byte eenv_rrc;// b? ; 1 /RRのカウンタ /旧pr2b
+            public byte eenv_volume;// b? ; 1 /Volume値(0～15)/旧penv
+            public byte extendmode;// b? ; 1 B1/Detune B2/LFO B3/Env Normal/Extend
             public byte fmpan;// b? ; 1 FM Panning + AMD + PMD
             public byte psgpat;// b? ; 1 PSG PATTERN[TONE / NOISE / MIX]
             public byte voicenum;// b? ; 1 音色番号
+            //+50
             public byte loopcheck;// b? ; 1 ループしたら１ 終了したら３
             public byte carrier;// b? ; 1 FM Carrier
             public byte slot1;// b? ; 1 SLOT 1 ﾉ TL
@@ -450,26 +467,27 @@ namespace PMDDotNET.Driver
             public byte lfo_wave;// b? ; 1 LFOの波形
             public byte partmask;// b 1 PartMask b0:通常 b1:効果音 b2:NECPCM用
                                  //          ;   b3:none b4:PPZ/ADE用 b5:s0時 b6:m b7:一時
+            //+60
             public byte keyoff_flag;// b? ; 1 KeyoffしたかどうかのFlag
             public byte volmask;// b? ; 1 音量LFOのマスク
             public byte qdata;// b? ; 1 qの値
             public byte qdatb;// b?	; 1 Qの値
             public byte hldelay;// b? ; 1 HardLFO delay
             public byte hldelay_c;// b? ; 1 HardLFO delay Counter
-                                  //_lfodat     dw?       ; 2 LFO DATA
-                                  //_delay db	?       ; 1 LFO[DELAY]
-                                  //_speed      db?       ; 1	[SPEED]
-                                  //_step db	?       ; 1	[STEP]
-                                  //_time db	?       ; 1	[TIME]
-                                  //_delay2 db	?       ; 1	[DELAY_2]
-                                  //_speed2 db	?       ; 1	[SPEED_2]
-                                  //_step2 db	?       ; 1	[STEP_2]
-                                  //_time2 db	?       ; 1	[TIME_2]
-                                  //_mdepth db	?	; 1 M depth
-                                  //_mdspd db	?	; 1 M speed
-                                  //_mdspd2 db	?	; 1 M speed_2
-                                  //_lfo_wave db	?	; 1 LFOの波形
-                                  //_volmask    db?	; 1 音量LFOのマスク
+            public ushort _lfodat;// w? ; 2 LFO DATA
+            public byte _delay;// b? ; 1 LFO[DELAY]
+            public byte _speed;// b? ; 1	[SPEED]
+            public byte _step;// b? ; 1	[STEP]
+            public byte _time;// b? ; 1	[TIME]
+            public byte _delay2;// b? ; 1	[DELAY_2]
+            public byte _speed2;// b? ; 1	[SPEED_2]
+            public byte _step2;// b? ; 1	[STEP_2]
+            public byte _time2;// b? ; 1	[TIME_2]
+            public byte _mdepth;// b? ; 1 M depth
+            public byte _mdspd;// b? ; 1 M speed
+            public byte _mdspd2;// b? ; 1 M speed_2
+            public byte _lfo_wave;// b?	; 1 LFOの波形
+            public byte _volmask;// b? ; 1 音量LFOのマスク
             public byte mdc;// b? ; 1 M depth Counter(変動値)
             public byte mdc2;// b? ; 1 M depth Counter
             public byte _mdc;// b? ; 1 M depth Counter(変動値)
@@ -644,20 +662,57 @@ namespace PMDDotNET.Driver
         // release_flag1   db	0	;リリースするかどうかのflag
         // release_flag2   db	0	;リリースしたかどうかのflag
         public byte pcm86_pan_flag = 0;// b 0 ;パンデータ１(bit0= 左 / bit1 = 右 / bit2 = 逆)
-//pcm86_pan_dat db	0	; パンデータ２(音量を下げるサイドの音量値)
+        public byte com_end=0xb1;
 
-//; pan_flagによる転送table
-//trans_table dw double_trans, left_trans
+        //pcm86_pan_dat db	0	; パンデータ２(音量を下げるサイドの音量値)
 
-//        dw right_trans, double_trans
+        //; pan_flagによる転送table
+        //trans_table dw double_trans, left_trans
 
-//        dw double_trans_g, left_trans_g
+        //        dw right_trans, double_trans
 
-//        dw right_trans_g, double_trans_g
+        //        dw double_trans_g, left_trans_g
 
-//; 周波数table Include
+        //        dw right_trans_g, double_trans_g
 
-//    include tunedata.inc
+        //; 周波数table Include
+
+        //    include tunedata.inc
+
+
+
+        //;==============================================================================
+        //;	ｵﾝｶｲ DATA
+        //;==============================================================================
+        public ushort[] fnum_data = new ushort[] {
+              0x026a//; C
+            , 0x028f//; D-
+            , 0x02b6//; D
+            , 0x02df//; E-
+            , 0x030b//; E
+            , 0x0339//; F
+            , 0x036a//; G-
+            , 0x039e//; G
+            , 0x03d5//; A-
+            , 0x0410//; A
+            , 0x044e//; B-
+            , 0x048f//; B
+        };
+
+        public ushort[] psg_tune_data = new ushort[]{
+              0x0ee8//; C
+            , 0x0e12//; D-
+            , 0x0d48//; D
+            , 0x0c89//; E-
+            , 0x0bd5//; E
+            , 0x0b2b//; F
+            , 0x0a8a//; G-
+            , 0x09f3//; G
+            , 0x0964//; A-
+            , 0x08dd//; A
+            , 0x085e//; B-
+            , 0x07e6//; B
+        };
 
 
 
