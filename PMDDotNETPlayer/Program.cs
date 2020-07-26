@@ -147,6 +147,8 @@ namespace PMDDotNET.Player
                 drv.StartRendering((int)SamplingRate
                     , new Tuple<string, int>[] { new Tuple<string, int>("YM2608", (int)opnaMasterClock) });
 
+                drv.MusicSTART(0);
+
                 switch (device)
                 {
                     case 0:
@@ -157,8 +159,6 @@ namespace PMDDotNET.Player
                         trdMain.Start();
                         break;
                 }
-
-                drv.MusicSTART(0);
 
                 Log.WriteLine(LogLevel.INFO, "終了する場合は何かキーを押してください");
 
@@ -182,6 +182,7 @@ namespace PMDDotNET.Player
 
                 drv.MusicSTOP();
                 drv.StopRendering();
+                ((Driver.Driver)drv).dispStatus();
             }
             catch (Exception ex)
             {
@@ -444,9 +445,9 @@ namespace PMDDotNET.Player
 
                 }
             }
-            catch//(Exception ex)
+            catch(Exception ex)
             {
-                //Log.WriteLine(LogLevel.FATAL, string.Format("{0} {1}", ex.Message, ex.StackTrace));
+                Log.WriteLine(LogLevel.FATAL, string.Format("{0} {1}", ex.Message, ex.StackTrace));
             }
 
             return count;
@@ -506,7 +507,12 @@ namespace PMDDotNET.Player
                         ));
                 }
             }
-            //Log.WriteLine(LogLevel.TRACE, string.Format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data,dat.port));
+
+#if DEBUG
+            if (dat.address == 0x28)
+                Log.WriteLine(LogLevel.TRACE, string.Format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data, dat.port));
+#endif
+
             switch (device)
             {
                 case 0:

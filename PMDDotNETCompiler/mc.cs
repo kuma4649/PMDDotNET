@@ -262,7 +262,9 @@ namespace PMDDotNET.Compiler
 
         private enmPass2JumpTable Jumper(enmPass2JumpTable ret)
         {
+#if DEBUG
             Log.WriteLine(LogLevel.TRACE, string.Format("jp:{0}", ret));
+#endif
             switch (ret)
             {
                 //Pass1
@@ -3432,8 +3434,9 @@ namespace PMDDotNET.Compiler
             get_param();
             mml_seg.newprg_num = work.al;
 
+#if DEBUG
             Log.WriteLine(LogLevel.TRACE, string.Format("@ num:{0}", work.al));
-
+#endif
             get_param();
             work.al &= 7;
             byte ch = work.al;
@@ -4011,7 +4014,9 @@ namespace PMDDotNET.Compiler
             work.dx = (dh * 0x100) | (byte)work.dx;
             if (comtbl[work.bx].Item2 != null)
             {
+#if DEBUG
                 Log.WriteLine(LogLevel.TRACE, string.Format("olc00:command:{0}", (char)dh));
+#endif
                 return comtbl[work.bx].Item2();
             }
 

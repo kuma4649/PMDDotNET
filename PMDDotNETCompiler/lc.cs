@@ -176,7 +176,9 @@ namespace PMDDotNET.Compiler
                 byte al;
                 do
                 {
+#if DEBUG
                     Log.WriteLine(LogLevel.TRACE, string.Format("si:{0}", work.si));
+#endif
                     al = (byte)(work.si<m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++).dat : 0x80);
 
                     if (al == 0x80) return enmPart_ends.part_ends;

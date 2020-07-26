@@ -121,8 +121,9 @@ namespace PMDDotNET.Console
                     {
                         foreach (Tuple<string, string> tag in tags)
                         {
+#if DEBUG
                             Log.WriteLine(LogLevel.TRACE, string.Format("{0}\t: {1}", tag.Item1, tag.Item2));
-
+#endif
                             //出力ファイル名を得る
                             if (tag.Item1.ToUpper().IndexOf("#FI") != 0) continue;//mcは3文字まで判定している為
                             outFileName = tag.Item2;

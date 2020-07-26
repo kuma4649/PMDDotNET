@@ -8,7 +8,7 @@ namespace PMDDotNET.Driver
     {
         public void intrpt()
         {
-            throw new NotImplementedException();
+            //TODO: 未実装
         }
     }
 }

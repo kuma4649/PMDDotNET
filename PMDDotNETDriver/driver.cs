@@ -11,6 +11,13 @@ namespace PMDDotNET.Driver
     public class Driver : iDriver
     {
         private iEncoding enc = null;
+        private PMD pmd = null;
+        private PW work = null;
+        private int renderingFreq = 44100;
+        private int opnaMasterClock = 7987200;
+        private Action<ChipDatum> WriteOPNA;
+        private Action<long, int> WaitSendOPNA;
+        private object lockObjWriteReg = new object();
 
         public Driver(iEncoding enc = null)
         {
@@ -44,7 +51,8 @@ namespace PMDDotNET.Driver
 
         public int GetStatus()
         {
-            throw new NotImplementedException();
+            pmd.int60_main(0x0a00);
+            return pmd.pw.status2 != 0xff ? 1 : 0;
         }
 
         /// <summary>
@@ -52,7 +60,8 @@ namespace PMDDotNET.Driver
         /// </summary>
         public List<Tuple<string, string>> GetTags()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return null;
         }
 
         /// <summary>
@@ -105,21 +114,59 @@ namespace PMDDotNET.Driver
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
 
+            bool notSoundBoard2 = (bool)((object[])addtionalOption)[0];
+            bool isLoadADPCM = (bool)((object[])addtionalOption)[1];
+            bool loadADPCMOnly = (bool)((object[])addtionalOption)[2];
+
+            pmd = new PMD(srcBuf, WriteRegister, !notSoundBoard2, false);
+            work = pmd.pw;
+            work.board = 1;//音源あり
+            //ポート番号の指定
+            work.fm1_port1 = 0x188;//レジスタ
+            work.fm1_port2 = 0x18a;//データ
+            work.fm2_port1 = 0x18c;//レジスタ(拡張)
+            work.fm2_port2 = 0x18e;//データ(拡張)
+
+            WriteOPNA = chipWriteRegister;
+            WaitSendOPNA = chipWaitSend;
         }
 
         public void MusicSTART(int musicNumber)
         {
-            throw new NotImplementedException();
+            Log.WriteLine(LogLevel.INFO, "演奏開始");
+            pmd.int60_main(0);
+            work.Status = 1;
         }
 
         public void MusicSTOP()
         {
-            throw new NotImplementedException();
+            Log.WriteLine(LogLevel.INFO, "演奏停止");
+            pmd.int60_main(0x0100);
+            work.Status = 0;
+        }
+
+        public void dispStatus()
+        {
+            pmd.int60_main(5);
+            int syosetu = pmd.pw.al_push + pmd.pw.ah_push * 0x100;
+#if DEBUG
+            Log.WriteLine(LogLevel.TRACE, string.Format("小節:{0}", syosetu));
+#endif
         }
 
         public void Rendering()
         {
-            throw new NotImplementedException();
+            if (work.Status < 0) return;
+
+            try
+            {
+                pmd.Rendering();
+            }
+            catch
+            {
+                work.Status = -1;
+                throw;
+            }
         }
 
         public int SetLoopCount(int loopCounter)
@@ -134,17 +181,41 @@ namespace PMDDotNET.Driver
 
         public void StartRendering(int renderingFreq, Tuple<string, int>[] chipsMasterClock)
         {
-            throw new NotImplementedException();
+            lock (work.SystemInterrupt)
+            {
+
+                work.timeCounter = 0L;
+                this.renderingFreq = renderingFreq <= 0 ? 44100 : renderingFreq;
+                this.opnaMasterClock = 7987200;
+                if (chipsMasterClock != null && chipsMasterClock.Length > 0)
+                {
+                    this.opnaMasterClock = chipsMasterClock[0].Item2 <= 0 ? 7987200 : chipsMasterClock[0].Item2;
+                }
+                work.timer = new OPNATimer(renderingFreq, opnaMasterClock);
+#if DEBUG
+                Log.WriteLine(LogLevel.TRACE, "Start rendering.");
+#endif
+            }
         }
 
         public void StopRendering()
         {
-            throw new NotImplementedException();
+            lock (work.SystemInterrupt)
+            {
+                if (work.Status > 0) work.Status = 0;
+#if DEBUG
+                Log.WriteLine(LogLevel.TRACE, "Stop rendering.");
+#endif
+            }
         }
 
         public void WriteRegister(ChipDatum reg)
         {
-            throw new NotImplementedException();
+            lock (lockObjWriteReg)
+            {
+                if (reg.port == 0) { work.timer?.WriteReg((byte)reg.address, (byte)reg.data); }
+                WriteOPNA(reg);
+            }
         }
 
         public int GetNowLoopCounter()

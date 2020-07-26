@@ -66,11 +66,59 @@ namespace PMDDotNET.Driver
         }
 
         public ushort di { get; internal set; }
+
         public ushort si { get; internal set; }
 
+        public ushort bp { get; internal set; }
+
         public bool carry { get; internal set; }
+
         public bool sign { get; internal set; }
 
         public Stack<ushort> stack = new Stack<ushort>();
+
+        public object lockobj = new object();
+
+        private int[] bitMask = new int[] { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
+
+        public byte rol(byte r, int n)
+        {
+            n &= 7;
+            byte ans = (byte)((r << n) | ((r >> (8 - n))));// & bitMask[n]));
+            carry = ((ans & 0x01) != 0);
+            return ans;
+        }
+
+        public byte ror(byte r, int n)
+        {
+            n &= 7;
+            byte ans = (byte)((r << (8 - n)) | ((r >> n)));// & bitMask[8 - n]));
+            carry = ((ans & 0x80) != 0);
+            return ans;
+        }
+
+        public byte rcl(byte r, int n)
+        {
+            n &= 7;
+            byte ans = (byte)(
+                (r << n) 
+                | ((carry ? 1 : 0) << n) 
+                | (n < 2 ? 0 : (r >> (9 - n)))
+                );// & bitMask[n]));
+            carry = ((r & (0x100 >> n)) != 0);
+            return ans;
+        }
+
+        public byte rcr(byte r, int n)
+        {
+            n &= 7;
+            byte ans = (byte)(
+                (n < 2 ? 0 : (r << (9 - n))) 
+                | ((carry ? 0x100 : 0) >> n) 
+                | (r >> n)
+                );// & bitMask[n]));
+            carry = ((r & (0x100 >> n)) != 0);
+            return ans;
+        }
     }
 }

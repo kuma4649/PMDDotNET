@@ -7,15 +7,35 @@ namespace PMDDotNET.Driver
 {
     public class PW
     {
+        public object lockObj = new object();
+        public object SystemInterrupt = new object();
+
+        private int _status = 0;
+        public int Status
+        {
+            get { lock (lockObj) { return _status; } }
+            set { lock (lockObj) { _status = value; } }
+        }
+
+        public int maxLoopCount { get; internal set; } = -1;
+        public int nowLoopCounter { get; internal set; } = -1;
+
+        public OPNATimer timer = null;
+        public ulong timeCounter = 0L;
+
+
+
         //PMD.ASM 7-53
         public const string ver = "4.8s";
 
         public MmlDatum[] md { get; internal set; }
-        public Action[] currentCommandTable { get; internal set; }
+        public Func<object>[] currentCommandTable { get; internal set; }
+        public MmlDatum[] inst = null;
+
 
         public int vers = 0x48;
         public string verc = "s";
-        public string date = "Jan.22nd 2020";
+        public const string date = "Jan.22nd 2020";
 
         public int mdata_def = 16;
         public int voice_def = 8;
@@ -123,7 +143,7 @@ namespace PMDDotNET.Driver
         public byte adpcm_wait = 0;//ADPCM定義の速度
         public byte revpan = 0;//PCM86逆走flag
         public byte pcm86_vol = 0;//PCM86の音量をSPBに合わせるか?
-        public int syousetu = 0;//小節カウンタ
+        public ushort syousetu = 0;//小節カウンタ
         public byte int5_flag = 0;//FM音源割り込み中？フラグ
         public byte port22h = 0;//OPN-PORT 22H に最後に出力した値(hlfo)
         public byte tempo_48 = 0;// 現在のテンポ(clock= 48 tの値)
@@ -210,6 +230,11 @@ namespace PMDDotNET.Driver
 
 
 
+        //PMD.ASM 2077
+        public byte com_end_0c0h = 0xf7;
+
+
+
         //PMD.ASM 4859
         public byte[] vol_tbl = new byte[] { 0, 0, 0, 0 };
 
@@ -234,11 +259,11 @@ namespace PMDDotNET.Driver
         public byte rhydmy;//b R part ダミー演奏データ
         public byte fmsel;//b FM 表か裏か flag
         public byte[] fmKeyOnDataTbl = new byte[6];//KUMA: 以下６つのパラメータの実体
-        public byte[] omote_key = new byte[] { 0, 0, 0 };
+        //public byte[] omote_key = new byte[] { 0, 0, 0 };
         public byte omote_key1Ptr = 0;//b FM keyondata表1
         public byte omote_key2Ptr = 1;//b  FM keyondata表2
         public byte omote_key3Ptr = 2;//b FM keyondata表3
-        public byte[] ura_key = new byte[] { 0, 0, 0 };
+        //public byte[] ura_key = new byte[] { 0, 0, 0 };
         public byte ura_key1Ptr = 3;//b FM keyondata裏1
         public byte ura_key2Ptr = 4;//b FM keyondata裏2
         public byte ura_key3Ptr = 5;//b FM keyondata裏3
@@ -264,20 +289,20 @@ namespace PMDDotNET.Driver
         public byte ongen;// b 音源 0=無し/2203 1=2608
         public byte lfo_switch;// b	局所LFOスイッチ
 
-        //rhydat:					; ドラムス用リズムデータ
-        //	;	PT PAN/VOLUME KEYON
-
-        //    db	18h,11011111b,	00000001b	;バス
-        //    db	19h,11011111b,	00000010b	;スネア
-        //    db	1ch,01011111b,	00010000b	;タム[LOW]
-        //    db	1ch,11011111b,	00010000b	;タム[MID]
-        //    db	1ch,10011111b,	00010000b	;タム[HIGH]
-        //    db	1dh,11010011b,	00100000b	;リム
-        //    db	19h,11011111b,	00000010b	;クラップ
-        //    db	1bh,10011100b,	10001000b	;Cハイハット
-        //    db	1ah,10011101b,	00000100b	;Oハイハット
-        //    db	1ah,11011111b,	00000100b	;シンバル
-        //    db	1ah,01011110b,	00000100b	;RIDEシンバル
+        public byte[] rhydat = new byte[]{//; ドラムス用リズムデータ
+            //PT PAN/VOLUME  KEYON
+            0x18,0b1101_1111,0b0000_0001,//バス
+            0x19,0b1101_1111,0b0000_0010,//スネア
+            0x1c,0b0101_1111,0b0001_0000,//タム[LOW]
+            0x1c,0b1101_1111,0b0001_0000,//タム[MID]
+            0x1c,0b1001_1111,0b0001_0000,//タム[HIGH]
+            0x1d,0b1101_0011,0b0010_0000,//リム
+            0x19,0b1101_1111,0b0000_0010,//クラップ
+            0x1b,0b1001_1100,0b1000_1000,//Cハイハット
+            0x1a,0b1001_1101,0b0000_0100,//Oハイハット
+            0x1a,0b1101_1111,0b0000_0100,//シンバル
+            0x1a,0b0101_1110,0b0000_0100,//RIDEシンバル
+        };
 
         //    even
         //;
@@ -467,7 +492,7 @@ namespace PMDDotNET.Driver
             public byte lfo_wave;// b? ; 1 LFOの波形
             public byte partmask;// b 1 PartMask b0:通常 b1:効果音 b2:NECPCM用
                                  //          ;   b3:none b4:PPZ/ADE用 b5:s0時 b6:m b7:一時
-            //+60
+                                 //+60
             public byte keyoff_flag;// b? ; 1 KeyoffしたかどうかのFlag
             public byte volmask;// b? ; 1 音量LFOのマスク
             public byte qdata;// b? ; 1 qの値
@@ -618,6 +643,19 @@ namespace PMDDotNET.Driver
         public byte[] fmoff_ef = new byte[] { 0, 1, 4, 5, 8, 9, 12, 13, 0xff };
 
 
+
+        //10538-
+        public string mes_title = "Ｍｕｓｉｃ　Ｄｒｉｖｅｒ　Ｐ.Ｍ.Ｄ. for PC9801/88VA Version " + ver
+        + "\r\n"
+        + "Copyright (C)1989," + date + " by M.Kajihara(KAJA).\r\n\r\n";
+
+        public byte port_sel;// b? ; 選択ポート
+        public byte opn_0eh;// b?
+        public byte message_flag;    // b?
+        public ushort opt_sp_push; // w?
+        public ushort resident_size;  // w?
+
+
         //EFCDRV.ASM
         public ushort effadr;// w effect address
         public ushort eswthz;// w トーンスゥイープ周波数
@@ -662,7 +700,7 @@ namespace PMDDotNET.Driver
         // release_flag1   db	0	;リリースするかどうかのflag
         // release_flag2   db	0	;リリースしたかどうかのflag
         public byte pcm86_pan_flag = 0;// b 0 ;パンデータ１(bit0= 左 / bit1 = 右 / bit2 = 逆)
-        public byte com_end=0xb1;
+        public byte com_end = 0xb1;
 
         //pcm86_pan_dat db	0	; パンデータ２(音量を下げるサイドの音量値)
 
@@ -716,9 +754,101 @@ namespace PMDDotNET.Driver
 
 
 
-
-        public PW()
+        //7177-7242
+        public byte[] part_table = null;
+        //if	board2
+        // if	ppz
+        //;			Part番号,Partb,音源番号
+        private byte[] part_table_ppz = new byte[]
         {
+         00,1,0 //; A
+        ,01,2,0	//; B
+        ,02,3,0	//; C
+        ,03,1,1	//; D
+        ,04,2,1	//; E
+        ,05,3,1	//; F
+        ,06,1,2	//; G
+        ,07,2,2	//; H
+        ,08,3,2	//; I
+        ,09,1,3	//; J
+        ,10,3,4	//; K
+        ,11,3,0	//; c2
+        ,12,3,0	//; c3
+        ,13,3,0	//; c4
+        ,0xff,0,0xff//;Rhythm
+        ,22,3,1	//; Effect
+        ,14,0,5	//; PPZ1
+        ,15,1,5	//; PPZ2
+        ,16,2,5	//; PPZ3
+        ,17,3,5	//; PPZ4
+        ,18,4,5	//; PPZ5
+        ,19,5,5	//; PPZ6
+        ,20,6,5	//; PPZ7
+        ,21,7,5 //; PPZ8
+        };
+        // else
+        //;			Part番号,Partb,音源番号
+        private byte[] part_table_brd2 = new byte[]
+        {
+         00,1,0	//;A
+		,01,2,0	//;B
+		,02,3,0	//;C
+		,03,1,1	//;D
+		,04,2,1	//;E
+		,05,3,1	//;F
+		,06,1,2	//;G
+		,07,2,2	//;H
+		,08,3,2	//;I
+		,09,1,3	//;J
+		,10,3,4	//;K
+		,11,3,0	//;c2
+		,12,3,0	//;c3
+		,13,3,0	//;c4
+		,0xff,0,0xff	//;Rhythm
+		,14,3,1 //;Effect
+        };
+        //else
+        //; Part番号,Partb,音源番号
+        private byte[] part_table_nbrd2 = new byte[]
+        {
+         00,1,0	//;A
+		,01,2,0	//;B
+		,02,3,0	//;C
+		,03,3,0	//;c2
+		,04,3,0	//;c3
+		,05,3,0	//;c4
+		,06,1,2	//;G
+		,07,2,2	//;H
+		,08,3,2	//;I
+		,09,1,3	//;J
+		,10,3,4	//;K
+		,03,3,0	//;c2
+		,04,3,0	//;c3
+		,05,3,0	//;c4
+		,0xff,0,0xff //;Rhythm
+		,11,3,0 //;Effect
+        };
+
+
+
+        //PMD.ASM 7955-7964
+        //;==============================================================================
+        //;	ＦＭ音色のキャリアのテーブル
+        //;==============================================================================
+        public byte[] carrier_table = new byte[] {
+             0b1000_0000,0b1000_0000,0b1000_0000,0b1000_0000
+            ,0b1010_0000,0b1110_0000,0b1110_0000,0b1111_0000
+            ,0b1110_1110,0b1110_1110,0b1110_1110,0b1110_1110
+            ,0b1100_1100,0b1000_1000,0b1000_1000,0b0000_0000
+        };
+
+
+
+        public PW(bool isSB2,bool usePPZ)
+        {
+            board2 = isSB2 ? 1 : 0;
+            ppz = usePPZ ? 1 : 0;
+
             fmvd_init = (va + board2 != 0) ? 0 : 16;
 
             if (va != 0)
@@ -788,12 +918,23 @@ namespace PMDDotNET.Driver
             part1 = 0; partWk[part1] = new partWork();
             part2 = 1; partWk[part2] = new partWork();
             part3 = 2; partWk[part3] = new partWork();
+
+            part_table = part_table_nbrd2;
+            if (board2 != 0)
+            {
+                part_table= part_table_brd2;
+                if (ppz != 0)
+                {
+                    part_table = part_table_ppz;
+                }
+            }
         }
 
         public void ZeroClearPartWk(partWork partWork)
         {
-            throw new NotImplementedException();
+            //TODO:ZeroClearPartWk 未実装
         }
 
     }
+
 }

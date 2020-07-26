@@ -6,9 +6,19 @@ namespace PMDDotNET.Driver
 {
     public class EFCDRV
     {
-        internal void effend()
+        public void effgo()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+        }
+
+        public void effend()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void effplay()
+        {
+            //throw new NotImplementedException();
         }
     }
 }
