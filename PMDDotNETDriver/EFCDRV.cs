@@ -20,5 +20,15 @@ namespace PMDDotNET.Driver
         {
             //throw new NotImplementedException();
         }
+
+        internal void eff_on2()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void effoff()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

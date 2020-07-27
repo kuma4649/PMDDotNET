@@ -529,8 +529,99 @@ namespace PMDDotNET.Driver
             public byte shift_def;// b? ; 1 マスター転調値
             public byte qdat3;// b? ; 1 q Random
 
-            //        db?	; dummy
-        }//qq  ends
+            public void Clear()
+            {
+                address=0;// w?	; 2 ｴﾝｿｳﾁｭｳ ﾉ ｱﾄﾞﾚｽ
+                partloop=0;// w? ; 2 ｴﾝｿｳ ｶﾞ ｵﾜｯﾀﾄｷ ﾉ ﾓﾄﾞﾘｻｷ
+                leng=0;// b? ; 1 ﾉｺﾘ LENGTH
+                qdat=0;// b? ; 1 gatetime(q/Q値を計算した値)
+                fnum=0;// w? ; 2 ｴﾝｿｳﾁｭｳ ﾉ BLOCK/FNUM
+                detune=0;// w? ; 2 ﾃﾞﾁｭｰﾝ
+                lfodat=0;// w? ; 2 LFO DATA
+                porta_num=0;// w? ; 2 ポルタメントの加減値（全体）
+                porta_num2=0;// w? ; 2 ポルタメントの加減値（一回）
+                porta_num3=0;// w? ; 2 ポルタメントの加減値（余り）
+                volume=0;// b? ; 1 VOLUME
+                shift=0;// b? ; 1 ｵﾝｶｲ ｼﾌﾄ ﾉ ｱﾀｲ
+                delay=0;// b? ; 1 LFO[DELAY]
+                speed=0;// b? ; 1 [SPEED]
+                step=0;// b? ; 1 [STEP]
+                time=0;// b? ; 1 [TIME]
+                delay2=0;// b? ; 1 [DELAY_2]
+                speed2=0;// b? ; 1 [SPEED_2]
+                step2=0;// b? ; 1 [STEP_2]
+                time2=0;// b? ; 1 [TIME_2]
+                lfoswi=0;// b? ; 1 LFOSW.B0/tone B1/vol B2/同期 B3/porta
+                volpush=0;// b? ; 1 Volume PUSHarea
+                mdepth=0;// b? ; 1 M depth
+                mdspd=0;// b? ; 1 M speed
+                mdspd2=0;// b? ; 1 M speed_2
+                envf=0;// b? ; 1 PSG ENV. [START_FLAG] / -1でextend
+                eenv_count=0;// b? ; 1 ExtendPSGenv/No=0 AR=1 DR=2 SR=3 RR=4
+                eenv_ar=0;// b? ; 1 /AR /旧pat
+                eenv_dr=0;// b? ; 1 /DR /旧pv2
+                eenv_sr=0;// b? ; 1 /SR /旧pr1
+                eenv_rr=0;// b? ; 1 /RR /旧pr2
+                eenv_sl=0;// b? ; 1 /SL
+                eenv_al=0;// b? ; 1 /AL
+                eenv_arc=0;// b? ; 1 /ARのカウンタ /旧patb
+                eenv_drc=0;// b? ; 1 /DRのカウンタ
+                eenv_src=0;// b? ; 1 /SRのカウンタ /旧pr1b
+                eenv_rrc=0;// b? ; 1 /RRのカウンタ /旧pr2b
+                eenv_volume=0;// b? ; 1 /Volume値(0～15)/旧penv
+                extendmode=0;// b? ; 1 B1/Detune B2/LFO B3/Env Normal/Extend
+                fmpan=0;// b? ; 1 FM Panning + AMD + PMD
+                psgpat=0;// b? ; 1 PSG PATTERN[TONE / NOISE / MIX]
+                voicenum=0;// b? ; 1 音色番号
+                loopcheck=0;// b? ; 1 ループしたら１ 終了したら３
+                carrier=0;// b? ; 1 FM Carrier
+                slot1=0;// b? ; 1 SLOT 1 ﾉ TL
+                slot3=0;// b? ; 1 SLOT 3 ﾉ TL
+                slot2=0;// b? ; 1 SLOT 2 ﾉ TL
+                slot4=0;// b? ; 1 SLOT 4 ﾉ TL
+                slotmask=0;// b? ; 1 FM slotmask
+                neiromask=0;// b? ; 1 FM 音色定義用maskdata
+                lfo_wave=0;// b? ; 1 LFOの波形
+                partmask=0;// b 1 PartMask b0:通常 b1:効果音 b2:NECPCM用
+                keyoff_flag=0;// b? ; 1 KeyoffしたかどうかのFlag
+                volmask=0;// b? ; 1 音量LFOのマスク
+                qdata=0;// b? ; 1 qの値
+                qdatb=0;// b?	; 1 Qの値
+                hldelay=0;// b? ; 1 HardLFO delay
+                hldelay_c=0;// b? ; 1 HardLFO delay Counter
+                _lfodat=0;// w? ; 2 LFO DATA
+                _delay=0;// b? ; 1 LFO[DELAY]
+                _speed=0;// b? ; 1	[SPEED]
+                _step=0;// b? ; 1	[STEP]
+                _time=0;// b? ; 1	[TIME]
+                _delay2=0;// b? ; 1	[DELAY_2]
+                _speed2=0;// b? ; 1	[SPEED_2]
+                _step2=0;// b? ; 1	[STEP_2]
+                _time2=0;// b? ; 1	[TIME_2]
+                _mdepth=0;// b? ; 1 M depth
+                _mdspd=0;// b? ; 1 M speed
+                _mdspd2=0;// b? ; 1 M speed_2
+                _lfo_wave=0;// b?	; 1 LFOの波形
+                _volmask=0;// b? ; 1 音量LFOのマスク
+                mdc=0;// b? ; 1 M depth Counter(変動値)
+                mdc2=0;// b? ; 1 M depth Counter
+                _mdc=0;// b? ; 1 M depth Counter(変動値)
+                _mdc2=0;// b? ; 1 M depth Counter
+                onkai=0;//b 1 演奏中の音階データ(0ffh:rest)
+                sdelay=0;//b?; 1 Slot delay
+                sdelay_c=0;//b? ; 1 Slot delay counter
+                sdelay_m=0;//b? ; 1 Slot delay Mask
+                alg_fb=0;//b? ; 1 音色のalg/fb
+                keyon_flag=0;// b 1 新音階/休符データを処理したらinc
+                qdat2=0;// b? ; 1 q 最低保証値
+                fnum2=0;// w? ; 2 ppz8/pmd86用fnum値上位
+                onkai_def=0;// b 1 演奏中の音階データ(転調処理前 / ?fh:rest)
+                shift_def=0;// b? ; 1 マスター転調値
+                qdat3=0;// b? ; 1 q Random
+            }
+
+        //        db?	; dummy
+    }//qq  ends
 
         //qqq struc
         //      db  offset eenv_ar dup(?)
