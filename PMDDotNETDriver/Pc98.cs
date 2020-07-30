@@ -23,6 +23,14 @@ namespace PMDDotNET.Driver
             {
                 return 0;
             }
+            else if (v == 0x088)//FM音源?
+            {
+                return 0;
+            }
+            else if (v == 0x08a)//FM音源?
+            {
+                return 0;
+            }
             else if (v == 0x188)//FM音源のステータスフラグ読み込み
             {
                 return 0;

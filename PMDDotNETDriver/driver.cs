@@ -60,8 +60,66 @@ namespace PMDDotNET.Driver
         /// </summary>
         public List<Tuple<string, string>> GetTags()
         {
-            //throw new NotImplementedException();
-            return null;
+            List<Tuple<string, string>> tags = new List<Tuple<string, string>>();
+
+            ushort adr = pmd.get_memo(1);
+            string str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("title", str));
+
+            adr = pmd.get_memo(2);
+            str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("composer", str));
+
+            adr = pmd.get_memo(3);
+            str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("arranger", str));
+            int al = 4;
+            str = "";
+            do
+            {
+                adr = pmd.get_memo(al);
+                if (adr != 0) str += "\r\n" + getNRDString(ref adr);
+                al++;
+            } while (adr != 0);
+            str = str != "" ? str.Substring(2) : "";
+            tags.Add(new Tuple<string, string>("memo", str));
+
+            adr = pmd.get_memo(0);
+            str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("PCMFile", str));
+
+            adr = pmd.get_memo(-1);
+            str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("PPSFile", str));
+
+            adr = pmd.get_memo(-2);
+            str = getNRDString(ref adr);
+            tags.Add(new Tuple<string, string>("PPZFile", str));
+
+            return tags;
+        }
+
+        private static string getNRDString(ref ushort index)
+        {
+            if (srcBuf== null || srcBuf.Length < 1 || index < 0 || index >= srcBuf.Length) return "";
+
+            try
+            {
+                List<byte> lst = new List<byte>();
+                for (; srcBuf[index].dat != 0; index++)
+                {
+                    lst.Add((byte)srcBuf[index].dat);
+                }
+
+                string n = System.Text.Encoding.GetEncoding(932).GetString(lst.ToArray());
+                index++;
+
+                return n;
+            }
+            catch (Exception e)
+            {
+            }
+            return "";
         }
 
         /// <summary>
@@ -110,25 +168,23 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
+        static MmlDatum[] srcBuf = null;
+
         public void Init(Action<ChipDatum> chipWriteRegister, Action<long, int> chipWaitSend, MmlDatum[] srcBuf, object addtionalOption, Func<string, Stream> appendFileReaderCallback)
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
 
+            Driver.srcBuf = srcBuf;
             bool notSoundBoard2 = (bool)((object[])addtionalOption)[0];
             bool isLoadADPCM = (bool)((object[])addtionalOption)[1];
             bool loadADPCMOnly = (bool)((object[])addtionalOption)[2];
 
-            pmd = new PMD(srcBuf, WriteRegister, !notSoundBoard2, false);
-            work = pmd.pw;
-            work.board = 1;//音源あり
-            //ポート番号の指定
-            work.fm1_port1 = 0x188;//レジスタ
-            work.fm1_port2 = 0x18a;//データ
-            work.fm2_port1 = 0x18c;//レジスタ(拡張)
-            work.fm2_port2 = 0x18e;//データ(拡張)
-
             WriteOPNA = chipWriteRegister;
             WaitSendOPNA = chipWaitSend;
+            work = new PW(!notSoundBoard2, false);
+            work.timer = new OPNATimer(44100, 7987200);
+            pmd = new PMD(srcBuf, WriteRegister, work);
+
         }
 
         public void MusicSTART(int musicNumber)
@@ -191,7 +247,7 @@ namespace PMDDotNET.Driver
                 {
                     this.opnaMasterClock = chipsMasterClock[0].Item2 <= 0 ? 7987200 : chipsMasterClock[0].Item2;
                 }
-                work.timer = new OPNATimer(renderingFreq, opnaMasterClock);
+                work.timer.setClock(renderingFreq, opnaMasterClock);
 #if DEBUG
                 Log.WriteLine(LogLevel.TRACE, "Start rendering.");
 #endif
@@ -211,6 +267,7 @@ namespace PMDDotNET.Driver
 
         public void WriteRegister(ChipDatum reg)
         {
+            if (work == null) return;
             lock (lockObjWriteReg)
             {
                 if (reg.port == 0) { work.timer?.WriteReg((byte)reg.address, (byte)reg.data); }

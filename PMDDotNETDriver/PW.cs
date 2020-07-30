@@ -161,18 +161,20 @@ namespace PMDDotNET.Driver
         public byte mmldat_lng = 0;//曲データバッファサイズ(KB)
         public byte voicedat_lng = 0;// 音色データバッファサイズ(KB)
         public byte effecdat_lng = 0;// 効果音データバッファサイズ(KB)
-        public byte rshot_bd = 0;// リズム音源 shot inc flag(BD)
-        public byte rshot_sd = 0;// リズム音源 shot inc flag(SD)
-        public byte rshot_sym = 0;// リズム音源 shot inc flag(CYM)
-        public byte rshot_hh = 0;// リズム音源 shot inc flag(HH)
-        public byte rshot_tom = 0;// リズム音源 shot inc flag(TOM)
-        public byte rshot_rim = 0;// リズム音源 shot inc flag(RIM)
-        public byte rdump_bd = 0;// リズム音源 dump inc flag(BD)
-        public byte rdump_sd = 0;// リズム音源 dump inc flag(SD)
-        public byte rdump_sym = 0;// リズム音源 dump inc flag(CYM)
-        public byte rdump_hh = 0;// リズム音源 dump inc flag(HH)
-        public byte rdump_tom = 0;// リズム音源 dump inc flag(TOM)
-        public byte rdump_rim = 0;// リズム音源 dump inc flag(RIM)
+        public byte[] rshot = new byte[] { 0, 0, 0, 0, 0, 0 };// リズム音源 shot inc flags
+        //public byte rshot_bd = 0;// リズム音源 shot inc flag(BD)
+        //public byte rshot_sd = 0;// リズム音源 shot inc flag(SD)
+        //public byte rshot_sym = 0;// リズム音源 shot inc flag(CYM)
+        //public byte rshot_hh = 0;// リズム音源 shot inc flag(HH)
+        //public byte rshot_tom = 0;// リズム音源 shot inc flag(TOM)
+        //public byte rshot_rim = 0;// リズム音源 shot inc flag(RIM)
+        public byte[] rdump = new byte[] { 0, 0, 0, 0, 0, 0 };// リズム音源 dump inc flags
+        //public byte rdump_bd = 0;// リズム音源 dump inc flag(BD)
+        //public byte rdump_sd = 0;// リズム音源 dump inc flag(SD)
+        //public byte rdump_sym = 0;// リズム音源 dump inc flag(CYM)
+        //public byte rdump_hh = 0;// リズム音源 dump inc flag(HH)
+        //public byte rdump_tom = 0;// リズム音源 dump inc flag(TOM)
+        //public byte rdump_rim = 0;// リズム音源 dump inc flag(RIM)
         public byte ch3mode = 0;// ch3 Mode
         public byte ch3mode_push = 0;// ch3 Mode(効果音発音時用push領域)
         public byte ppz_voldown = 0;// PPZ8 voldown 数値
@@ -303,6 +305,9 @@ namespace PMDDotNET.Driver
             0x1a,0b1101_1111,0b0000_0100,//シンバル
             0x1a,0b0101_1110,0b0000_0100,//RIDEシンバル
         };
+
+        public MmlDatum[] rd = null;
+        public MmlDatum[] rdDmy = new MmlDatum[] { new MmlDatum(0xff) };
 
         //    even
         //;
@@ -937,6 +942,7 @@ namespace PMDDotNET.Driver
 
         public PW(bool isSB2,bool usePPZ)
         {
+            board = 1;
             board2 = isSB2 ? 1 : 0;
             ppz = usePPZ ? 1 : 0;
 
@@ -1021,10 +1027,10 @@ namespace PMDDotNET.Driver
             }
         }
 
-        public void ZeroClearPartWk(partWork partWork)
-        {
+        //public void ZeroClearPartWk(partWork partWork)
+        //{
             //TODO:ZeroClearPartWk 未実装
-        }
+        //}
 
     }
 

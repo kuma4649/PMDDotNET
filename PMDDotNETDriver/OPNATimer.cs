@@ -24,6 +24,10 @@ namespace PMDDotNET.Driver
 
         public OPNATimer(int renderingFreq, int opnaMasterClock)
         {
+            setClock(renderingFreq, opnaMasterClock);
+        }
+        public void setClock(int renderingFreq, int opnaMasterClock)
+        {
             step = opnaMasterClock / 72.0 / 2.0 / (double)renderingFreq;
         }
 

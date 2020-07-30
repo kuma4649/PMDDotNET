@@ -24,10 +24,17 @@ namespace PMDDotNET.Driver
         private PPSDRV ppsdrv = null;
         private EFCDRV efcdrv = null;
 
-        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,bool isSB2, bool usePPZ)
+        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw)//,bool isSB2, bool usePPZ)
         {
-            pw = new PW(isSB2, usePPZ);
+            this.pw = pw;
             pw.md = mmlData;
+            pw.board = 1;//音源あり
+            //ポート番号の指定
+            pw.fm1_port1 = 0x188;//レジスタ
+            pw.fm1_port2 = 0x18a;//データ
+            pw.fm2_port1 = 0x18c;//レジスタ(拡張)
+            pw.fm2_port2 = 0x18e;//データ(拡張)
+
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister);
             ppz = new PPZDRV();
@@ -39,6 +46,7 @@ namespace PMDDotNET.Driver
             Set_n_int60_jumptable();
             SetupCmdtbl();
             SetupCmdtblp();
+            SetupCmdtblr();
             SetupComtbl0c0h();
 
             comstart();
@@ -547,8 +555,9 @@ namespace PMDDotNET.Driver
             r.si += 2;
             r.ax += (ushort)pw.mmlbuf;
             pw.radtbl = r.ax;
-            pw.rhyadr = 0;//offset rhydmy
 
+            pw.rhyadr = 0;//offset rhydmy
+            pw.rd = pw.rdDmy;//rhyadrはrdDmy(ダミー向け演奏データ配列)を参照する
         }
 
 
@@ -585,7 +594,7 @@ namespace PMDDotNET.Driver
                 //cli
 
                 r.al = 0;
-                pw.ZeroClearPartWk(pw.partWk[r.bx]);
+                pw.partWk[r.bx].Clear();
 
                 r.dh &= 0xf;//0dh;一時,s,m,ADE以外の
                 pw.partWk[r.bx].partmask = r.dh;//partmaskのみ保存
@@ -1820,7 +1829,8 @@ namespace PMDDotNET.Driver
 
         private void rhyms00()
         {
-            r.al = (byte)pw.md[r.bx].dat;// mov al,[bx]
+        rhyms00:;
+            r.al = (byte)pw.rd[r.bx].dat;//rdにはmd(正規の演奏データ)或いはrdDmy(ダミーの演奏データ)のどちらかがセットされている
             r.bx++;
 
             if (r.al == 0xff)
@@ -1830,7 +1840,8 @@ namespace PMDDotNET.Driver
             }
             if ((r.al & 0x80) != 0)
             {
-                rhythmon();
+                int r = rhythmon();
+                if (r == 1) goto rhyms00;
                 return;
             }
 
@@ -1840,7 +1851,7 @@ namespace PMDDotNET.Driver
 
         private void rlnset()
         {
-            r.al = (byte)pw.md[r.bx].dat;// mov al,[bx]
+            r.al = (byte)pw.rd[r.bx].dat;// mov al,[bx]
             r.bx++;
 
             pw.rhyadr = r.bx;
@@ -1887,10 +1898,11 @@ namespace PMDDotNET.Driver
             r.ax += (ushort)pw.mmlbuf;
             pw.rhyadr = r.ax;
             r.bx = r.ax;
+            pw.rd = pw.md;
 
-            //goto rhyms00;
+            rhyms00:;
             {
-                r.al = (byte)pw.md[r.bx].dat;//	mov al,[bx]
+                r.al = (byte)pw.rd[r.bx].dat;//	mov al,[bx]
                 r.bx++;
 
                 if (r.al == 0xff)
@@ -1899,7 +1911,8 @@ namespace PMDDotNET.Driver
                 }
                 if ((r.al & 0x80) != 0)
                 {
-                    rhythmon();
+                    int r = rhythmon();
+                    if (r == 1) goto rhyms00;
                     return;
                 }
 
@@ -1924,6 +1937,7 @@ namespace PMDDotNET.Driver
         rf00:;
             r.bx = 0;//offset rhydmy
             pw.rhyadr = r.bx;
+            pw.rd = pw.rdDmy;
 
             fmmnp_4();
             mnp_ret();
@@ -1935,7 +1949,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	PSGﾘｽﾞﾑ ON
         //;==============================================================================
-        private void rhythmon()
+        private int rhythmon()
         {
             if ((r.al & 0b0100_0000) == 0)
                 goto rhy_shot;
@@ -1954,8 +1968,8 @@ namespace PMDDotNET.Driver
             a = r.si;
             r.si = r.bx;
             r.bx = a;
-            rhyms00();
-            return;
+            //rhyms00();
+            return 1;
 
         rhy_shot:;
             if (pw.partWk[r.di].partmask == 0)
@@ -1963,23 +1977,24 @@ namespace PMDDotNET.Driver
             pw.kshot_dat = 0;
             r.bx++;
             rlnset();//; maskされている場合
-            return;
+            return 0;
         r_nonmask:;
             r.ah = r.al;
-            r.al = (byte)pw.md[r.bx].dat;
+            r.al = (byte)pw.rd[r.bx].dat;
             r.bx++;
             r.ax &= 0x3fff;
             pw.kshot_dat = r.ax;
             if (r.ax == 0)
             {
                 rlnset();
-                return;
+                return 0;
             }
             pw.rhyadr = r.bx;
             if (pw.board2 != 0)
             {
                 if (pw.kp_rhythm_flag == 0)
                     goto rsb210;
+                //KUMA:SB2でkp_rhythm_flagなら、リズム音源もならす
                 r.stack.Push(r.ax);
                 r.bx = 0;//offset rhydat
                 r.cx = 11;
@@ -2042,6 +2057,7 @@ namespace PMDDotNET.Driver
         roret:;
             r.bx = (ushort)pw.rhyadr;
             rlnset();
+            return 0;
         }
 
         private void rshot()
@@ -2165,23 +2181,23 @@ namespace PMDDotNET.Driver
             ,jump1                    // 0xee(17)
             ,jump1                    // 0xed(18)
             //FOR SB2                 
-            ,null//,panset            // 0xec(19)
-            ,null//,rhykey            // 0xeb(20)
-            ,null//,rhyvs             // 0xea(21)
-            ,null//,rpnset            // 0xe9(22)
-            ,null//,rmsvs             // 0xe8(23)
+            ,panset                   // 0xec(19)
+            ,rhykey                   // 0xeb(20)
+            ,rhyvs                    // 0xea(21)
+            ,rpnset                   // 0xe9(22)
+            ,rmsvs                    // 0xe8(23)
             //追加 for V2.0         
             ,comshift2                // 0xe7(24)
-            ,null//,rmsvs_sft         // 0xe6(25)
-            ,null//,rhyvs_sft         // 0xe5(26)
+            ,rmsvs_sft                // 0xe6(25)
+            ,rhyvs_sft                // 0xe5(26)
             //                      
-            ,null//,hlfo_delay        // 0xe4(27)
+            ,hlfo_delay               // 0xe4(27)
             //追加 for V2.3         
             ,comvolup2                // 0xe3(28)
             ,comvoldown2              // 0xe2(29)
             //追加 for V2.4         
-            ,null//,hlfo_set          // 0xe1(30)
-            ,null//,hlfo_onoff        // 0xe0(31)
+            ,hlfo_set                 // 0xe1(30)
+            ,hlfo_onoff               // 0xe0(31)
             //                      
             ,syousetu_lng_set         // 0xdf(32)
             //                      
@@ -2219,9 +2235,9 @@ namespace PMDDotNET.Driver
             ,slotdetune_set           // 0xc8(55) 
             ,slotdetune_set2          // 0xc7(56) 
             ,fm3_extpartset           // 0xc6(57) 
-            ,null//,volmask_set       // 0xc5(58) 
+            ,volmask_set              // 0xc5(58) 
             ,comq2                    // 0xc4(59) 
-            ,null//,panset_ex         // 0xc3(60) 
+            ,panset_ex                // 0xc3(60) 
             ,lfoset_delay             // 0xc2(61) 
             ,jump0                    // 0xc1(62) ,sular
             ,fm_mml_part_mask         // 0xc0(63) 
@@ -2270,14 +2286,14 @@ namespace PMDDotNET.Driver
             ,psgsel                     //(0xed)18
             ////                        
             ,jump1                      //(0xec)19
-            ,null//,rhykey              //(0xeb)20
-            ,null//,rhyvs               //(0xea)21
-            ,null//,rpnset              //(0xe9)22
-            ,null//,rmsvs               //(0xe8)23
+            ,rhykey                     //(0xeb)20
+            ,rhyvs                      //(0xea)21
+            ,rpnset                     //(0xe9)22
+            ,rmsvs                      //(0xe8)23
             ////                        
             ,comshift2                  //(0xe7)24
-            ,null//,rmsvs_sft           //(0xe6)25
-            ,null//,rhyvs_sft           //(0xe5)26
+            ,rmsvs_sft                  //(0xe6)25
+            ,rhyvs_sft                  //(0xe5)26
             ////
             ,jump1                      //(0xe4)27
             ////追加 for V2.3
@@ -2346,102 +2362,106 @@ namespace PMDDotNET.Driver
             };
         }
 
-        private Func<object>[] cmdtblr = new Func<object>[] {
-            // jump1
-            //,jump1
-            //,comv
-            //,comt
-            //,comtie
-            //,comd
-            //,comstloop
-            //,comedloop
-            //,comexloop
-            //,comlopset
-            //,jump1
-            //,comvolupp
-            //,comvoldownp
-            //,jump4
-            //,pdrswitch
-            //,jump4
-            //,comy
-            //,jump1
-            //,jump1
-            ////
-            //,jump1
-            //,rhykey
-            //,rhyvs
-            //,rpnset
-            //,rmsvs
-            ////
-            //,jump1
-            //,rmsvs_sft
-            //,rhyvs_sft
-            ////
-            //,jump1              //0E4H
-            ////
-            //,comvolupp2         //0E3H
-            //,comvoldownp2	    //0E2H
-            ////
-            //,jump1              //0E1H
-            //,jump1		        //0E0H
-            ////
-            //,syousetu_lng_set   //0DFH
-            ////
-            //,vol_one_up_psg     //0DEH
-            //,vol_one_down       //0DDH
-            ////
-            //,status_write       //0DCH
-            //,status_add	        //0DBH
-            ////                  //
-            //,jump1              // ポルタメント＝通常音程コマンドに
-            ////                  //
-            //,jump1              //0D9H
-            //,jump1		        //0D8H
-            //,jump1		        //0D7H
-            ////                  //
-            //,jump2              //0D6H
-            ////                  //
-            //,comdd              //0d5h
-            ////
-            //,ssg_efct_set       //0d4h
-            //,fm_efct_set        //0d3h
-            //,fade_set	        //0d2h
-            ////                  //
-            //,jump1              //
-            //,jump1              //0d0h
-            ////                  //
-            //,jump1              //
-            //,jump6              //0ceh
-            //,jump5		        //0cdh
-            //,jump1		        //0cch
-            //,jump1              //
-            //,jump1              //
-            //,jump1              //
-            //,jump3              //
-            //,jump3              //
-            //,jump6              //
-            //,jump1		        //0c5h
-            //,jump1              //
-            //,jump2		        //0c3h
-            //,jump1              //
-            //,jump0		        //0c1h,sular
-            //,rhythm_mml_part_mask   //0c0h
-            //,jump4		        //0bfh
-            //,jump1		        //0beh
-            //,jump2		        //0bdh
-            //,jump1		        //0bch
-            //,jump1		        //0bbh
-            //,jump1		        //0bah
-            //,jump1		        //0b9h
-            //,jump2              //
-            //,jump1              //
-            //,jump1              //
-            //,jump2              //
-            //,jump16		        //0b4h
-            //,jump1              //
-            //,jump1		        //0b2h
-            //,jump1		        //0b1h
-        };
+        private Func<object>[] cmdtblr;
+        private void SetupCmdtblr()
+        {
+            cmdtblr = new Func<object>[] {
+             jump1                      //0xff 0
+            ,jump1                      //0xfe 1
+            ,comv                       //0xfd 2
+            ,comt                       //0xfc 3
+            ,comtie                     //0xfb 4
+            ,comd                       //0xfa 5
+            ,comstloop                  //0xf9 6
+            ,comedloop                  //0xf8 7
+            ,comexloop                  //0xf7 8
+            ,comlopset                  //0xf6 9
+            ,jump1                      //0xf5 10
+            ,comvolupp                  //0xf4 11
+            ,comvoldownp                //0xf3 12
+            ,jump4                      //0xf2 13
+            ,pdrswitch                  //0xf1 14
+            ,jump4                      //0xf0 15
+            ,comy                       //0xef 16
+            ,jump1                      //0xee 17
+            ,jump1                      //0xed 18
+            //
+            ,jump1                      //0xec 19
+            ,rhykey                     //0xeb 20
+            ,rhyvs                      //0xea 21
+            ,rpnset                     //0xe9 22
+            ,rmsvs                      //0xe8 23
+            //
+            ,jump1                      //0xe7 24
+            ,rmsvs_sft                  //0xe6 25
+            ,rhyvs_sft                  //0xe5 26
+            //
+            ,jump1                      //0E4H 27
+            //
+            ,comvolupp2                 //0E3H 28 
+            ,comvoldownp2	            //0E2H 29
+            //
+            ,jump1                      //0E1H 30
+            ,jump1		                //0E0H 31
+            //
+            ,syousetu_lng_set           //0DFH 32
+            //
+            ,vol_one_up_psg             //0DEH 33
+            ,vol_one_down               //0DDH 34
+            //
+            ,status_write               //0DCH 35
+            ,status_add	                //0DBH 36
+            //                          
+            ,jump1                      // ポルタメント＝通常音程コマンドに 0xda 37
+            //                          
+            ,jump1                      //0D9H 38
+            ,jump1		                //0D8H 39
+            ,jump1		                //0D7H 40
+            //                          
+            ,jump2                      //0D6H 41
+            //                          
+            ,comdd                      //0d5h 42
+            //
+            ,ssg_efct_set               //0d4h 43
+            ,fm_efct_set                //0d3h 44
+            ,fade_set	                //0d2h 45
+            //                  
+            ,jump1                      //0xd1 46
+            ,jump1                      //0d0h 47
+            //                  
+            ,jump1                      //0xcf 48
+            ,jump6                      //0ceh 49
+            ,jump5		                //0cdh 50
+            ,jump1		                //0cch 51
+            ,jump1                      //0xcb 52
+            ,jump1                      //0xca 53
+            ,jump1                      //0xc9 54
+            ,jump3                      //0xc8 55
+            ,jump3                      //0xc7 56
+            ,jump6                      //0xc6 57
+            ,jump1		                //0c5h 58
+            ,jump1                      //0xc4 59
+            ,jump2		                //0c3h 60
+            ,jump1                      //0xc2 61
+            ,jump0		                //0c1h,sular 62
+            ,rhythm_mml_part_mask       //0c0h 63
+            ,jump4		                //0bfh 64
+            ,jump1		                //0beh 65
+            ,jump2		                //0bdh 66
+            ,jump1		                //0bch 67
+            ,jump1		                //0bbh 68
+            ,jump1		                //0bah 69
+            ,jump1		                //0b9h 70
+            ,jump2                      //0xb8 71
+            ,jump1                      //0xb7 72
+            ,jump1                      //0xb6 73
+            ,jump2                      //0xb5 74
+            ,jump16		                //0b4h 75
+            ,jump1                      //0xb3 76
+            ,jump1		                //0b2h 77
+            ,jump1		                //0b1h 78
+            };
+        }
 
 
 
@@ -2849,7 +2869,7 @@ namespace PMDDotNET.Driver
             if (!r.carry) goto ts_04;
             pw.partWk[r.di].slot4 = r.dl;
             if (r.bx == 0) opnset();
-            dummy_ret:;
+            //dummy_ret:;
         ts_04:;
             return null;
 
@@ -2996,6 +3016,26 @@ namespace PMDDotNET.Driver
 
 
 
+        //2402-2413
+        private Func<object> rhythm_mml_part_mask()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (r.al >= 2)
+                return special_0c0h;
+
+            if (r.al == 0)
+                goto rhythm_part_maskoff_ret;
+
+            pw.partWk[r.di].partmask |= 0x40;
+            return null;
+
+        rhythm_part_maskoff_ret:;
+            pw.partWk[r.di].partmask &= 0xbf;
+            return null;
+        }
+
+
+
         //2414-2474
         //;==============================================================================
         //;	FM音源の音色を再設定
@@ -3063,6 +3103,56 @@ namespace PMDDotNET.Driver
             }
         nr_ret:;
             return;
+        }
+
+
+
+        //2475-2489
+        //;==============================================================================
+        //;	PDRのswitch
+        //;==============================================================================
+        private Func<object> pdrswitch()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (pw.ppsdrv_flag == 0)
+                goto pdrsw_ret;
+
+            r.dl = r.al;
+            r.dl &= 1;
+            r.al >>= 1;
+            r.ah = 5;
+            ppsdrv.intrpt();//int ppsdrv
+        pdrsw_ret:;
+            return null;
+        }
+
+
+
+        //2490-2509
+        //;==============================================================================
+        //;	音量マスクslotの設定
+        //;==============================================================================
+        private Func<object> volmask_set()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            r.al &= 0xf;
+            if (r.al == 0)
+                goto vms_zero;
+
+            r.al = r.rol(r.al, 1);
+            r.al = r.rol(r.al, 1);
+            r.al = r.rol(r.al, 1);
+            r.al = r.rol(r.al, 1);//; 上位4BITに移動
+
+            r.al |= 0xf;//;０以外を指定した=下位4BITを１にする
+            pw.partWk[r.di].volmask = r.al;
+            return ch3_setting;
+
+        vms_zero:;
+            r.al = pw.partWk[r.di].carrier;
+            pw.partWk[r.di].volmask = r.al;//; キャリア位置を設定
+
+            return ch3_setting;
         }
 
 
@@ -3476,7 +3566,7 @@ namespace PMDDotNET.Driver
             if ((pw.partWk[r.di].lfoswi & 0x1) != 0)
                 goto cm_set;
 
-            cm_noset1:;
+            //cm_noset1:;
             if ((pw.partWk[r.di]._volmask & 0x0f) == 0)
                 goto cm_clear;
             if ((pw.partWk[r.di].lfoswi & 0x10) != 0)
@@ -3488,7 +3578,7 @@ namespace PMDDotNET.Driver
             if (pw.slot3_flag != 0)
                 goto cm_set2;
 
-            cm_clear2:;
+            //cm_clear2:;
             if (pw.slotdetune_flag == 1)
                 goto cm_set2;
             r.ah = 0x3f;
@@ -3525,7 +3615,7 @@ namespace PMDDotNET.Driver
             if (r.di == pw.part3)
                 goto cm_exit;
 
-            cm_otodasi:;
+            //cm_otodasi:;
 
             r.stack.Push(r.bp);
             r.bp = r.di;
@@ -3533,13 +3623,13 @@ namespace PMDDotNET.Driver
             r.di = (ushort)pw.part3;//offset part3
             otodasi_cm();
 
-        cm_3bchk:;
+        //cm_3bchk:;
             if (r.bp == pw.part3b)
                 goto cm_exit2;
             r.di = (ushort)pw.part3;//offset part3b
             otodasi_cm();
 
-        cm_3cchk:;
+        //cm_3cchk:;
             if (r.bp == pw.part3c)
                 goto cm_exit2;
             r.di = (ushort)pw.part3c;//offset part3c
@@ -3653,13 +3743,13 @@ namespace PMDDotNET.Driver
             r.di = (ushort)pw.part3;
             keyon_sm();
 
-        sm_3bchk:;
+        //sm_3bchk:;
             if (r.bp == pw.part3b)
                 goto sm_exit2;
             r.di = (ushort)pw.part3b;
             keyon_sm();
 
-        sm_3cchk:;
+        //sm_3cchk:;
             if (r.bp == pw.part3c)
                 goto sm_exit2;
             r.di = (ushort)pw.part3c;
@@ -3739,7 +3829,7 @@ namespace PMDDotNET.Driver
             r.di = r.stack.Pop();
             r.si = r.stack.Pop();
 
-        ses_ret:;
+        //ses_ret:;
             return null;
 
         ses_off:;
@@ -4166,6 +4256,89 @@ namespace PMDDotNET.Driver
             if (!r.carry) return vmax_check;
             r.al = 0;
             return vo_vset;
+        }
+
+
+
+        //3257-3300
+        //;==============================================================================
+        //;	ＦＭ音源ハードＬＦＯの設定（Ｖ２．４拡張分）
+        //;==============================================================================
+        private Func<object> hlfo_set()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (pw.board2 != 0)
+            {
+                r.ah = r.al;
+                r.al = pw.partWk[r.di].fmpan;
+                r.al &= 0b1100_0000;
+                r.al |= r.ah;
+                pw.partWk[r.di].fmpan = r.al;
+                if (pw.partb != 3)
+                    goto hlfoset_notfm3;
+                if (pw.fmsel != 0)
+                    goto hlfoset_notfm3;
+                //;2608の時のみなので part_eはありえない
+                //; FM3の場合は 4つのパート総て設定
+                r.stack.Push(r.di);
+                r.di = (ushort)pw.part3;//offset part3
+                pw.partWk[r.di].fmpan = r.al;
+                r.di = (ushort)pw.part3b;//offset part3b
+                pw.partWk[r.di].fmpan = r.al;
+                r.di = (ushort)pw.part3c;//offset part3c
+                pw.partWk[r.di].fmpan = r.al;
+                r.di = (ushort)pw.part3d;//offset part3d
+                pw.partWk[r.di].fmpan = r.al;
+                r.di = r.stack.Pop();
+
+            hlfoset_notfm3:;
+                if (pw.partWk[r.di].partmask != 0)//; パートマスクされているか？
+                    goto hlfo_exit;
+                r.dh = pw.partb;
+                r.dh += 0xb4 - 1;
+                calc_panout();
+                opnset();
+            }
+        hlfo_exit:;
+            return null;
+        }
+
+
+
+        //3301-3314
+        //;==============================================================================
+        //;	ＦＭ音源ハードＬＦＯのスイッチ（Ｖ２．４拡張分）
+        //;==============================================================================
+        private Func<object> hlfo_onoff()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (pw.board2 != 0)
+            {
+                r.dl = r.al;
+                r.dh = 0x22;
+                pw.port22h = r.dl;
+                opnset44();
+                return null;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        //3315-3324
+        //;==============================================================================
+        //;	ＦＭ音源ハードＬＦＯのディレイ設定
+        //;==============================================================================
+        private Func<object> hlfo_delay()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (pw.board2 != 0)
+            {
+                pw.partWk[r.di].hldelay = r.al;
+            }
+            return null;
         }
 
 
@@ -5217,6 +5390,60 @@ namespace PMDDotNET.Driver
 
 
 
+        //3911-3956
+        //;==============================================================================
+        //;	'p' COMMAND[FM PANNING SET]
+        //;==============================================================================
+        private Func<object> panset()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            if (pw.board2 != 0)
+            {
+                return panset_main();
+            }
+            return null;
+        }
+
+        private Func<object> panset_main()
+        {
+            r.al = r.ror(r.al, 1);
+            r.al = r.ror(r.al, 1);
+            r.al &= 0b1100_0000;
+            r.ah = r.al;//;ah<- pan data
+            r.al = pw.partWk[r.di].fmpan;
+            r.al &= 0b0011_1111;
+            r.al |= r.ah;
+            pw.partWk[r.di].fmpan = r.al;
+            if (pw.partb != 3)
+                goto panset_notfm3;
+            if (pw.fmsel != 0)
+                goto panset_notfm3;
+            //;	FM3の場合は 4つのパート総て設定
+            r.stack.Push(r.di);
+            r.di = (ushort)pw.part3;
+            pw.partWk[r.di].fmpan = r.al;
+            r.di = (ushort)pw.part3b;
+            pw.partWk[r.di].fmpan = r.al;
+            r.di = (ushort)pw.part3c;
+            pw.partWk[r.di].fmpan = r.al;
+            r.di = (ushort)pw.part3d;
+            pw.partWk[r.di].fmpan = r.al;
+            r.di = r.stack.Pop();
+
+        panset_notfm3:;
+            if (pw.partWk[r.di].partmask != 0)//; パートマスクされているか？
+                goto panset_exit;
+            r.dl = r.al;
+            r.dh = pw.partb;
+            r.dh += 0xb4 - 1;
+            calc_panout();
+            opnset();
+
+        panset_exit:;
+            return null;
+        }
+
+
         //3957-3968
         //;==============================================================================
         //;	0b4h～に設定するデータを取得 out.dl
@@ -5237,6 +5464,270 @@ namespace PMDDotNET.Driver
 
 
 
+        //3969-3990
+        //;==============================================================================
+        //;	Pan setting Extend
+        //;==============================================================================
+        private Func<object> panset_ex()
+        {
+            r.al = (byte)pw.md[r.si++].dat;
+            r.si++;//;逆走flagは読み飛ばす
+            if (pw.board2 != 0)
+            {
+                if (r.al == 0)
+                    goto pex_mid;
+                if ((r.al & 0x80) != 0)
+                    goto pex_left;
+
+                r.al = 2;
+                return panset_main();
+            pex_mid:;
+                r.al = 3;
+                return panset_main();
+            pex_left:;
+                r.al = 1;
+                return panset_main();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+
+        //3991-4060
+        //;==============================================================================
+        //;	"\?" COMMAND[OPNA Rhythm Keyon / Dump]
+        //;==============================================================================
+        private Func<object> rhykey()
+        {
+            if (pw.board2 != 0)
+            {
+                r.dh = 0x10;
+                r.al = (byte)pw.md[r.si++].dat;
+                r.al &= pw.rhythmmask;
+                if (r.al == 0) goto rhst_ret;
+                r.dl = r.al;
+                if (pw.fadeout_volume == 0)
+                    goto rk_00;
+                r.stack.Push(r.dx);
+                r.dl = pw.rhyvol;
+                volset2rf();
+                r.dx = r.stack.Pop();
+            rk_00:;
+                if ((r.dl & 0x80) != 0)
+                    goto rhyset;
+                r.al = r.dl;
+                r.bx = 0;//offset rdat
+                r.stack.Push(r.dx);
+                r.cx = 6;
+                r.dh = 0x18;
+            //rklp:;
+                do
+                {
+                    r.al = r.ror(r.al, 1);
+                    if (!r.carry) goto rk00;
+                    r.dl = pw.rdat[r.bx];
+                    opnset44();
+                rk00:;
+                    r.bx++;
+                    r.dh++;
+                    r.cx--;
+                } while (r.cx != 0);
+                r.dx = r.stack.Pop();
+
+            rhyset:;
+                opnset44();
+                if ((r.dl & 0x80) == 0)
+                    goto rhst_00;
+
+                r.bx = 0;//offset rdump_bd
+                rflag_inc(false);
+                r.dl = (byte)~r.dl;
+                pw.rshot_dat &= r.dl;
+                goto rhst_ret2;
+            rhst_00:;
+                r.bx = 0;//offset rshot_bd
+                rflag_inc(true);
+                pw.rshot_dat |= r.dl;
+            rhst_ret2:;
+                if (pw.md[r.si].dat != 0xeb)
+                    goto rhst_ret;
+                _rwait();
+                rhst_ret:;
+                return null;
+            }
+            else
+            {
+                r.si++;
+                return null;
+            }
+        }
+
+        private void rflag_inc(bool isShot)
+        {
+            r.al = r.dl;
+            r.cx = 6;
+        //ri_loop:;
+            do
+            {
+                r.al = r.ror(r.al, 1);
+                if (!r.carry) goto ri_not;
+                if (isShot) pw.rshot[r.bx]++;
+                else pw.rdump[r.bx]++;
+                ri_not:;
+                r.bx++;
+                r.cx--;
+            } while (r.cx != 0);
+        }
+
+
+
+        //4061-4132
+        //;==============================================================================
+        //;	"\v?n" COMMAND
+        //;==============================================================================
+        private Func<object> rhyvs()
+        {
+            if (pw.board2 != 0)
+            {
+                r.al = (byte)pw.md[r.si++].dat;
+                r.cl = 0xc0;
+                r.dl = 0x1f;
+                r.dl &= r.al;
+                return rs002();
+            }
+            else
+            {
+                r.si++;
+                return null;
+            }
+        }
+
+        private Func<object> rs002()
+        {
+            r.al = r.rol(r.al, 1);
+            r.al = r.rol(r.al, 1);
+            r.al = r.rol(r.al, 1);
+            r.al &= 0x7;
+            r.bx = 0xffff;//offset rdat-1
+            r.dh = r.al;
+            r.ah = 0;
+            r.bx += r.ax;
+            r.al = 0x18 - 1;
+            r.al += r.dh;
+            r.dh = r.al;
+            r.al = pw.rdat[r.bx];
+            r.al &= r.cl;
+            r.dl |= r.al;
+            pw.rdat[r.bx] = r.dl;
+            opnset44();
+            return null;
+        }
+
+        private Func<object> rhyvs_sft()
+        {
+            if (pw.board2 != 0)
+            {
+                r.al = (byte)pw.md[r.si++].dat;
+                r.bx = 0xffff;//offset rdat-1
+                r.dh = r.al;
+                r.ah = 0;
+                r.bx += r.ax;
+                r.al = 0x18 - 1;
+                r.al = pw.rdat[r.bx];
+                r.al &= 0b0001_1111;
+                r.dl = r.al;
+
+                r.al = (byte)pw.md[r.si++].dat;
+                r.al += r.dl;
+                if (r.al < 32)
+                    goto rvss00;
+                if ((r.al & 0x80) != 0)
+                    goto rvss01;
+                r.al = 31;
+                goto rvss00;
+            rvss01:;
+                r.al = 0;
+            rvss00:;
+                r.al &= 0b0001_1111;
+                r.dl = r.al;
+                r.al = pw.rdat[r.bx];
+                r.al &= 0b1110_0000;
+                r.dl |= r.al;
+                pw.rdat[r.bx] = r.dl;
+                opnset44();
+                return null;
+            }
+            else
+            {
+                r.si+=2;
+                return null;
+            }
+        }
+
+
+
+        //4133-4151
+        //;==============================================================================
+        //;	"\p?" COMMAND
+        //;==============================================================================
+        private Func<object> rpnset()
+        {
+            if (pw.board2 != 0)
+            {
+                r.al = (byte)pw.md[r.si++].dat;
+                r.ah = r.al;
+                r.cl = 0x1f;
+                r.ah &= 3;
+                r.ah = r.ror(r.ah, 1);
+                r.ah = r.ror(r.ah, 1);
+                r.dl = r.ah;
+                return rs002();
+            }
+            else
+            {
+                r.si++;
+                return null;
+            }
+        }
+
+
+
+        //4152-4168
+        //;==============================================================================
+        //;	"\Vn" COMMAND
+        //;==============================================================================
+        private Func<object> rmsvs()
+        {
+            if (pw.board2 != 0)
+            {
+                r.al = (byte)pw.md[r.si++].dat;
+                r.dl = r.al;
+                r.al = pw.rhythm_voldown;
+                if (r.al != 0)
+                {
+                    r.al = (byte)-r.al;
+                    r.ax = (ushort)(r.al * r.dl);
+                    r.dl = r.ah;
+                }
+                volset2r();
+            }
+            else
+            {
+                r.si++;
+            }
+
+            return null;
+        }
+
+        private void volset2r()
+        {
+            pw.rhyvol = r.dl;
+            volset2rf();
+        }
+
         //4169-4181
         private void volset2rf()
         {
@@ -5252,9 +5743,37 @@ namespace PMDDotNET.Driver
             vs2r_000:;
                 opnset44();
             }
+        }
+
+
+
+        //4184-4204
+        private Func<object> rmsvs_sft()
+        {
+            if (pw.board2 != 0)
+            {
+                r.dh = 0x11;
+                r.al = (byte)pw.md[r.si++].dat;
+                r.dl = r.al;
+                r.al = pw.rhyvol;
+                r.al += r.dl;
+                if (r.al < 64)
+                    goto rmss00;
+                if ((r.al & 0x80) != 0)
+                    goto rmss01;
+                r.al = 63;
+                goto rmss00;
+            rmss01:;
+                r.al = 0;
+            rmss00:;
+                r.dl = r.al;
+                volset2r();
+                return null;
+            }
             else
             {
-                r.si++;                
+                r.si++;
+                    return null;
             }
         }
 
@@ -5312,7 +5831,7 @@ namespace PMDDotNET.Driver
         //;
         shiftplus:;
             r.bl += r.dl;
-        spm1:;
+        //spm1:;
             do
             {
                 if (r.bl < 0xc)
@@ -6212,7 +6731,7 @@ namespace PMDDotNET.Driver
         {
             if (pw.partWk[r.di].onkai != 0xff) //-1
                 goto ko1;
-            keyon_ret:;
+            //keyon_ret:;
             return;//; ｷｭｳﾌ ﾉ ﾄｷ
         ko1:;
             r.dh = 0x28;
@@ -6693,7 +7212,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void lfo()
         {
-        lfop:;
+        //lfop:;
             if (pw.partWk[r.di].delay == 0)
                 goto lfo1;
             pw.partWk[r.di].delay--;//; cy=0
@@ -6957,10 +7476,10 @@ namespace PMDDotNET.Driver
 
             r.ax = (ushort)(r.ax * pw.seed);
             r.ax += 3;
-            r.ax = 32767;//0x7fff
+            r.ax &= 32767;//0x7fff
 
             pw.seed = r.ax;
-            int ans = (ushort)(r.ax * r.cx);
+            int ans = (r.ax * r.cx);
             r.cx = 32767;
             r.ax = (ushort)(ans / r.cx);
             r.dx = (ushort)(ans % r.cx);
@@ -7360,7 +7879,7 @@ namespace PMDDotNET.Driver
 
         private void esm_sub()
         {
-        esm_ar_check:;
+        //esm_ar_check:;
             r.ah--;
             if (r.ah != 0)
                 goto esm_dr_check;
@@ -7962,6 +8481,60 @@ namespace PMDDotNET.Driver
 
 
 
+        //6738-6789
+        //;==============================================================================
+        //;	メモ文字列の取り出し
+        //;==============================================================================
+        public ushort get_memo(int al)
+        {
+            r.al = (byte)al;
+            r.si = (ushort)pw.mmlbuf;
+            if (pw.md[r.si].dat != 0x1a)
+                goto getmemo_errret;//;音色がないfile=メモのアドレス取得不能
+            r.si += 0x18;
+            r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+            r.si +=(ushort)pw.mmlbuf;
+            r.si -= 4;
+            r.bx= (ushort)(pw.md[r.si+2].dat + pw.md[r.si + 3].dat * 0x100);//;bh=0feh,bl=ver
+            if (r.bl == 0x40)//;Ver4.0 & 00Hの場合
+                goto getmemo_exec;
+            if (r.bh != 0xfe)
+                goto getmemo_errret;//;Ver.4.1以降は 0feh
+            if (r.bl < 0x41)
+                goto getmemo_errret;//;MC version 4.1以前だったらError
+            getmemo_exec:;
+            if (r.bl < 0x42)//;Ver.4.2以降か？
+                goto getmemo_oldver41;
+            r.al++;//; ならalを +1 (0FFHで#PPSFile)
+        getmemo_oldver41:;
+            if (r.bl < 0x48)//;Ver.4.8以降か？
+                goto getmemo_oldver47;
+            r.al++;//; ならalを +1 (0FEHで#PPZFile)
+        getmemo_oldver47:;
+            r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+            r.si += (ushort)pw.mmlbuf;
+            r.al++;
+        getmemo_loop:;
+            r.dx = (ushort)(pw.md[r.si + 0].dat + pw.md[r.si + 1].dat * 0x100);
+            if (r.dx == 0)
+                goto getmemo_errret;
+            r.si += 2;
+            r.al--;
+            if (r.al != 0)
+                goto getmemo_loop;
+            getmemo_exit:;
+            r.dx += (ushort)pw.mmlbuf;
+            pw.ds_push = 0;// r.cs; セグメントなし
+            pw.dx_push = r.dx;
+            return r.dx;
+
+        getmemo_errret:;
+            pw.ds_push = 0;
+            pw.dx_push = 0;
+            return 0;
+        }
+
+
         //6790-6819
         //;==============================================================================
         //;	曲の頭だし
@@ -8248,7 +8821,7 @@ namespace PMDDotNET.Driver
                 r.ah--;
                 if (r.ah == 0) goto pm_ppz;
             }
-        pm_ret:;
+        //pm_ret:;
             return;
 
         pm_fm1:;
@@ -8401,7 +8974,7 @@ namespace PMDDotNET.Driver
                 if (r.ah == 0) goto po_fm2;//;音色設定処理
             }
 
-        po_ret:;
+        //po_ret:;
             return;
 
         po_fm1:;
@@ -8958,48 +9531,52 @@ namespace PMDDotNET.Driver
 
             pw.fm_voldown = (byte)pw.fmvd_init;//; FM_VOLDOWN
             pw._fm_voldown = (byte)pw.fmvd_init;//; FM_VOLDOWN
-            pw.ssg_voldown    =r.al;//; SSG_VOLDOWN
-            pw._ssg_voldown   =r.al;//; SSG_VOLDOWN
-            pw.pcm_voldown    =r.al;//; PCM_VOLDOWN
-            pw._pcm_voldown   =r.al;//; PCM_VOLDOWN
-            pw.ppz_voldown    =r.al;//; PPZ_VOLDOWN
-            pw._ppz_voldown   =r.al;//; PPZ_VOLDOWN
-            pw.rhythm_voldown =r.al;//; RHYTHM_VOLDOWN
-            pw._rhythm_voldown=r.al;//; RHYTHM_VOLDOWN
-            pw.kp_rhythm_flag =0xff;//; SSGDRUMでRHYTHM音源を鳴らすか FLAG
+            pw.ssg_voldown = r.al;//; SSG_VOLDOWN
+            pw._ssg_voldown = r.al;//; SSG_VOLDOWN
+            pw.pcm_voldown = r.al;//; PCM_VOLDOWN
+            pw._pcm_voldown = r.al;//; PCM_VOLDOWN
+            pw.ppz_voldown = r.al;//; PPZ_VOLDOWN
+            pw._ppz_voldown = r.al;//; PPZ_VOLDOWN
+            pw.rhythm_voldown = r.al;//; RHYTHM_VOLDOWN
+            pw._rhythm_voldown = r.al;//; RHYTHM_VOLDOWN
+            pw.kp_rhythm_flag = 0xff;//; SSGDRUMでRHYTHM音源を鳴らすか FLAG
 
             r.di = 0;//offset rshot_bd
-            pw.rshot_bd = 0;
-            pw.rshot_sd = 0;
-            pw.rshot_sym = 0;
-            pw.rshot_hh = 0;
-            pw.rshot_tom = 0;
-            pw.rshot_rim = 0;
+            pw.rshot[0] = 0;// _bd = 0;
+            pw.rshot[1] = 0;// _sd = 0;
+            pw.rshot[2] = 0;// _sym = 0;
+            pw.rshot[3] = 0;// _hh = 0;
+            pw.rshot[4] = 0;// _tom = 0;
+            pw.rshot[5] = 0;// _rim = 0;
 
-            //mov di, offset part1
-            //mov cx,max_part1* type qq
-            //rep stosb
+            r.di = (ushort)pw.part1;//offset part1
+            r.cx = (ushort)pw.max_part1;
+            do
+            {
+                pw.partWk[r.di++].Clear();
+                r.cx--;
+            } while (r.cx != 0);
 
-            pw.disint        =r.al;//; INT Disable FLAG
-            pw.rescut_cant   =r.al;//; 常駐解除禁止 FLAG
-            pw.adpcm_wait    =r.al;//; ADPCM定義速度
-            pw.pcm86_vol     =r.al;//; PCM音量合わせ
-            pw._pcm86_vol    =r.al;//; PCM音量合わせ
-            pw.fade_stop_flag=1;//; FADEOUT後MSTOPするか FLAG
-            pw.ppsdrv_flag   =0xff;//; PPSDRV FLAG
+            pw.disint = r.al;//; INT Disable FLAG
+            pw.rescut_cant = r.al;//; 常駐解除禁止 FLAG
+            pw.adpcm_wait = r.al;//; ADPCM定義速度
+            pw.pcm86_vol = r.al;//; PCM音量合わせ
+            pw._pcm86_vol = r.al;//; PCM音量合わせ
+            pw.fade_stop_flag = 1;//; FADEOUT後MSTOPするか FLAG
+            pw.ppsdrv_flag = 0xff;//; PPSDRV FLAG
 
             if (pw.va != 0)
             {
-                pw.grph_sp_key=0x80;// GRPH + CTRL key code
-                pw.rew_sp_key =0x40;// GPPH + SHIFTkey code
-                pw.esc_sp_key =0x80;// ESC + CTRL key code
+                pw.grph_sp_key = 0x80;// GRPH + CTRL key code
+                pw.rew_sp_key = 0x40;// GPPH + SHIFTkey code
+                pw.esc_sp_key = 0x80;// ESC + CTRL key code
             }
             else
             {
-                pw.grph_sp_key=0x10;// GRPH + CTRL key code
-                pw.rew_sp_key =0x1;// GPPH + SHIFTkey code
-                pw.esc_sp_key =0x10;// ESC + CTRL key code
-                pw.port_sel   =0xff;// ポート選択 = 自動
+                pw.grph_sp_key = 0x10;// GRPH + CTRL key code
+                pw.rew_sp_key = 0x1;// GPPH + SHIFTkey code
+                pw.esc_sp_key = 0x10;// ESC + CTRL key code
+                pw.port_sel = 0xff;// ポート選択 = 自動
             }
             pw.ff_tempo = 250;
             pw.music_flag = r.al;
@@ -9049,7 +9626,263 @@ namespace PMDDotNET.Driver
             r.ax += r.bx;
             pw.efcdat = r.ax;
 
+            Random rnd = new System.Random();
+            pw.seed = (ushort)rnd.Next(0, 0xffff);
+
+            //;==============================================================================
+            //; 効果音 / FMINT / EFCINTを初期化
+            //;==============================================================================
+            r.ax = 0;
+            pw.fmint_seg = r.ax;
+            pw.fmint_ofs = r.ax;
+            pw.efcint_seg = r.ax;
+            pw.efcint_ofs = r.ax;
+            pw.intfook_flag = r.al;
+            pw.skip_flag = r.al;
+            pw.effon = r.al;
+            pw.fm_effec_flag = r.al;
+            pw.pcmflag = r.al;
+
+            r.al--;
+
+            pw.psgefcnum = r.al;
+            pw.fm_effec_num = r.al;
+            pw.pcm_effec_num = r.al;
+
+            //;==============================================================================
+            //; 割り込み設定
+            //;==============================================================================
+            if (pw.board == 0) goto not_set_opnvec;
+
+            //;==============================================================================
+            //; OPN 初期化
+            //;==============================================================================
+            int_init();
+
+            //; ------------------------------------------------------------------------------
+            //; 088 / 188 / 288 / 388(同INT番号のみ) を初期設定
+            //; ------------------------------------------------------------------------------
+            if (pw.va != 0)
+            {
+                r.ax = 0x2900;
+                opnset44();
+                r.ax = 0x2400;
+                opnset44();
+                r.ax = 0x2500;
+                opnset44();
+                r.ax = 0x2600;
+                opnset44();
+                r.ax = 0x273f;
+                opnset44();
+            }
+            else
+            {
+                r.cx = 4;
+                r.dx = 0x88;
+
+                r.cx = 1;//KUMA:0x188のみ
+                r.dx = 0x188;//KUMA:0x188のみ
+
+            //opninit_loop:;
+                do
+                {
+                    r.stack.Push(r.cx);
+                    r.ah = 0xff;//-1
+                    r.cx = 256;
+
+                //opninit_loop2:;
+                    do
+                    {
+                        r.al = pc98.InPort(r.dx);
+                        r.ah &= r.al;
+                        if ((r.ah & 0x80) == 0)
+                            goto opninit_exec;
+                        r.cx--;
+                    } while (r.cx != 0);
+                    goto opninit_next;// ; 音源無し
+
+                opninit_exec:;
+                    //pushf
+                    //cli
+
+                    rdychk();
+                    r.al = 0xe;
+                    pc98.OutPort(r.dx, r.al);
+                    r.cx = 256;
+                    do { r.cx--; } while (r.cx != 0);
+                    r.dx += 2;
+                    r.al = pc98.InPort(r.dx);
+
+                    //popf
+
+                    r.dx -= 2;
+                    r.al &= 0xc0;
+                    if (r.al != pw.opn_0eh)//; int番号を比較
+                        goto opninit_next;// ; 非一致なら初期化しない
+
+                    r.ax = 0x2900;
+                    opnset_fmc();
+                    r.ax = 0x2400;
+                    opnset_fmc();
+                    r.ax = 0x2500;
+                    opnset_fmc();
+                    r.ax = 0x2600;
+                    opnset_fmc();
+                    r.ax = 0x273f;
+                    opnset_fmc();
+
+                opninit_next:;
+                    r.cx = r.stack.Pop();
+                    r.dh++;
+
+                    r.cx--;
+                } while (r.cx != 0);
+            }
+
+            //;==============================================================================
+            //; ＯＰＮ 割り込みベクトル 退避
+            //;==============================================================================
+            //  cli
+            r.ax = 0;
+            //r.es = r.ax;
+            //r.bx = pw.vector;
+            r.bx = 0;//les bx, es:[bx]
+            pw.int5ofs = r.bx;
+            pw.int5seg = 0;// r.es;
+
+            //;==============================================================================
+            //; ＯＰＮ 割り込みベクトル 設定
+            //;==============================================================================
+            //r.es = r.ax;
+            //r.bx = pw.vector;
+            //es:[bx] = 0;//offset opnint
+            //es:[bx+2] = r.cs;
+        not_set_opnvec:;
+
+            //;==============================================================================
+            //; INT60 割り込みベクトル 退避
+            //;==============================================================================
+            //cli
+            r.ax = 0;
+            //r.es = r.ax;
+            //r.bx = es:[pmdvector*4];
+            pw.int60ofs = r.bx;
+            pw.int60seg = 0;// r.es;
+
+            //;==============================================================================
+            //; INT60 割り込みベクトル 設定
+            //;==============================================================================
+            //r.es = r.ax;
+            //es:[pmdvector*4] = 0;//offset int60_head
+            //es:[pmdvector*4 + 2] = r.cs;
+
+            //;==============================================================================
+            //; ＯＰＮ割り込み開始
+            //;==============================================================================
+            opnint_start();
+            //sti
         }
+
+
+
+        //8896-
+        private void int_init()
+        {
+            //不要?
+        }
+
+        //9133-9166
+        //;==============================================================================
+        //;	ＯＰＮ割り込み許可処理
+        //;==============================================================================
+        private void opnint_start()
+        {
+            if (pw.board == 0)
+                goto not_opnint_start;// ; ボードがない
+
+            //r.ax = r.cs;
+            //r.es = r.ax;
+            r.di = (ushort)pw.part1;
+            r.cx = (ushort)pw.max_part1;//max_part1*type qq
+            r.al = 0;
+            do
+            {
+                pw.partWk[r.di++].Clear();
+                r.cx--;
+            } while (r.cx != 0); //; Partwork All Reset
+
+            r.al--;
+            pw.rhythmmask = 255;//; Rhythm Mask解除
+            pw.rhydmy = r.al;//	;R part Dummy用
+            pw.rd = pw.rdDmy;
+            data_init();
+            opn_init();
+            r.dx = 0x07bf;//;07hPort Init
+            opnset44();
+            mstop();
+            setint();
+            r.al = (byte)pw.int_level;
+            intset();
+            if (pw.va != 0)
+            {
+                r.al = pc98.InPort(0x32);
+                //jmp $+2
+                r.al &= 0x7f;
+                pc98.OutPort(0x32, r.al);
+            }
+            r.dx = 0x2983;
+            opnset44();
+        not_opnint_start:;
+            return;
+        }
+
+
+
+        //9167-9189
+        //;==============================================================================
+        //;	OPN out for 088/188/288/388 INIT用
+        //;		input ah  reg
+        //;			al data
+        //; dx port
+        //;==============================================================================
+        private void opnset_fmc()
+        {
+            if (pw.va == 0)
+            {
+                //pushf
+                //cli
+
+                r.cx = 256;
+                do { r.cx--; } while (r.cx != 0);
+
+                byte a = r.ah;
+                r.ah = r.al;
+                r.al = a;
+                pc98.OutPort(r.dx, r.al);
+
+                r.cx = 256;
+                do { r.cx--; } while (r.cx != 0);
+
+                r.dx += 2;
+                a = r.ah;
+                r.ah = r.al;
+                r.al = a;
+                pc98.OutPort(r.dx, r.al);
+
+                r.dx -= 2;
+                //popf
+                //ret
+            }
+        }
+
+
+
+        //9856-9894
+        private void intset()
+        {
+            //不要?
+        }
+
 
     }
 }
