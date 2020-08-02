@@ -75,6 +75,8 @@ namespace PMDDotNET.Driver
 
         public bool sign { get; internal set; }
 
+        public bool zero { get; internal set; }
+
         public Stack<ushort> stack = new Stack<ushort>();
 
         public object lockobj = new object();

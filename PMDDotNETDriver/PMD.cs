@@ -40,7 +40,7 @@ namespace PMDDotNET.Driver
             ppz = new PPZDRV();
             pcmdrv86 = new PCMDRV86();
             ppsdrv = new PPSDRV();
-            efcdrv = new EFCDRV();
+            efcdrv = new EFCDRV(this, pw, r, ppsdrv);
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -8257,7 +8257,7 @@ namespace PMDDotNET.Driver
         //;
         //;	表
         //;
-        private void opnset44()
+        public void opnset44()
         {
             r.stack.Push(r.ax);
             r.stack.Push(r.dx);
@@ -8355,7 +8355,7 @@ namespace PMDDotNET.Driver
         //;	READ PSG 07H Port
         //; cliしてから来ること
         //;==============================================================================
-        private void get07()
+        public void get07()
         {
             r.stack.Push(r.dx);
             r.dx = (ushort)pw.fm1_port1;
@@ -9789,7 +9789,124 @@ namespace PMDDotNET.Driver
         private void int_init()
         {
             //不要?
+
+            pps_chk();
         }
+
+
+
+        //8970-9029
+        //;------------------------------------------------------------------------------
+        //;	ppsdrv/ppz8常駐CHECK
+        //;------------------------------------------------------------------------------
+        private void pps_chk()
+        {
+            if (pw.ppsdrv_flag == 0xff)
+                goto pps_check;
+
+            if (pw.kp_rhythm_flag != 0xff)
+                goto ppschk_exit;
+
+            r.al = pw.ppsdrv_flag;
+            r.al ^= 1;
+            pw.kp_rhythm_flag = r.al;
+            goto ppschk_exit;
+
+        pps_check:;
+            ppsdrv_check();
+            if (r.carry) goto ppschk_01;
+
+            pw.ppsdrv_flag = 1;
+            if (pw.kp_rhythm_flag != 0xff)
+                goto ppschk_exit;
+
+            pw.kp_rhythm_flag = 0;
+            goto ppschk_exit;
+
+        ppschk_01:;
+            pw.ppsdrv_flag = 0;
+            if (pw.kp_rhythm_flag != 0xff)
+                goto ppschk_exit;
+
+            pw.kp_rhythm_flag = 1;
+            goto ppschk_exit;
+
+        ppschk_exit:;
+            if (pw.message_flag == 0)
+                goto ppschk_end;
+            if (pw.ppsdrv_flag != 1)
+                goto ppschk_end;
+            print_mes(pw.mes_ppsdrv);
+
+        ppschk_end:;
+
+            if (pw.ppz != 0)
+            {
+                ppz8_check();
+                if (r.carry) goto ppzchk_end;
+                pw.ppz_call_seg = 1;
+                r.ax = 0x410;
+                ppz.intrpt();//int ppz_vec
+                r.ah = (byte)pw.int_level;
+                r.ah += 8;
+                if (r.al != r.ah)
+                    goto ppzchk_next;
+                //push es
+                r.ax = 0x409;
+                ppz.intrpt();//int ppz_vec
+                r.ax = 0;// r.es;
+                         // pop es
+                pw.ppz_call_ofs = r.bx;
+                pw.ppz_call_seg = r.ax;
+            ppzchk_next:;
+                r.ax = 0x1901;
+                ppz.intrpt();//int ppz_vec; 常駐解除禁止
+                if (pw.message_flag == 0)
+                {
+                    mask_eoi_set();
+                    return;
+                }
+                print_mes(pw.mes_ppz8);
+                ppzchk_end:;
+            }
+        }
+
+
+        //9030-9079
+        //;------------------------------------------------------------------------------
+        //;	MASK/EOIの出力先の設定
+        //;------------------------------------------------------------------------------
+        private void mask_eoi_set()
+        {
+            //なにもしない
+        }
+
+
+
+        //9080-9105
+        //;==============================================================================
+        //;	ppsdrv常駐CHECK
+        //;==============================================================================
+        private void ppsdrv_check()
+        {
+            r.carry = !pw.usePPSDRV;//PPSDRV常駐しています！(TBD)
+        }
+
+
+
+        //9106-9132
+        //;==============================================================================
+        //;	ppz8常駐CHECK
+        //;==============================================================================
+        private void ppz8_check()
+        {
+            if (pw.ppz != 0)
+            {
+                r.carry = false;//PPZ8常駐しています！(TBD)
+            }
+        }
+
+
 
         //9133-9166
         //;==============================================================================

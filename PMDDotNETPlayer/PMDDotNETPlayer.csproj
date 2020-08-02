@@ -64,7 +64,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="c86ctl.ini" />
+    <None Include="c86ctl.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="scci.ini" />
   </ItemGroup>
@@ -79,10 +81,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="c86ctl.dll" />
+    <Content Include="c86ctl.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="lib\MDSound.dll" />
     <Content Include="lib\RealChipCtlWrap.dll" />
     <Content Include="lib\scci.dll" />
+    <Content Include="scci.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="scciconfig.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

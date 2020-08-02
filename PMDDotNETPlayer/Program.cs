@@ -117,8 +117,29 @@ namespace PMDDotNET.Player
                     Volume = 0,
                     Option = new object[] { GetApplicationFolder() }
                 };
+
                 mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip });
 
+                bool isNRM = true; //-23ボードか
+
+                //fmgen向け設定
+                if (isNRM)
+                {
+                    //PC98のOPN(-23)を想定
+                    mds.SetVolumeYM2608FM(12);//98は88よりFMが大きい
+                    mds.SetVolumeYM2608PSG(-17);
+                }
+                else
+                {
+                    //OPNA(-86/SPB)を想定
+                    mds.SetVolumeYM2608FM(0);
+                    mds.SetVolumeYM2608PSG(-17);
+                }
+
+                if (device == 1)//GIMICのときは31
+                {
+                    rsc.setSSGVolume(31);
+                }
 #if NETCOREAPP
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 #endif
@@ -127,7 +148,7 @@ namespace PMDDotNET.Player
                     args[fnIndex]
                     , OPNAWrite
                     , OPNAWaitSend
-                    , false
+                    , isNRM //notSB2
                     , false//isLoadADPCM
                     , false//loadADPCMOnly
                     );
@@ -160,7 +181,7 @@ namespace PMDDotNET.Player
                         break;
                 }
 
-                Log.WriteLine(LogLevel.INFO, "終了する場合は何かキーを押してください");
+                Log.WriteLine(LogLevel.INFO, "終了する場合は何かキーを押してください(実chip時は特に。)");
 
                 while (true)
                 {
@@ -325,11 +346,18 @@ namespace PMDDotNET.Player
             {
                 case 1://GIMIC存在チェック
                     nc86ctl = new Nc86ctl.Nc86ctl();
-                    nc86ctl.initialize();
-                    iCount = nc86ctl.getNumberOfChip();
+                    try
+                    {
+                        nc86ctl.initialize();
+                        iCount = nc86ctl.getNumberOfChip();
+                    }
+                    catch
+                    {
+                        iCount = 0;
+                    }
                     if (iCount == 0)
                     {
-                        nc86ctl.deinitialize();
+                        try { nc86ctl.deinitialize(); } catch { }
                         nc86ctl = null;
                         Log.WriteLine(LogLevel.ERROR, "Not found G.I.M.I.C.");
                         device = 0;
@@ -509,7 +537,7 @@ namespace PMDDotNET.Player
             }
 
 #if DEBUG
-            if (dat.address == 0x28)
+            if (dat.address == 0x4c)
                 Log.WriteLine(LogLevel.TRACE, string.Format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data, dat.port));
 #endif
 
