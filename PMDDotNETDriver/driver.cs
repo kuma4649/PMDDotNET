@@ -18,6 +18,8 @@ namespace PMDDotNET.Driver
         private Action<ChipDatum> WriteOPNA;
         private Action<long, int> WaitSendOPNA;
         private object lockObjWriteReg = new object();
+        static MmlDatum[] srcBuf = null;
+
 
         public Driver(iEncoding enc = null)
         {
@@ -135,13 +137,22 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
-        public void Init(string fileName, Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, bool notSoundBoard2, bool isLoadADPCM, bool loadADPCMOnly, Func<string, Stream> appendFileReaderCallback = null)
+        public void Init(string fileName, Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, MmlDatum[] srcBuf, object addtionalOption)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Init(
+            string fileName,
+            Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
+            PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
+            Func<string, Stream> appendFileReaderCallback = null)
         {
             if (Path.GetExtension(fileName).ToLower() != ".xml")
             {
                 byte[] srcBuf = File.ReadAllBytes(fileName);
                 if (srcBuf == null || srcBuf.Length < 1) return;
-                Init(opnaWrite, opnaWaitSend, notSoundBoard2, srcBuf, isLoadADPCM, loadADPCMOnly, appendFileReaderCallback ?? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)));
+                Init(srcBuf, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback ?? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)));
             }
             else
             {
@@ -149,39 +160,37 @@ namespace PMDDotNET.Driver
                 using (StreamReader sr = new StreamReader(fileName, new UTF8Encoding(false)))
                 {
                     MmlDatum[] s = (MmlDatum[])serializer.Deserialize(sr);
-                    Init(opnaWrite, opnaWaitSend, s, new object[] { notSoundBoard2, isLoadADPCM, loadADPCMOnly }, appendFileReaderCallback);
+                    Init(s, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback);
                 }
 
             }
         }
 
-        public void Init(Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, bool notSoundBoard2, byte[] srcBuf, bool isLoadADPCM, bool loadADPCMOnly, Func<string, Stream> appendFileReaderCallback)
+        public void Init(
+            byte[] srcBuf,
+            Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
+            PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
+            Func<string, Stream> appendFileReaderCallback)
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
             List<MmlDatum> bl = new List<MmlDatum>();
             foreach (byte b in srcBuf) bl.Add(new MmlDatum(b));
-            Init(opnaWrite, opnaWaitSend, bl.ToArray(), new object[] { notSoundBoard2, isLoadADPCM, loadADPCMOnly }, appendFileReaderCallback);
+            Init(bl.ToArray(), opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback);
         }
 
-        public void Init(string fileName, Action<ChipDatum> chipWriteRegister, Action<long, int> chipWaitSend, MmlDatum[] srcBuf, object addtionalOption)
-        {
-            throw new NotImplementedException();
-        }
-
-        static MmlDatum[] srcBuf = null;
-
-        public void Init(Action<ChipDatum> chipWriteRegister, Action<long, int> chipWaitSend, MmlDatum[] srcBuf, object addtionalOption, Func<string, Stream> appendFileReaderCallback)
+        public void Init(
+            MmlDatum[] srcBuf,
+            Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
+            PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
+            Func<string, Stream> appendFileReaderCallback)
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
 
             Driver.srcBuf = srcBuf;
-            bool notSoundBoard2 = (bool)((object[])addtionalOption)[0];
-            bool isLoadADPCM = (bool)((object[])addtionalOption)[1];
-            bool loadADPCMOnly = (bool)((object[])addtionalOption)[2];
 
-            WriteOPNA = chipWriteRegister;
-            WaitSendOPNA = chipWaitSend;
-            work = new PW(!notSoundBoard2, false);
+            WriteOPNA = opnaWrite;
+            WaitSendOPNA = opnaWaitSend;
+            work = new PW(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
             pmd = new PMD(srcBuf, WriteRegister, work);
 
@@ -189,14 +198,14 @@ namespace PMDDotNET.Driver
 
         public void MusicSTART(int musicNumber)
         {
-            Log.WriteLine(LogLevel.INFO, "演奏開始");
+            Log.WriteLine(LogLevel.DEBUG, "演奏開始");
             pmd.int60_main(0);
             work.Status = 1;
         }
 
         public void MusicSTOP()
         {
-            Log.WriteLine(LogLevel.INFO, "演奏停止");
+            Log.WriteLine(LogLevel.DEBUG, "演奏停止");
             pmd.int60_main(0x0100);
             work.Status = 0;
         }
@@ -300,7 +309,6 @@ namespace PMDDotNET.Driver
                 return null;
             };
         }
-
 
     }
 }

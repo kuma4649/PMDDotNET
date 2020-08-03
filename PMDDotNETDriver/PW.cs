@@ -28,7 +28,7 @@ namespace PMDDotNET.Driver
         public bool usePPSDRV = false;
         public OPNATimer timer = null;
         public ulong timeCounter = 0L;
-
+        public string[] pmdOption = null;
 
 
 
@@ -826,11 +826,14 @@ namespace PMDDotNET.Driver
 
 
 
-        public PW(bool isSB2, bool usePPZ)
+        public PW(PMDDotNETOption dop,string[] op)
         {
             board = 1;
-            board2 = isSB2 ? 1 : 0;
-            ppz = usePPZ ? 1 : 0;
+            board2 = dop.isNRM ? 0 : 1;
+            va = dop.isVA ? 1 : 0;
+            usePPSDRV = dop.usePPS;
+            ppz = dop.usePPZ ? 1 : 0;
+            pmdOption = op;
 
             fmvd_init = (va + board2 != 0) ? 0 : 16;
 

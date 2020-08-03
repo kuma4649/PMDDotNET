@@ -5,6 +5,7 @@ using System.Net.Cache;
 using System.Resources;
 using System.Text;
 using musicDriverInterface;
+using PMDDotNET.Common;
 
 //;==============================================================================
 //;	Professional Music Driver[P.M.D.] version 4.8
@@ -9592,7 +9593,8 @@ namespace PMDDotNET.Driver
             //; オプションを取り込む
             //;==============================================================================
 
-            //TBD
+            //TBD "PMDOPT=" 検索
+            set_option();
 
             //;==============================================================================
             //; vmapエリアに"PMD"文字列書込み
@@ -9998,6 +10000,75 @@ namespace PMDDotNET.Driver
         private void intset()
         {
             //不要?
+        }
+
+
+
+        //9982-10003
+        //;==============================================================================
+        //;	/D? option
+        //;==============================================================================
+        private void fmvd_set(string op)
+        {
+            char c = op[0];
+            int n = 0;
+            if(!int.TryParse(op.Substring(1),out n))
+            {
+                throw new PmdException("/D オプションの解析に失敗しました");
+            }
+            switch(c)
+            {
+                case 'S':// DS option
+                    pw.ssg_voldown = (byte)n;
+                    pw._ssg_voldown = (byte)n;
+                    break;
+                case 'P':
+                    pw.pcm_voldown = (byte)n;
+                    pw._pcm_voldown = (byte)n;
+                    break;
+                case 'R':
+                    pw.rhythm_voldown = (byte)n;
+                    pw._rhythm_voldown = (byte)n;
+                    break;
+                case 'Z':
+                    pw.ppz_voldown = (byte)n;
+                    pw._ppz_voldown = (byte)n;
+                    break;
+                case 'F':// DF option
+                    pw.fm_voldown = (byte)n;
+                    pw._fm_voldown = (byte)n;
+                    break;
+                default:
+                    throw new PmdException("/D オプションの解析に失敗しました");
+            }
+        }
+
+
+
+        //9921-9954
+        //;==============================================================================
+        //;	オプション処理
+        //;		input cs:bx option_data
+        //; ds:si command_line
+        //; es pmd_segment
+        //;==============================================================================
+        private void set_option()
+        {
+            if (pw.pmdOption == null) return;
+            for(int i=0;i<pw.pmdOption.Length;i++)
+            {
+                string op = pw.pmdOption[i].ToUpper();
+                if (string.IsNullOrEmpty(op)) continue;
+                if (op.Length < 1 || (op[0] != '/' && op[0] != '-')) continue;
+
+                char c = op[1];//1文字目
+                switch (c)
+                {
+                    case 'D':
+                        if (op.Length > 2) fmvd_set(op.Substring(2));
+                        break;
+                }
+            }
         }
 
 
