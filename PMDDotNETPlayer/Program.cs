@@ -464,7 +464,7 @@ namespace PMDDotNET.Player
             int n;
             if (int.TryParse(v, out n))
             {
-                VolumeR = new int[] { Math.Min(Math.Max(n, 0), 255) };
+                VolumeR = new int[] { Math.Min(Math.Max(n, 0), 127) };
             }
         }
 
@@ -523,7 +523,7 @@ Welcome to PMDDotNET !
          デフォルト値です。
          エミュレーションによる再生をWindowsの音声デバイスから行います。
        -D=GIMIC
-         G.I.M.I.C.のOPNAモジュールによる再生を行います。モジュールが見つからない場合はEMUと同じ動作になります。
+         G.I.M.I.CのOPNAモジュールによる再生を行います。モジュールが見つからない場合はEMUと同じ動作になります。
        -D=SCCI
          SCCIのOPNAモジュールによる再生を行います。モジュールが見つからない場合はEMUと同じ動作になります。
 
@@ -537,7 +537,7 @@ Welcome to PMDDotNET !
    -B=
      想定する音源ボードを指定します。
      PMDの振る舞いが変わるほか、エミュレーションや実チップに設定するボリューム値も設定します。
-     ボリューム値については後述の-V=にて変更可能です。
+     ボリューム値については後述の-VV=などにて変更可能です。
        -B=NRM|OPN|2203|26
          デフォルト値です。
          ノーマル音源(OPN)を指定します。
@@ -545,41 +545,45 @@ Welcome to PMDDotNET !
            -VV=12,-5,-191,-191
          GIMIC GMC-OPNAの場合
            -VR=31
-         GIMIC GMC-OPNA以外のモジュール又はSCCIの場合(PMDのオプション)(TBD)
-           -DFn -DSn -DRn -DPn -DZn
+         GIMIC GMC-OPNA以外のモジュールの場合(PMDのオプション)
+           -DF12 -DS0
+         SCCIの場合(PMDのオプション)
+           -DF1 -DS0
        -B=86|SPB|86B|OPNA|2608
          拡張音源(OPNA)を指定します。
          以下のオプションが暗黙で指定されます。
            -VV=0,-5,-18,0
          GIMIC GMC-OPNAの場合
            -VR=66
-         GIMIC GMC-OPNA以外のモジュール又はSCCIの場合(PMDのオプション)(TBD)
-           -DFn -DSn -DRn -DPn -DZn
+         GIMIC GMC-OPNA以外のモジュールの場合(PMDのオプション)
+           -DF12 -DS0
+         SCCIの場合(PMDのオプション)(TBD)
+           -DF1 -DS0
        -B=VA_NRM
-         PC-88VAノーマル音源を指定します。
-         以下のオプションが暗黙で指定されます。
+         PC-88VAノーマル音源を指定します。(TBD)
+         以下のオプションが暗黙で指定されます。(TBD)
            -VV=0,0,0,0
-         GIMIC GMC-OPNAの場合
+         GIMIC GMC-OPNAの場合(TBD)
            -VR=31
          GIMIC GMC-OPNA以外のモジュール又はSCCIの場合(PMDのオプション)(TBD)
            -DFn -DSn -DRn -DPn -DZn
        -B=VA_86
-         PC-88VA拡張音源を指定します。
-         以下のオプションが暗黙で指定されます。
+         PC-88VA拡張音源を指定します。(TBD)
+         以下のオプションが暗黙で指定されます。(TBD)
            -VV=0,0,0,0
-         GIMIC GMC-OPNAの場合
+         GIMIC GMC-OPNAの場合(TBD)
            -VR=31
          GIMIC GMC-OPNA以外のモジュール又はSCCIの場合(PMDのオプション)(TBD)
            -DFn -DSn -DRn -DPn -DZn
 
    -VV=n,n,n,n
-     エミュレーションに設定するボリューム値を設定します。
+     エミュレーション向けボリューム値を設定します。
      カンマ区切りでFM,SSG,Rhythm,Adpcmの順に音量を指定します。
      nの指定可能範囲は-191～20です。
 
    -VR=n
-     実チップに設定するボリューム値を設定します。
-     実質、GIMICのOPNAモジュール専用オプションで、SSGの音量を0～255で指定します。
+     実チップ向けボリューム値を設定します。
+     実質、GIMICのOPNAモジュール専用オプションで、SSGの音量を0～127で指定します。
 
    -PPS=n  (TBD)
      PPSDRVを使用するときは1を指定します。0を指定すると使用しません。
@@ -593,7 +597,7 @@ Welcome to PMDDotNET !
 
    [PMD options]
      オリジナルのPMDへ送るオプションを指定します。
-     実際には上記以外のオプションやファイル名を指定すると全てオリジナルのPMDへ指定したものと解釈されます。
+     実際には上記以外のオプションや、ファイル名を指定すると全てオリジナルのPMDへ指定したものと解釈されます。
 
    [file.m]
      .mファイルを指定します。.m2ファイルなどは今のところ未対応です。
@@ -659,7 +663,7 @@ Welcome to PMDDotNET !
                     {
                         try { nc86ctl.deinitialize(); } catch { }
                         nc86ctl = null;
-                        Log.WriteLine(LogLevel.ERROR, "Not found G.I.M.I.C.");
+                        Log.WriteLine(LogLevel.ERROR, "Not found G.I.M.I.C");
                         device = 0;
                         break;
                     }
@@ -693,7 +697,7 @@ Welcome to PMDDotNET !
                     {
                         nc86ctl.deinitialize();
                         nc86ctl = null;
-                        Log.WriteLine(LogLevel.ERROR, "Not found G.I.M.I.C.(OPNA module)");
+                        Log.WriteLine(LogLevel.ERROR, "Not found G.I.M.I.C(OPNA module)");
                         device = 0;
                     }
                     else
