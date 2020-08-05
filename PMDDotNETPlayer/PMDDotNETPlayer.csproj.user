@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-D=gimic -B=86 C:\Users\kuma\Desktop\desire\des_26.m</StartArguments>
+    <StartArguments>-D=gimic -B=spb C:\Users\kuma\Desktop\NAVAO_21\NAVAO_21.m</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>-D=GIMIC C:\Users\kuma\Desktop\desire\des_26.m</StartArguments>

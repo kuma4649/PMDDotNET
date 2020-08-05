@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
 using System.Net.Cache;
 using System.Resources;
@@ -21,11 +22,13 @@ namespace PMDDotNET.Driver
         private x86Register r = null;
         private Pc98 pc98 = null;
         private PPZDRV ppz = null;
+        private PCMDRV pcmdrv = null;
         private PCMDRV86 pcmdrv86 = null;
         private PPSDRV ppsdrv = null;
         private EFCDRV efcdrv = null;
+        public PCMLOAD pcmload = null;
 
-        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw)//,bool isSB2, bool usePPZ)
+        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback)
         {
             this.pw = pw;
             pw.md = mmlData;
@@ -39,9 +42,11 @@ namespace PMDDotNET.Driver
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister);
             ppz = new PPZDRV();
+            pcmdrv = new PCMDRV(this, pw, r, pc98);
             pcmdrv86 = new PCMDRV86();
             ppsdrv = new PPSDRV();
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
+            pcmload = new PCMLOAD(this, pw, r, pc98, appendFileReaderCallback);
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -989,7 +994,14 @@ namespace PMDDotNET.Driver
             if (pw.board2 != 0)
             {
                 r.di = (ushort)pw.part10;//offset part10
-                pcmdrv86.pcmmain();//; ADPCM/PCM(IN "pcmdrv.asm"/"pcmdrv86.asm")
+                if (pw.useP86DRV)
+                {
+                    pcmdrv86.pcmmain();//; ADPCM/PCM(IN "pcmdrv.asm"/"pcmdrv86.asm")
+                }
+                else
+                {
+                    pcmdrv.pcmmain();
+                }
             }
 
 
@@ -1277,14 +1289,14 @@ namespace PMDDotNET.Driver
             //not_lfo:
             if ((r.cl & 0x30) != 0)
             {
-                // pushf
-                //    cli
+                //pushf
+                //cli
                 lfo_change();
                 lfo();
                 if (r.carry)
                 {
                     lfo_change();
-                    //    popf
+                    //popf
                     r.al = pw.partWk[r.di].lfoswi;
                     r.al &= 0x30;
                     pw.lfo_switch |= r.al;
@@ -1319,7 +1331,7 @@ namespace PMDDotNET.Driver
 
 
 
-        private Func<object> mnp_ret()
+        public Func<object> mnp_ret()
         {
             r.al = pw.loop_work;
             r.al &= pw.partWk[r.di].loopcheck;
@@ -1335,7 +1347,7 @@ namespace PMDDotNET.Driver
         //;	Q値の計算
         //;		break	dx
         //;==============================================================================
-        private void calc_q()
+        public void calc_q()
         {
             if (pw.md[r.si].dat == 0xc1) //&&
                 goto cq_sular;
@@ -1464,7 +1476,7 @@ namespace PMDDotNET.Driver
             } while (true);
         }
 
-        private Func<object> fmmnp_3()
+        public Func<object> fmmnp_3()
         {
             pw.partWk[r.di].fnum = 0;//; 休符に設定
             pw.partWk[r.di].onkai = 0xff;//-1
@@ -1484,7 +1496,7 @@ namespace PMDDotNET.Driver
             return fmmnp_4;
         }
 
-        private Func<object> fmmnp_4()
+        public Func<object> fmmnp_4()
         {
             pw.tieflag = 0;
             pw.volpush_flag = 0;
@@ -2120,7 +2132,7 @@ namespace PMDDotNET.Driver
             return command00();
         }
 
-        private Func<object> command00()
+        public Func<object> command00()
         {
             if (r.al < pw.com_end)
             {
@@ -2467,7 +2479,7 @@ namespace PMDDotNET.Driver
 
 
         //2035-2051
-        private Func<object> jump16()
+        public Func<object> jump16()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump16");
@@ -2477,7 +2489,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump6()
+        public Func<object> jump6()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump6");
@@ -2507,7 +2519,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump3()
+        public Func<object> jump3()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump3");
@@ -2517,7 +2529,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump2()
+        public Func<object> jump2()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump2");
@@ -2527,7 +2539,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump1()
+        public Func<object> jump1()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump1");
@@ -2537,7 +2549,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump0()
+        public Func<object> jump0()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump0");
@@ -2551,7 +2563,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	0c0hの追加special命令
         //;==============================================================================
-        private Func<object> special_0c0h()
+        public Func<object> special_0c0h()
         {
             if (r.al < pw.com_end_0c0h)
             {
@@ -3159,7 +3171,7 @@ namespace PMDDotNET.Driver
 
 
         //2510-2524
-        private Func<object> _volmask_set()
+        public Func<object> _volmask_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "_volmask_set");
@@ -3310,7 +3322,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFO Extend Set
         //;==============================================================================
-        private Func<object> lfo_extend()
+        public Func<object> lfo_extend()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "lfo_extend");
@@ -3331,7 +3343,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	Envelope Extend Set
         //;==============================================================================
-        private Func<object> envelope_extend()
+        public Func<object> envelope_extend()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "envelope_extend");
@@ -3353,7 +3365,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFOのWave選択
         //;==============================================================================
-        private Func<object> lfowave_set()
+        public Func<object> lfowave_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "lfowave_set");
@@ -3371,7 +3383,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	PSG Envelope set(Extend)
         //;==============================================================================
-        private Func<object> extend_psgenvset()
+        public Func<object> extend_psgenvset()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "extend_psgenvset");
@@ -3811,7 +3823,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ssg effect
         //;==============================================================================
-        private Func<object> ssg_efct_set()
+        public Func<object> ssg_efct_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "ssg_efct_set");
@@ -3848,7 +3860,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	fm effect
         //;==============================================================================
-        private Func<object> fm_efct_set()
+        public Func<object> fm_efct_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "fm_efct_set");
@@ -3924,7 +3936,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	fadeout
         //;==============================================================================
-        private Func<object> fade_set()
+        public Func<object> fade_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "fade_set");
@@ -3943,7 +3955,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFO depth +- set
         //;==============================================================================
-        private Func<object> mdepth_set()
+        public Func<object> mdepth_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "mdepth_set");
@@ -3961,7 +3973,7 @@ namespace PMDDotNET.Driver
 
 
         //3045-3063
-        private Func<object> mdepth_count()
+        public Func<object> mdepth_count()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "mdepth_count");
@@ -4001,7 +4013,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ポルタメント計算なのね
         //;==============================================================================
-        private void porta_calc()
+        public void porta_calc()
         {
             r.ax = pw.partWk[r.di].porta_num2;
             pw.partWk[r.di].porta_num += r.ax;
@@ -4145,7 +4157,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ＳＴＡＴＵＳに値を出力
         //;==============================================================================
-        private Func<object> status_write()
+        public Func<object> status_write()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "status_write");
@@ -4162,7 +4174,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ＳＴＡＴＵＳに値を加算
         //;==============================================================================
-        private Func<object> status_add()
+        public Func<object> status_add()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "status_add");
@@ -4217,7 +4229,7 @@ namespace PMDDotNET.Driver
             return vo_vset;
         }
 
-        private Func<object> vol_one_up_pcm()
+        public Func<object> vol_one_up_pcm()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "vol_one_up_pcm");
@@ -4243,7 +4255,7 @@ namespace PMDDotNET.Driver
             return vo_vset;
         }
 
-        private Func<object> vol_one_down()
+        public Func<object> vol_one_down()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "vol_one_down");
@@ -4348,7 +4360,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'Z' （小節の長さの変更）
         //;==============================================================================
-        private Func<object> syousetu_lng_set()
+        public Func<object> syousetu_lng_set()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "syousetu_lng_set");
@@ -4432,7 +4444,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'q' [STEP-GATE CHANGE]
         //;==============================================================================
-        private Func<object> comq()
+        public Func<object> comq()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comq");
@@ -4444,7 +4456,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> comq3()
+        public Func<object> comq3()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comq3");
@@ -4455,7 +4467,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> comq4()
+        public Func<object> comq4()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comq4");
@@ -4472,7 +4484,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'Q' [STEP-GATE CHANGE 2]
         //;==============================================================================
-        private Func<object> comq2()
+        public Func<object> comq2()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comq2");
@@ -4490,7 +4502,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'V' [VOLUME CHANGE]
         //;==============================================================================
-        private Func<object> comv()
+        public Func<object> comv()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comv");
@@ -4510,7 +4522,7 @@ namespace PMDDotNET.Driver
         //;	COMMAND 't±' [TEMPO CHANGE 相対1]
         //;	COMMAND 'T±' [TEMPO CHANGE 相対2]
         //;==============================================================================
-        private Func<object> comt()
+        public Func<object> comt()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comt");
@@ -4658,7 +4670,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND '&' [タイ]
         //;==============================================================================
-        private Func<object> comtie()
+        public Func<object> comtie()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comtie");
@@ -4674,7 +4686,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'D' [ﾃﾞﾁｭｰﾝ]
         //;==============================================================================
-        private Func<object> comd()
+        public Func<object> comd()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comd");
@@ -4692,7 +4704,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'DD' [相対ﾃﾞﾁｭｰﾝ]
         //;==============================================================================
-        private Func<object> comdd()
+        public Func<object> comdd()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comdd");
@@ -4710,7 +4722,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND '[' [ﾙｰﾌﾟ ｽﾀｰﾄ]
         //;==============================================================================
-        private Func<object> comstloop()
+        public Func<object> comstloop()
         {
             r.ax = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
             r.si += 2;
@@ -4734,7 +4746,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND	']' [ﾙｰﾌﾟ ｴﾝﾄﾞ]
         //;==============================================================================
-        private Func<object> comedloop()
+        public Func<object> comedloop()
         {
             r.al = (byte)(pw.md[r.si++].dat);
             if (r.al == 0)
@@ -4775,7 +4787,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND	':' [ﾙｰﾌﾟ ﾀﾞｯｼｭﾂ]
         //;==============================================================================
-        private Func<object> comexloop()
+        public Func<object> comexloop()
         {
             r.ax = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
             r.si += 2;
@@ -4808,7 +4820,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND 'L' [ｸﾘｶｴｼ ﾙｰﾌﾟ ｾｯﾄ]
         //;==============================================================================
-        private Func<object> comlopset()
+        public Func<object> comlopset()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comlopset");
@@ -4825,7 +4837,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND '_' [ｵﾝｶｲ ｼﾌﾄ]
         //;==============================================================================
-        private Func<object> comshift()
+        public Func<object> comshift()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comshift");
@@ -4841,7 +4853,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND '__' [相対転調]
         //;==============================================================================
-        private Func<object> comshift2()
+        public Func<object> comshift2()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comshift2");
@@ -4859,7 +4871,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	COMMAND '_M' [Master転調値]
         //;==============================================================================
-        private Func<object> comshift_master()
+        public Func<object> comshift_master()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comshift_master");
@@ -5034,7 +5046,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ＬＦＯ２用処理
         //;==============================================================================
-        private Func<object> _lfoset()
+        public Func<object> _lfoset()
         {
             r.ax = 0;//offset lfoset
             return _lfo_main(lfoset);
@@ -5060,7 +5072,7 @@ namespace PMDDotNET.Driver
 
 
         //3733-3736
-        private Func<object> _mdepth_set()
+        public Func<object> _mdepth_set()
         {
             r.ax = 0;//offset lfoset
             return _lfo_main(mdepth_set);
@@ -5069,7 +5081,7 @@ namespace PMDDotNET.Driver
 
 
         //3737-3740
-        private Func<object> _lfowave_set()
+        public Func<object> _lfowave_set()
         {
             r.ax = 0;//offset lfoset
             return _lfo_main(lfowave_set);
@@ -5078,7 +5090,7 @@ namespace PMDDotNET.Driver
 
 
         //3741-3744
-        private Func<object> _lfo_extend()
+        public Func<object> _lfo_extend()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "_lfo_extend");
@@ -5091,7 +5103,7 @@ namespace PMDDotNET.Driver
 
 
         //3745-3748
-        private Func<object> _lfoset_delay()
+        public Func<object> _lfoset_delay()
         {
             r.ax = 0;//offset lfoset
             return _lfo_main(lfoset_delay);
@@ -5100,7 +5112,7 @@ namespace PMDDotNET.Driver
 
 
         //3749-3761
-        private Func<object> _lfoswitch()
+        public Func<object> _lfoswitch()
         {
             r.al = (byte)pw.md[r.si++].dat;
             r.al &= 7;
@@ -5130,7 +5142,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFO1<->LFO2 change
         //;==============================================================================
-        private void lfo_change()
+        public void lfo_change()
         {
             r.ax = pw.partWk[r.di].lfodat;
             pw.partWk[r.di].lfodat = pw.partWk[r.di]._lfodat;
@@ -5209,7 +5221,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFO ﾊﾟﾗﾒｰﾀ ｾｯﾄ
         //;==============================================================================
-        private Func<object> lfoset()
+        public Func<object> lfoset()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "lfoset");
@@ -5237,7 +5249,7 @@ namespace PMDDotNET.Driver
 
 
         //3827-3832
-        private Func<object> lfoset_delay()
+        public Func<object> lfoset_delay()
         {
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].delay = r.al;
@@ -5252,7 +5264,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	LFO SWITCH
         //;==============================================================================
-        private Func<object> lfoswitch()
+        public Func<object> lfoswitch()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "lfoswitch");
@@ -5288,7 +5300,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	PSG ENVELOPE SET
         //;==============================================================================
-        private Func<object> psgenvset()
+        public Func<object> psgenvset()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "psgenvset");
@@ -5321,7 +5333,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	'y' COMMAND[ｺｲﾂｶﾞ ｲﾁﾊﾞﾝ ｶﾝﾀﾝ]
         //;==============================================================================
-        private Func<object> comy()
+        public Func<object> comy()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comy");
@@ -5501,7 +5513,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	"\?" COMMAND[OPNA Rhythm Keyon / Dump]
         //;==============================================================================
-        private Func<object> rhykey()
+        public Func<object> rhykey()
         {
             if (pw.board2 != 0)
             {
@@ -5589,7 +5601,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	"\v?n" COMMAND
         //;==============================================================================
-        private Func<object> rhyvs()
+        public Func<object> rhyvs()
         {
             if (pw.board2 != 0)
             {
@@ -5627,7 +5639,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> rhyvs_sft()
+        public Func<object> rhyvs_sft()
         {
             if (pw.board2 != 0)
             {
@@ -5674,7 +5686,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	"\p?" COMMAND
         //;==============================================================================
-        private Func<object> rpnset()
+        public Func<object> rpnset()
         {
             if (pw.board2 != 0)
             {
@@ -5700,7 +5712,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	"\Vn" COMMAND
         //;==============================================================================
-        private Func<object> rmsvs()
+        public Func<object> rmsvs()
         {
             if (pw.board2 != 0)
             {
@@ -5749,7 +5761,7 @@ namespace PMDDotNET.Driver
 
 
         //4184-4204
-        private Func<object> rmsvs_sft()
+        public Func<object> rmsvs_sft()
         {
             if (pw.board2 != 0)
             {
@@ -5784,7 +5796,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	SHIFT[di] 分移調する
         //;==============================================================================
-        private void oshift()
+        public void oshift()
         {
             //oshiftp:
             if (r.al == 0xf)//;休符
@@ -7211,7 +7223,7 @@ namespace PMDDotNET.Driver
         //;		Don't Break cl
         //;		output cy = 1    変化があった
         //;==============================================================================
-        private void lfo()
+        public void lfo()
         {
         //lfop:;
             if (pw.partWk[r.di].delay == 0)
@@ -7497,7 +7509,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ＰＳＧ／ＰＣＭ音源用 Entry
         //;==============================================================================
-        private void lfoinitp()
+        public void lfoinitp()
         {
             r.ah = r.al;//; ｷｭｰﾌ ﾉ ﾄｷ ﾊ INIT ｼﾅｲﾖ
             r.ah &= 0xf;
@@ -7752,7 +7764,7 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ＰＳＧ／ＰＣＭのソフトウエアエンベロープ
         //;==============================================================================
-        private void soft_env()
+        public void soft_env()
         {
             if ((pw.partWk[r.di].extendmode & 4) == 0)//; TimerAと合わせるか？
             {
@@ -8288,7 +8300,7 @@ namespace PMDDotNET.Driver
         //;
         //;	裏
         //;
-        private void opnset46()
+        public void opnset46()
         {
             if (pw.board2 != 0)
             {
@@ -8428,14 +8440,14 @@ namespace PMDDotNET.Driver
                 null,//get_musdat_adr,//6
                 null,//get_tondat_adr,//7
                 null,//get_fv,//8
-                null,//drv_chk,//9
+                drv_chk,//9
                 get_status,// A
-                //get_efcdat_adr,//B
-                //fm_effect_on,//C
-                //fm_effect_off,//D
-                //get_pcm_adr,//E
-                //pcm_effect,//F
-                //get_workadr,//10
+                null,//get_efcdat_adr,//B
+                null,//fm_effect_on,//C
+                null,//fm_effect_off,//D
+                get_pcm_adr,//E
+                null,//pcm_effect,//F
+                get_workadr,//10
                 //get_fmefc_num,//11
                 //get_pcmefc_num,//12
                 //set_fm_int,//13
@@ -8472,12 +8484,71 @@ namespace PMDDotNET.Driver
 
 
 
+        //6452-6475
+        private void drv_chk()
+        {
+            if (pw.board2 != 0)
+            {
+                if (pw.ppz != 0)
+                {
+                    if (pw.ademu != 0)
+                    {
+                        pw.al_push = 5;
+                    }
+                    else
+                    {
+                        pw.al_push = 4;
+                    }
+                }
+                else
+                {
+                    if (pw.pcm != 0)
+                    {
+                        pw.al_push = 2;
+                    }
+                    else
+                    {
+                        pw.al_push = 1;
+                    }
+                }
+            }
+            else
+            {
+                pw.al_push = 0;
+            }
+            r.ah = (byte)pw.vers;
+            r.al = (byte)pw.verc;
+            pw.ah_push = r.ah;
+            pw.dx_push = r.ax;
+        }
+
+
         //6476-6481
         private void get_status()
         {
             getst();
             pw.al_push = r.al;
             pw.ah_push = r.ah;
+        }
+
+
+
+        //6482-6487
+        private void get_pcm_adr()
+        {
+            r.ax = 0;// r.cs;
+            pw.ds_push = r.ax;
+            pw.dx_push = 0;//offset pcm_table
+        }
+
+
+
+        //6488-6493
+        private void get_workadr()
+        {
+            r.ax = 0;// r.cs;
+            pw.ds_push = r.ax;
+            pw.dx_push = 0;//offset part_data_table
         }
 
 

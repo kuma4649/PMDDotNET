@@ -11,7 +11,7 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
-        internal void pcmmain()
+        public void pcmmain()
         {
             //throw new NotImplementedException();
         }

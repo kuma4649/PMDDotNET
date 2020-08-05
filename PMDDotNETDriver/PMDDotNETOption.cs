@@ -12,5 +12,6 @@ namespace PMDDotNET.Driver
         public bool isNRM;
         public bool usePPS;
         public bool usePPZ;
+        public bool isSPB;
     }
 }

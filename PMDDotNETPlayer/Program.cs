@@ -54,6 +54,7 @@ namespace PMDDotNET.Player
         private static RSoundChip rsc;
 
         private static bool isNRM = true;
+        private static bool isSPB = true;
         private static bool isVA = false;
         private static bool usePPS = false;
         private static bool usePPZ = false;
@@ -152,6 +153,7 @@ namespace PMDDotNET.Player
                 drv = new Driver.Driver();
                 Driver.PMDDotNETOption dop = new Driver.PMDDotNETOption();
                 dop.isNRM = isNRM;
+                dop.isSPB = isSPB;
                 dop.isVA = isVA;
                 dop.usePPS = usePPS;
                 dop.usePPZ = usePPZ;
@@ -195,8 +197,6 @@ namespace PMDDotNET.Player
                 }
 
                 Log.WriteLine(LogLevel.INFO, "");
-
-                //if (loadADPCMOnly) return 0;
 
                 drv.StartRendering((int)SamplingRate
                     , new Tuple<string, int>[] { new Tuple<string, int>("YM2608", (int)opnaMasterClock) });
@@ -305,7 +305,7 @@ namespace PMDDotNET.Player
                         //OPNA(-86/SPB)を想定
                         VolumeV[0] = 0;//FM
                         VolumeV[1] = -5;//SSG
-                        VolumeV[2] = -10;//Rhythm //未調査
+                        VolumeV[2] = 0;//Rhythm //未調査
                         VolumeV[3] = 0;//Adpcm //未調査
                     }
                 }
@@ -488,21 +488,31 @@ namespace PMDDotNET.Player
             {
                 isNRM = true;
                 isVA = false;
+                isSPB = false;
             }
-            else if (v == "86" || v == "SPB" || v == "86B" || v == "OPNA" || v == "2608")
+            else if (v == "86" || v == "86B")
             {
                 isNRM = false;
                 isVA = false;
+                isSPB = false;
+            }
+            else if (v == "SPB" || v == "OPNA" || v == "2608")
+            {
+                isNRM = false;
+                isVA = false;
+                isSPB = true;
             }
             else if (v == "VA_NRM")
             {
                 isNRM = true;
                 isVA = true;
+                isSPB = false;
             }
             else if (v == "VA_86")
             {
                 isNRM = false;
                 isVA = true;
+                isSPB = false;
             }
         }
 
@@ -549,10 +559,13 @@ Welcome to PMDDotNET !
            -DF12 -DS0
          SCCIの場合(PMDのオプション)
            -DF1 -DS0
-       -B=86|SPB|86B|OPNA|2608
+       -B=86|86B|SPB|OPNA|2608
          拡張音源(OPNA)を指定します。
+         SPB/OPNA/2608を指定するとADPCMを利用します。(PMDB2相当)
+         PPCファイルが指定されている場合は再生前にADPCMデータを転送する処理が発生します。
+         (エミュレーションの場合以外は転送に時間がかかります。)
          以下のオプションが暗黙で指定されます。
-           -VV=0,-5,-18,0
+           -VV=0,-5,0,0
          GIMIC GMC-OPNAの場合
            -VR=66
          GIMIC GMC-OPNA以外のモジュールの場合(PMDのオプション)

@@ -89,14 +89,23 @@ namespace PMDDotNET.Driver
             adr = pmd.get_memo(0);
             str = getNRDString(ref adr);
             tags.Add(new Tuple<string, string>("PCMFile", str));
+            pmd.pw.ppcFile = str.Trim();
 
             adr = pmd.get_memo(-1);
             str = getNRDString(ref adr);
             tags.Add(new Tuple<string, string>("PPSFile", str));
+            pmd.pw.ppsFile = str.Trim();
 
             adr = pmd.get_memo(-2);
             str = getNRDString(ref adr);
             tags.Add(new Tuple<string, string>("PPZFile", str));
+            pmd.pw.ppz1File = str.Trim();
+            string[] p = pmd.pw.ppz1File.Split(',');
+            if (p.Length > 1)
+            {
+                pmd.pw.ppz1File = p[0];
+                pmd.pw.ppz2File = p[1];
+            }
 
             return tags;
         }
@@ -192,8 +201,11 @@ namespace PMDDotNET.Driver
             WaitSendOPNA = opnaWaitSend;
             work = new PW(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
-            pmd = new PMD(srcBuf, WriteRegister, work);
+            pmd = new PMD(srcBuf, WriteRegister, work,appendFileReaderCallback);
 
+            GetTags();
+
+            if (!string.IsNullOrEmpty(pmd.pw.ppcFile)) pmd.pcmload.pcm_all_load(pmd.pw.ppcFile);
         }
 
         public void MusicSTART(int musicNumber)

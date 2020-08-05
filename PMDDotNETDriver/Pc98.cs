@@ -19,7 +19,11 @@ namespace PMDDotNET.Driver
 
         public byte InPort(int v)
         {
-            if (v == 0xa468)
+            if(v==0x2)
+            {
+                return 0;
+            }
+            else if (v == 0xa468)
             {
                 return 0;
             }
@@ -57,7 +61,11 @@ namespace PMDDotNET.Driver
 
         public void OutPort(ushort dx, byte al)
         {
-            if (dx == 0x188)
+            if(dx==0x02)
+            {
+
+            }
+            else if (dx == 0x188)
             {
                 fm1_reg = al;
             }

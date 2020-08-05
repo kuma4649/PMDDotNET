@@ -23,21 +23,28 @@ namespace PMDDotNET.Driver
         //DotNET独自
         public MmlDatum[] md { get; internal set; }
         public MmlDatum[] crtEfcDat { get; internal set; }
+        public byte[] pcmWk = new byte[4 * 256 + 2 + 128];
+        public byte[] pcmDt;
+
         public Func<object>[] currentCommandTable { get; internal set; }
         public MmlDatum[] inst = null;
         public bool usePPSDRV = false;
+        public bool useP86DRV = false;
         public OPNATimer timer = null;
         public ulong timeCounter = 0L;
         public string[] pmdOption = null;
+        public string ppsFile = "";
+        public string ppcFile = "";
+        public string ppz1File = "";
+        public string ppz2File = "";
 
 
 
 
         //PMD.ASM 7-53
         public const string ver = "4.8s";
-
         public int vers = 0x48;
-        public string verc = "s";
+        public char verc = 's';
         public const string date = "Jan.22nd 2020";
 
         public int mdata_def = 16;
@@ -528,7 +535,7 @@ namespace PMDDotNET.Driver
         //psg    equ 2
         //rhythm equ 3
 
-        //    dw  open_work
+        //public ushort open_work;//dw
 
         public int[] part_data_table;
 
@@ -581,15 +588,15 @@ namespace PMDDotNET.Driver
         //if	board2
         // if	adpcm
         //  ife   ademu
-        //pcmends     dw	26H	;最初のstartは26Hから
-        //pcmadrs     dw	2*256 dup(0)
-        //pcmfilename db	128 dup(0)
+        public ushort pcmends = 0x26;//;最初のstartは26Hから
+        public ushort[] pcmadrs = new ushort[2 * 256];
+        public byte[] pcmfilename = new byte[128];
         //  endif
         // endif
         // if	pcm
-        //pcmst_ofs   dw	0
-        //pcmst_seg dw	0
-        //pcmadrs db	6*256 dup(0)
+        public ushort pcmst_ofs = 0;
+        public ushort pcmst_seg = 0;
+        public byte[] pcmadrs_86 = new byte[6 * 256];
         // endif
         //endif
 
@@ -826,10 +833,99 @@ namespace PMDDotNET.Driver
 
 
 
+        //PCMLOAD.INC
+        //15
+        public int message = 1;//equ ;エラーメッセージを表示するか否か
+
+        //1447-1503
+        //;==============================================================================
+        //;	DataArea
+        //;==============================================================================
+        //if	message
+        public string allload_mes = "ＰＣＭを定義中です。しばらくお待ち下さい。";
+        public string exit1_mes = "PCMが定義出来る環境ではありません。";
+        public string exit1p_mes = "PPSDRVが常駐していません。";
+        public string exit2_mes = "PCMFileが見つかりません。";
+        public string exit2p_mes = "PPSFileが見つかりません。";
+        public string exit3_mes = "PCMFileのFORMATが違います。";
+        public string exit3p_mes = "PPSDRVの確保容量が足りません。";
+        public string exit4_mes = "PCMDataが一致したので読み込みません。";
+        public string exit4pp_mes = "P86DRVの確保容量が足りません。";
+        public string exit5_mes = "PCMFileが読み込めません。";
+        public string exit5p_mes = "PPSFileが読み込めません。";
+        public string exit6_mes = "PCMメモリを他のアプリケーションがアクセス中です。";
+        public string exit1z_mes = "PCMFileが見つかりません。";
+        public string exit2z_mes = "PCMFileのデータ形式が違います。";
+        public string exit3z_mes = "メモリ確保容量が足りません。";
+        public string exit4z_mes = "EMSハンドルのマッピングができません。";
+        public string exit5z_mes = "PPZ8が常駐していません。";
+        public string ppzbank_mes = "PPZ8(";
+        public string banknum = "?):$";
+        //endif
+        public string adpcm_header = "ADPCM DATA for  PMD ver.4.4-  ";// ;30 bytes
+        public string pps_ext = "PPS";
+        public string ppc_ext = "PPC";
+        public string p86_ext = "P86";
+        public string pvi_ext = "PVI";
+        public string pzi_ext = "PZI";
+
+        public byte retry_flag = 0;
+        public byte key_check_push = 0;
+        public ushort pcmload_wait_clock = 0;
+        public byte pcmload_adpcm_wait = 0;
+        public ushort mmask_port = 0;
+        public byte mmask_push = 0;
+
+        public byte[] filename_buf = new byte[128];
+
+        public string filename_ofs;// dw	?
+        public ushort filename_seg;// dw	?
+        public string filename_ofs2;// dw	?
+        public ushort filename_seg2;// dw	?
+        public ushort pcmdata_ofs;// dw	?
+        public ushort pcmdata_seg;// dw	?
+        public byte pcmdata_size_s;// db	?
+        public ushort pcmdata_size;// dw	?
+        public ushort pcmwork_ofs;// dw	?
+        public ushort pcmwork_seg;// dw	?
+        public ushort port46;// dw	?
+        public ushort port47;// dw	?
+        public ushort pcmload_pcmstop;// dw	?
+        public ushort pcmload_pcmstart;// dw	?
+        public ushort fhand2;// dw	?
+        public byte   ppz_bank;// db	?
+
+
+
+        //924-940
+        //;==============================================================================
+        //;	Datas
+        //;==============================================================================
+        public ushort[] pcm_tune_data = new ushort[]{
+            0x3132*2//;C
+            ,0x3420*2//;C+
+            ,0x373a*2//;D
+            ,0x3a83*2//;D+
+            ,0x3dfe*2//;E
+            ,0x41af*2//;F
+            ,0x4597*2//;F+
+            ,0x49bb*2//;G
+            ,0x4e1e*2//;G+
+            ,0x52c4*2//;A
+            ,0x57b1*2//;A+
+            ,0x5ce8*2//;B
+        };
+
+
         public PW(PMDDotNETOption dop,string[] op)
         {
             board = 1;
             board2 = dop.isNRM ? 0 : 1;
+            if (board2 != 0)
+            {
+                adpcm = dop.isSPB ? 1 : 0;
+                pcm = dop.isSPB ? 0 : 1;
+            }
             va = dop.isVA ? 1 : 0;
             usePPSDRV = dop.usePPS;
             ppz = dop.usePPZ ? 1 : 0;
