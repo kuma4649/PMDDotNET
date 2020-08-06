@@ -6326,7 +6326,7 @@ namespace PMDDotNET.Driver
         od_ext_notlfo2:;
             if (r.dx == 0)
                 goto extlfo_set;
-            int ans1 = (short)r.ax * (short)r.bx;//  imul    bx
+            int ans1 = (short)r.ax * (short)r.dx;//  imul    dx
             ans1 <<= 4;
             r.dx = (ushort)(ans1 >> 16);
             r.ax = (ushort)(ans1 >> 0);
