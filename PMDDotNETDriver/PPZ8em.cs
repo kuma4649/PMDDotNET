@@ -48,6 +48,9 @@ namespace PMDDotNET.Driver
                 chWk[i].panL = 1.0;
                 chWk[i].panR = 1.0;
                 chWk[i].volume = 8;
+                //chWk[i]._frequency = 0;
+                chWk[i]._loopStartOffset = -1;
+                chWk[i]._loopEndOffset = -1;
             }
         }
 
@@ -84,34 +87,50 @@ namespace PMDDotNET.Driver
             int bank = (dx & 0x8000) != 0 ? 1 : 0;
             int num = dx & 0x7fff;
             chWk[al].bank = bank;
-            chWk[al].ptr = pcmData[bank][num * 0x12 + 32]
-                + pcmData[bank][num * 0x12 + 1 + 32] * 0x100
-                + pcmData[bank][num * 0x12 + 2 + 32] * 0x10000
-                + pcmData[bank][num * 0x12 + 3 + 32] * 0x1000000
-                + 0x20 + 0x12 * 128;
-            chWk[al].end = chWk[al].ptr
-                + pcmData[bank][num * 0x12 + 4 + 32]
-                + pcmData[bank][num * 0x12 + 5 + 32] * 0x100
-                + pcmData[bank][num * 0x12 + 6 + 32] * 0x10000
-                + pcmData[bank][num * 0x12 + 7 + 32] * 0x1000000
-                ;
-            chWk[al].loopStartOffset = 0
-                + pcmData[bank][num * 0x12 + 8 + 32]
-                + pcmData[bank][num * 0x12 + 9 + 32] * 0x100
-                + pcmData[bank][num * 0x12 + 10 + 32] * 0x10000
-                + pcmData[bank][num * 0x12 + 11 + 32] * 0x1000000
-                ;
-            chWk[al].loopEndOffset = 0
-                + pcmData[bank][num * 0x12 + 12 + 32]
-                + pcmData[bank][num * 0x12 + 13 + 32] * 0x100
-                + pcmData[bank][num * 0x12 + 14 + 32] * 0x10000
-                + pcmData[bank][num * 0x12 + 15 + 32] * 0x1000000
-                ;
-            //不要っぽい?
-            //chWk[al].srcFrequency = (ushort)(chWk[al].ptr
-            //    + pcmData[bank][num * 0x12 + 16 + 32]
-            //    + pcmData[bank][num * 0x12 + 17 + 32] * 0x100
-            //    );
+            if (pcmData[bank] != null)
+            {
+                chWk[al].ptr = pcmData[bank][num * 0x12 + 32]
+                    + pcmData[bank][num * 0x12 + 1 + 32] * 0x100
+                    + pcmData[bank][num * 0x12 + 2 + 32] * 0x10000
+                    + pcmData[bank][num * 0x12 + 3 + 32] * 0x1000000
+                    + 0x20 + 0x12 * 128;
+                chWk[al].end = chWk[al].ptr
+                    + pcmData[bank][num * 0x12 + 4 + 32]
+                    + pcmData[bank][num * 0x12 + 5 + 32] * 0x100
+                    + pcmData[bank][num * 0x12 + 6 + 32] * 0x10000
+                    + pcmData[bank][num * 0x12 + 7 + 32] * 0x1000000
+                    ;
+
+                chWk[al].loopStartOffset = chWk[al]._loopStartOffset;
+                if (chWk[al]._loopStartOffset == -1)
+                {
+                    chWk[al].loopStartOffset = 0
+                        + pcmData[bank][num * 0x12 + 8 + 32]
+                        + pcmData[bank][num * 0x12 + 9 + 32] * 0x100
+                        + pcmData[bank][num * 0x12 + 10 + 32] * 0x10000
+                        + pcmData[bank][num * 0x12 + 11 + 32] * 0x1000000
+                        ;
+                }
+                chWk[al].loopEndOffset = chWk[al]._loopEndOffset;
+                if (chWk[al]._loopEndOffset == -1)
+                {
+                    chWk[al].loopEndOffset = 0
+                    + pcmData[bank][num * 0x12 + 12 + 32]
+                    + pcmData[bank][num * 0x12 + 13 + 32] * 0x100
+                    + pcmData[bank][num * 0x12 + 14 + 32] * 0x10000
+                    + pcmData[bank][num * 0x12 + 15 + 32] * 0x1000000
+                    ;
+                }
+
+                //不要っぽい?
+                //chWk[al].srcFrequency = (ushort)(chWk[al].ptr
+                //    + pcmData[bank][num * 0x12 + 16 + 32]
+                //    + pcmData[bank][num * 0x12 + 17 + 32] * 0x100
+                //    );
+
+                //chWk[al].frequency = chWk[al]._frequency;
+                chWk[al].srcFrequency = chWk[al]._srcFrequency;
+            }
 
             interrupt = false;
             chWk[al].playing = true;
@@ -231,8 +250,8 @@ namespace PMDDotNET.Driver
                 , lpStOfsDX * 0x10000 + lpStOfsCX, lpEdOfsDI * 0x10000 + lpEdOfsSI));
 #endif
             al &= 7;
-            chWk[al].loopStartOffset = lpStOfsDX * 0x10000 + lpStOfsCX;
-            chWk[al].loopEndOffset = lpEdOfsDI * 0x10000 + lpEdOfsSI;
+            chWk[al]._loopStartOffset = lpStOfsDX * 0x10000 + lpStOfsCX;
+            chWk[al]._loopEndOffset = lpEdOfsDI * 0x10000 + lpEdOfsSI;
         }
 
         /// <summary>
@@ -271,7 +290,7 @@ namespace PMDDotNET.Driver
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, string.Format("ppz8em: SetSrcFrequency: {0}", dx));
 #endif
-            chWk[al].srcFrequency = dx;
+            chWk[al]._srcFrequency = dx;
         }
 
         /// <summary>
@@ -299,6 +318,8 @@ namespace PMDDotNET.Driver
 
         private int CheckPZI(byte[] pcmData)
         {
+            if (pcmData == null)
+                return 5;
             if(!(pcmData[0] == 'P' && pcmData[1] == 'Z' && pcmData[2] == 'I'))
                 return 2;
 
@@ -307,7 +328,12 @@ namespace PMDDotNET.Driver
 
         private int CheckPVI(byte[] pcmData)
         {
-            throw new NotImplementedException();
+            if (pcmData == null)
+                return 5;
+            if (!(pcmData[0] == 'P' && pcmData[1] == 'V' && pcmData[2] == 'I'))
+                return 2;
+
+            return 0;
         }
 
 
@@ -320,6 +346,7 @@ namespace PMDDotNET.Driver
             {
                 if (!chWk[i].playing) continue;
                 if (chWk[i].pan==0) continue;
+                if (pcmData[chWk[i].bank] == null) continue;
 
                 l += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]] 
                     * chWk[i].panL);
@@ -361,6 +388,11 @@ namespace PMDDotNET.Driver
         public uint srcFrequency;
         public ushort volume;
         public uint frequency;
+
+        public int _loopStartOffset;
+        public int _loopEndOffset;
+        //public uint _frequency;
+        public uint _srcFrequency;
 
         public int bank;
         public int ptr;

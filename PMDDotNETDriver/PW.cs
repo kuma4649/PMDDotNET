@@ -859,6 +859,7 @@ namespace PMDDotNET.Driver
         public string exit3z_mes = "メモリ確保容量が足りません。";
         public string exit4z_mes = "EMSハンドルのマッピングができません。";
         public string exit5z_mes = "PPZ8が常駐していません。";
+        public string exit6z_mes = "PVI/PZIFileが見つかりません。"; //KUMA: Added
         public string ppzbank_mes = "PPZ8({0}):";
         //endif
         public string adpcm_header = "ADPCM DATA for  PMD ver.4.4-  ";// ;30 bytes

@@ -69,7 +69,7 @@ namespace PMDDotNET.Player
             Log.writeLine += WriteLine;
 #if DEBUG
             //Log.writeLine += WriteLineF;
-            Log.level = LogLevel.INFO;
+            Log.level = LogLevel.TRACE;
 #else
             Log.level = LogLevel.INFO;
 #endif

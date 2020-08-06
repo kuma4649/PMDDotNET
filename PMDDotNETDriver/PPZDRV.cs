@@ -724,21 +724,24 @@ namespace PMDDotNET.Driver
             r.stack.Push(r.si);
             r.stack.Push(r.di);
             ppz_voicetable_calc();
-            r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0xa] + ppz8em.pcmData[bank][ptr + 0xb] * 0x100);
-            r.cx = (ushort)(ppz8em.pcmData[bank][ptr + 0x8] + ppz8em.pcmData[bank][ptr + 0x9] * 0x100);// dx: cx = Loop Start
-            r.di = (ushort)(ppz8em.pcmData[bank][ptr + 0xe] + ppz8em.pcmData[bank][ptr + 0xf] * 0x100);
-            r.si = (ushort)(ppz8em.pcmData[bank][ptr + 0xc] + ppz8em.pcmData[bank][ptr + 0xd] * 0x100);// dx: cx = Loop End
-            r.ah = 0xe;
-            r.al = pw.partb;
-            //push es
-            r.stack.Push(r.bx);
-            ppz8em.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
-            r.bx = r.stack.Pop();
-            //pop es
-            r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0x10] + ppz8em.pcmData[bank][ptr + 0x11] * 0x100);//;dx = Frequency
-            r.ah = 0x15;
-            r.al = pw.partb;
-            ppz8em.SetSrcFrequency(r.al, r.dx);
+            if (ppz8em.pcmData[bank] != null)
+            {
+                r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0xa] + ppz8em.pcmData[bank][ptr + 0xb] * 0x100);
+                r.cx = (ushort)(ppz8em.pcmData[bank][ptr + 0x8] + ppz8em.pcmData[bank][ptr + 0x9] * 0x100);// dx: cx = Loop Start
+                r.di = (ushort)(ppz8em.pcmData[bank][ptr + 0xe] + ppz8em.pcmData[bank][ptr + 0xf] * 0x100);
+                r.si = (ushort)(ppz8em.pcmData[bank][ptr + 0xc] + ppz8em.pcmData[bank][ptr + 0xd] * 0x100);// dx: cx = Loop End
+                r.ah = 0xe;
+                r.al = pw.partb;
+                //push es
+                r.stack.Push(r.bx);
+                ppz8em.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
+                r.bx = r.stack.Pop();
+                //pop es
+                r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0x10] + ppz8em.pcmData[bank][ptr + 0x11] * 0x100);//;dx = Frequency
+                r.ah = 0x15;
+                r.al = pw.partb;
+                ppz8em.SetSrcFrequency(r.al, r.dx);
+            }
             r.di = r.stack.Pop();
             r.si = r.stack.Pop();
         //    pop es

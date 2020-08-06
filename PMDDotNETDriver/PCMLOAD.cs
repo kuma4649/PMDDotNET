@@ -206,7 +206,14 @@ namespace PMDDotNET.Driver
                     return;
                 }
                 r.dx = 0;//offset exit5z_mes
-                ppz_error_main2(pw.exit5z_mes);
+                r.bx--;
+                if (r.bx == 0)
+                {
+                    ppz_error_main(pw.exit5z_mes);
+                    return;
+                }
+                r.dx = 0;//offset exit6z_mes
+                ppz_error_main2(pw.exit6z_mes);
             }
 
             r.carry = true;
