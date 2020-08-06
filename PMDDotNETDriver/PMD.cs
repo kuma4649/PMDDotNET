@@ -21,14 +21,16 @@ namespace PMDDotNET.Driver
         public PW pw = null;
         private x86Register r = null;
         private Pc98 pc98 = null;
-        private PPZDRV ppz = null;
+        private PPZDRV ppzdrv = null;
         private PCMDRV pcmdrv = null;
         private PCMDRV86 pcmdrv86 = null;
         private PPSDRV ppsdrv = null;
         private EFCDRV efcdrv = null;
+        private PPZ8em ppz8em = null;
         public PCMLOAD pcmload = null;
 
-        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback)
+
+        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback, PPZ8em ppz8em)
         {
             this.pw = pw;
             pw.md = mmlData;
@@ -41,12 +43,15 @@ namespace PMDDotNET.Driver
 
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister);
-            ppz = new PPZDRV();
-            pcmdrv = new PCMDRV(this, pw, r, pc98);
+            this.ppz8em = ppz8em;
+            ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em);
+            pcmdrv = new PCMDRV(this, pw, r, pc98, ppzdrv);
+            ppzdrv.pcmdrv = pcmdrv;
+            ppzdrv.init();
             pcmdrv86 = new PCMDRV86();
             ppsdrv = new PPSDRV();
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
-            pcmload = new PCMLOAD(this, pw, r, pc98, appendFileReaderCallback);
+            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, appendFileReaderCallback);
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -383,7 +388,7 @@ namespace PMDDotNET.Driver
                 {
                     r.ax = 0x1800;
                     pw.adpcm_emulate = r.al;
-                    ppz.ppz8_call();// ADPCMEmulate OFF
+                    ppz8em.SetAdpcmEmu(r.al);// ADPCMEmulate OFF
                     r.bx = (ushort)pw.part10;//offset part10	//PCMを
                     pw.partWk[r.bx].partmask |= 0x10;//Mask(bit4)
                 }
@@ -409,11 +414,11 @@ namespace PMDDotNET.Driver
                 if (pw.ppz_call_seg != 0)
                 {
                     r.ax = 0x1901;
-                    ppz.intrpt();// 常駐解除禁止
+                    ppz8em.SetReleaseFlag(0x01);// 常駐解除禁止
                     r.ah = 0;
-                    ppz.intrpt();
-                    r.ah = 6;
-                    ppz.intrpt();
+                    ppz8em.Initialize();
+                    //r.ah = 6;
+                    //ppz8em.Reserve();
                 }
                 //not_init_ppz8:
             }
@@ -850,7 +855,7 @@ namespace PMDDotNET.Driver
                     {
                         r.al = r.cl;
                         r.al--;
-                        ppz.ppz8_call();
+                        ppz8em.SetPan(r.al, r.dx);
                         r.cx--;
                     } while (r.cx != 0);
                 }
@@ -1009,35 +1014,35 @@ namespace PMDDotNET.Driver
             {
                 r.di = (ushort)pw.part10a;//offset part10a
                 pw.partb = 0;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10b;//offset part10b
                 pw.partb = 1;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10c;//offset part10c
                 pw.partb = 2;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10d;//offset part10d
                 pw.partb = 3;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10e;//offset part10e
                 pw.partb = 4;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10f;//offset part10f
                 pw.partb = 5;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10g;//offset part10g
                 pw.partb = 6;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
 
                 r.di = (ushort)pw.part10h;//offset part10h
                 pw.partb = 7;
-                ppz.ppzmain();
+                ppzdrv.ppzmain();
             }
 
 
@@ -6913,7 +6918,7 @@ namespace PMDDotNET.Driver
             }
         }
 
-        private void keyoffp()
+        public void keyoffp()
         {
             if (pw.partWk[r.di].onkai != 0xff)
             {
@@ -8246,11 +8251,11 @@ namespace PMDDotNET.Driver
                     if (pw.ppz_call_seg != 0)
                     {
                         r.ah = 0x12;
-                        ppz.intrpt();// FIFO割り込み停止
+                        ppz8em.StopInterrupt();// FIFO割り込み停止
                         r.ax = 0x0200;
                     ppz_off_loop:;
                         r.stack.Push(r.ax);
-                        ppz.intrpt();// ppz keyoff
+                        ppz8em.StopPCM(r.al);// ppz keyoff
                         r.ax = r.stack.Pop();
                         r.al++;
                         if (r.al < 8) goto ppz_off_loop;
@@ -8950,7 +8955,7 @@ namespace PMDDotNET.Driver
                         if (pw.adpcm_emulate != 1)
                             goto pmpcm_noadpcm;
                         r.ax = 0x0207;
-                        ppz.ppz8_call();//; PPZ8 ch7 発音停止
+                        ppz8em.StopPCM(r.al);//; PPZ8 ch7 発音停止
                     pmpcm_noadpcm:;
                     }
                     else
@@ -8983,7 +8988,7 @@ namespace PMDDotNET.Driver
                     pmppz_exec:;
                 }
                 r.ah = 2;
-                ppz.ppz8_call();// ; ppz stop(al= partb)
+                ppz8em.StopPCM(r.al);// ; ppz stop(al= partb)
             pmppz_noexec:;
                 return;
             }
@@ -9919,21 +9924,21 @@ namespace PMDDotNET.Driver
                 if (r.carry) goto ppzchk_end;
                 pw.ppz_call_seg = 1;
                 r.ax = 0x410;
-                ppz.intrpt();//int ppz_vec
+                ppz8em.ReadStatus(r.al);//int ppz_vec
                 r.ah = (byte)pw.int_level;
                 r.ah += 8;
                 if (r.al != r.ah)
                     goto ppzchk_next;
                 //push es
                 r.ax = 0x409;
-                ppz.intrpt();//int ppz_vec
+                ppz8em.ReadStatus(r.al);//int ppz_vec
                 r.ax = 0;// r.es;
                          // pop es
                 pw.ppz_call_ofs = r.bx;
                 pw.ppz_call_seg = r.ax;
             ppzchk_next:;
                 r.ax = 0x1901;
-                ppz.intrpt();//int ppz_vec; 常駐解除禁止
+                ppz8em.SetReleaseFlag(r.al);//int ppz_vec; 常駐解除禁止
                 if (pw.message_flag == 0)
                 {
                     mask_eoi_set();

@@ -53,6 +53,7 @@ namespace PMDDotNET.Driver
 
         public int GetStatus()
         {
+            if (work.Status < 0) return -1;
             pmd.int60_main(0x0a00);
             return pmd.pw.status2 != 0xff ? 1 : 0;
         }
@@ -201,11 +202,13 @@ namespace PMDDotNET.Driver
             WaitSendOPNA = opnaWaitSend;
             work = new PW(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
-            pmd = new PMD(srcBuf, WriteRegister, work,appendFileReaderCallback);
+            PPZ8em ppz8em = addtionalPMDDotNETOption.ppz8em;
+            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em);
 
             GetTags();
 
             if (!string.IsNullOrEmpty(pmd.pw.ppcFile)) pmd.pcmload.pcm_all_load(pmd.pw.ppcFile);
+            if (!string.IsNullOrEmpty(pmd.pw.ppz1File) || !string.IsNullOrEmpty(pmd.pw.ppz2File)) pmd.pcmload.ppz_load(pmd.pw.ppz1File, pmd.pw.ppz2File);
         }
 
         public void MusicSTART(int musicNumber)

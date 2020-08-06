@@ -11,13 +11,15 @@ namespace PMDDotNET.Driver
         private PW pw = null;
         private x86Register r = null;
         private Pc98 pc98 = null;
+        private PPZDRV ppzdrv = null;
 
-        public PCMDRV(PMD pmd, PW pw, x86Register r, Pc98 pc98)
+        public PCMDRV(PMD pmd, PW pw, x86Register r, Pc98 pc98,PPZDRV ppzdrv)
         {
             this.pmd = pmd;
             this.pw = pw;
             this.r = r;
             this.pc98 = pc98;
+            this.ppzdrv = ppzdrv;
 
             SetupCmdtbl();
         }
@@ -380,7 +382,7 @@ namespace PMDDotNET.Driver
 	            , pmd.comq4				    //0b1h(78)
             };
 
-            if (pw.ppz != 0) cmdtblm[75] = null;//ppz_extpartset;//0b4h in ppzdrv.asm(75)
+            if (pw.ppz != 0) cmdtblm[75] = ppzdrv.ppz_extpartset;//0b4h in ppzdrv.asm(75)
         }
 
 
@@ -523,7 +525,7 @@ namespace PMDDotNET.Driver
         //;
         //;	COMMAND ']' [VOLUME UP]
         //;
-        private Func<object> comvolupm()
+        public Func<object> comvolupm()
         {
             r.al = pw.partWk[r.di].volume;
             r.carry = (r.al + 16) > 0xff;
@@ -544,7 +546,7 @@ namespace PMDDotNET.Driver
         }
 
         //; Ｖ２．３　ＥＸＴＥＮＤ
-        private Func<object> comvolupm2()
+        public Func<object> comvolupm2()
         {
             r.al = (byte)pw.md[r.si++].dat;
             r.al += pw.partWk[r.di].volume;
@@ -557,7 +559,7 @@ namespace PMDDotNET.Driver
         //;
         //;	COMMAND '[' [VOLUME DOWN]
         //;
-        private Func<object> comvoldownm()
+        public Func<object> comvoldownm()
         {
             r.al = pw.partWk[r.di].volume;
             r.carry = r.al - 16 < 0;
@@ -567,7 +569,7 @@ namespace PMDDotNET.Driver
         }
 
         //; Ｖ２．３　ＥＸＴＥＮＤ
-        private Func<object> comvoldownm2()
+        public Func<object> comvoldownm2()
         {
             r.al = (byte)pw.md[r.si++].dat;
             r.ah = r.al;
@@ -879,7 +881,7 @@ namespace PMDDotNET.Driver
             keyoffp();
         }
 
-        private void keyoffp()
+        public void keyoffp()
         {
             if (pw.partWk[r.di].onkai != 0xff)
             {

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Runtime.CompilerServices;
+using PMDDotNET.Driver;
 
 namespace PMDDotNET.Player
 {
@@ -61,13 +62,14 @@ namespace PMDDotNET.Player
         private static int[] VolumeV = null;
         private static int[] VolumeR = null;
         private static bool isGimicOPNA = false;
+        private static PPZ8em ppz8em=null;
 
         static int Main(string[] args)
         {
             Log.writeLine += WriteLine;
 #if DEBUG
             //Log.writeLine += WriteLineF;
-            Log.level = LogLevel.INFO;//.TRACE;
+            Log.level = LogLevel.INFO;
 #else
             Log.level = LogLevel.INFO;
 #endif
@@ -141,6 +143,7 @@ namespace PMDDotNET.Player
                 };
 
                 mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip });
+                ppz8em = new PPZ8em(SamplingRate);
 
                 string[] pmdVol = SetVolume();
 
@@ -159,6 +162,7 @@ namespace PMDDotNET.Player
                 dop.usePPZ = usePPZ;
                 dop.isLoadADPCM = false;
                 dop.loadADPCMOnly = false;
+                dop.ppz8em = ppz8em;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
                 for(int i = fnIndex; i < args.Length; i++)
@@ -601,12 +605,12 @@ Welcome to PMDDotNET !
    -PPS=n  (TBD)
      PPSDRVを使用するときは1を指定します。0を指定すると使用しません。
      デフォルト値は0です。
-     nの指定可能範囲は0～1です。
+     nの指定可能値は0または1です。
 
-   -PPZ=n  (TBD)
+   -PPZ=n
      PPZ8を使用するときは1を指定します。0を指定すると使用しません。
      デフォルト値は0です。
-     nの指定可能範囲は0～1です。
+     nの指定可能値は0または1です。
 
    [PMD options]
      オリジナルのPMDへ送るオプションを指定します。
@@ -785,6 +789,7 @@ Welcome to PMDDotNET !
                 for (int i = 0; i < bufCnt; i++)
                 {
                     mds.Update(emuRenderBuf, 0, 2, OneFrame);
+                    ppz8em.Update(emuRenderBuf);
 
                     buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                     buffer[offset + i * 2 + 1] = emuRenderBuf[1];

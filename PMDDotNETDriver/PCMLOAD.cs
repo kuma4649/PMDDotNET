@@ -1,7 +1,9 @@
 ﻿using musicDriverInterface;
+using PMDDotNET.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PMDDotNET.Driver
@@ -12,14 +14,16 @@ namespace PMDDotNET.Driver
         private PW pw = null;
         private PMD pmd = null;
         private Pc98 pc98 = null;
+        private PPZ8em ppz8em = null;
         private Func<string, Stream> appendFileReaderCallback = null;
 
-        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, Func<string, Stream> appendFileReaderCallback)
+        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, PPZ8em ppz8em, Func<string, Stream> appendFileReaderCallback)
         {
             this.pmd = pmd;
             this.pw = pw;
             this.r = r;
             this.pc98 = pc98;
+            this.ppz8em = ppz8em;
             this.appendFileReaderCallback = appendFileReaderCallback;
         }
 
@@ -60,6 +64,176 @@ namespace PMDDotNET.Driver
                 return ms.ToArray();
             }
         }
+
+
+
+        //20-202
+        //;==============================================================================
+        //;
+        //;	PPZ(PVI/PZI)ファイルの読み込み
+        //;
+        //;		input DS:AX filename(128byte)
+        //; CL 読ませるバンク(1=１つ目 2=２つ目 3=両方)
+        //; output cy = 1    Not Loaded
+        //; AX=1	ファイルの読み込み失敗
+        //;				AX=2	データ形式が違う
+        //;				AX=3	メモリが確保できない
+        //;				AX=4	EMSハンドルのマッピングができない
+        //;				AX=5	PPZ8が常駐していない
+        //;				CL エラーの出たPCM番号(0 or 1)
+        //;		break	ax,cx
+        //;==============================================================================
+        public void ppz_load(string ppz1File, string ppz2File)
+        {
+            r.stack.Push(r.bx);
+            r.stack.Push(r.dx);
+            r.stack.Push(r.si);
+            r.stack.Push(r.di);
+            r.stack.Push(r.bp);
+            //r.stack.Push(r.ds);
+            //r.stack.Push(r.es);
+
+            pw.ppz_bank = r.cl;
+            pw.filename_ofs = ppz1File;
+            pw.filename_seg = 0;
+            ppz_load_main(ppz1File, ppz2File);
+
+            //r.es = r.stack.Pop();
+            //r.ds = r.stack.Pop();
+            r.bp = r.stack.Pop();
+            r.di = r.stack.Pop();
+            r.si = r.stack.Pop();
+            r.dx = r.stack.Pop();
+            r.bx = r.stack.Pop();
+        }
+
+        //;==============================================================================
+        //;	PPZ8 読み込み main
+        //;==============================================================================
+        private void ppz_load_main(string ppz1File, string ppz2File)
+        {
+            ppz8_check();
+            pw.ppz_bank = (byte)((string.IsNullOrEmpty(ppz1File) ? 0 : 1) | (string.IsNullOrEmpty(ppz2File) ? 0 : 2));
+            r.cl = 0;
+            r.ax = 4;
+            if (r.carry)
+            {
+                ppz_load_error();
+                return;
+            }
+            //; PCM２つ読み用追加判別処理
+            read_ppz8();
+            if (r.carry) goto plm_exit;
+            if (string.IsNullOrEmpty(ppz2File))
+                goto plm_exit2;// ; PCMは１つだけ
+            pw.filename_ofs = ppz2File;
+            r.cl = 1;
+            read_ppz8();
+        plm_exit:;
+            return;
+        plm_exit2:;
+            r.ax = 0;
+            return;
+        }
+
+        private void read_ppz8()
+        {
+            //; 拡張子判別(PVI / PZI)
+            string ext = Path.GetExtension(pw.filename_ofs).ToUpper().Trim();
+            if (ext == ".PZI") r.ch = 1;
+            else if (ext == ".PVI") r.ch = 0;
+
+            r.carry = (pw.ppz_bank & 1) != 0;
+            pw.ppz_bank >>= 1;
+            if (!r.carry) goto p8_load_skip;//; load skip
+
+            //; PVI / PZI 読み込み
+            p8_load_main:;
+            byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
+            int ret = ppz8em.LoadPcm(r.cl,r.ch, pcmData);
+
+            if (ret==0) goto p8_load_exit;//KUMA:読み込めた
+            if (ret!=2) goto p8_load_exit;//; file not found or 形式が違うなら
+
+            r.ch ^= 1;//; もう片方の形式も
+            ppz8em.LoadPcm(r.cl,r.ch, pcmData);//pcm loadを試してみる
+
+        p8_load_exit:;
+            r.carry = false;
+            if (ret!=0)
+            {
+                r.ax = (ushort)ret;
+                ppz_load_error();
+                r.carry = true;
+            }
+        p8_load_skip:;
+            r.ax = 0;
+        }
+
+        //;	Error処理
+        private void ppz_load_error()
+        {
+            r.ax++;
+            if (pw.message != 0)
+            {
+                r.bx = r.ax;
+                r.dx = 0;//offset exit1z_mes
+                r.bx--;
+                if (r.bx == 0)
+                {
+                    ppz_error_main(pw.exit1z_mes);
+                    return;
+                }
+                r.dx = 0;//offset exit2z_mes
+                r.bx--;
+                if (r.bx == 0)
+                {
+                    ppz_error_main(pw.exit2z_mes);
+                    return;
+                }
+                r.dx = 0;//offset exit3z_mes
+                r.bx--;
+                if (r.bx == 0)
+                {
+                    ppz_error_main(pw.exit3z_mes);
+                    return;
+                }
+                r.dx = 0;//offset exit4z_mes
+                r.bx--;
+                if (r.bx == 0)
+                {
+                    ppz_error_main(pw.exit4z_mes);
+                    return;
+                }
+                r.dx = 0;//offset exit5z_mes
+                ppz_error_main2(pw.exit5z_mes);
+            }
+
+            r.carry = true;
+        }
+        private void ppz_error_main(string msg)
+        {
+            r.al = r.cl;
+            r.al += (byte)'1';
+            //pw.banknum = r.al.ToString();//;Bank
+            r.stack.Push(r.dx);
+            r.dx = 0;//offset ppzbank_mes
+            //ppz_error_main2(string.Format(pw.ppzbank_mes, r.al));
+            r.dx = r.stack.Pop();
+            ppz_error_main2(string.Format(pw.ppzbank_mes, r.al) + msg);
+        }
+
+        private void ppz_error_main2(string msg)
+        {
+            Log.writeLine(LogLevel.ERROR, msg);
+        }
+
+        //; PPZ8常駐check
+        private void ppz8_check()
+        {
+            r.carry = pw.ppz == 0;
+        }
+
 
 
         //203-288

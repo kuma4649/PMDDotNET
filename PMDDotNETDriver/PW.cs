@@ -859,8 +859,7 @@ namespace PMDDotNET.Driver
         public string exit3z_mes = "メモリ確保容量が足りません。";
         public string exit4z_mes = "EMSハンドルのマッピングができません。";
         public string exit5z_mes = "PPZ8が常駐していません。";
-        public string ppzbank_mes = "PPZ8(";
-        public string banknum = "?):$";
+        public string ppzbank_mes = "PPZ8({0}):";
         //endif
         public string adpcm_header = "ADPCM DATA for  PMD ver.4.4-  ";// ;30 bytes
         public string pps_ext = "PPS";
@@ -893,7 +892,7 @@ namespace PMDDotNET.Driver
         public ushort pcmload_pcmstop;// dw	?
         public ushort pcmload_pcmstart;// dw	?
         public ushort fhand2;// dw	?
-        public byte   ppz_bank;// db	?
+        public byte ppz_bank;// db	?
 
 
 
@@ -915,6 +914,30 @@ namespace PMDDotNET.Driver
             ,0x57b1*2//;A+
             ,0x5ce8*2//;B
         };
+
+
+
+        //848-865 PPZDRV.ASM
+        //;==============================================================================
+        //;	Datas
+        //;==============================================================================
+        public byte[] ppzpandata = new byte[] { 0, 9, 1, 5 };
+
+        public ushort[] ppz_tune_data = new ushort[]{//label   word
+              0x08000//;00 c
+            , 0x087a6//;01 d-
+	        , 0x08fb3//;02 d
+            , 0x09838//;03 e-
+	        , 0x0a146//;04 e
+            , 0x0aade//;05 f
+            , 0x0b4ff//;06 g-
+	        , 0x0bfcc//;07 g
+            , 0x0cb34//;08 a-
+	        , 0x0d747//;09 a
+            , 0x0e418//;10 b-
+	        , 0x0f1a5//;11 b
+        };
+
 
 
         public PW(PMDDotNETOption dop,string[] op)

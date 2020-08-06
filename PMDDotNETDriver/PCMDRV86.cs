@@ -8,7 +8,7 @@ namespace PMDDotNET.Driver
     {
         public void stop_86pcm()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void pcmmain()
