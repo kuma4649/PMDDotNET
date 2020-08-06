@@ -549,6 +549,7 @@ namespace PMDDotNET.Driver
         public Func<object> comvolupm2()
         {
             r.al = (byte)pw.md[r.si++].dat;
+            r.carry = (r.al + pw.partWk[r.di].volume) > 0xff;
             r.al += pw.partWk[r.di].volume;
             return vupckm();
         }

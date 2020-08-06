@@ -965,7 +965,7 @@ namespace PMDDotNET.Driver
                 goto odz_not_lfo;
             if ((pw.partWk[r.di].lfoswi & 0x1) == 0)
                 goto odz_not_lfo1;
-            r.ax += pw.partWk[r.si].lfodat;
+            r.ax += pw.partWk[r.di].lfodat;
             odz_not_lfo1:;
             if ((pw.partWk[r.di].lfoswi & 0x10) == 0)
                 goto odz_not_lfo;
@@ -989,11 +989,10 @@ namespace PMDDotNET.Driver
             r.bx = 0xffff;
             goto odz_main;
         odz_minus:;
-            c = r.cx + r.ax > 0xffff;
-            r.cx += r.ax;
-            r.carry = (r.bx + r.dx + (c ? 1 : 0)) > 0xffff;
-            r.bx += (ushort)(r.dx + (c ? 1 : 0));
-            r.carry = r.bx + r.dx > 0xffff;
+            r.carry = !((r.bx * 0x10000 + r.cx + a) < 0);
+            a = (r.bx * 0x10000 + r.cx) + a;
+            r.bx= (ushort)(a >> 16);
+            r.cx = (ushort)a;
             if (r.carry) goto odz_main;
             r.cx = 0;
             r.bx = 0;
