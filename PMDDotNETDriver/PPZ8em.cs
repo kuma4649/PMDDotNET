@@ -95,7 +95,23 @@ namespace PMDDotNET.Driver
                 + pcmData[bank][num * 0x12 + 6 + 32] * 0x10000
                 + pcmData[bank][num * 0x12 + 7 + 32] * 0x1000000
                 ;
-
+            chWk[al].loopStartOffset = 0
+                + pcmData[bank][num * 0x12 + 8 + 32]
+                + pcmData[bank][num * 0x12 + 9 + 32] * 0x100
+                + pcmData[bank][num * 0x12 + 10 + 32] * 0x10000
+                + pcmData[bank][num * 0x12 + 11 + 32] * 0x1000000
+                ;
+            chWk[al].loopEndOffset = 0
+                + pcmData[bank][num * 0x12 + 12 + 32]
+                + pcmData[bank][num * 0x12 + 13 + 32] * 0x100
+                + pcmData[bank][num * 0x12 + 14 + 32] * 0x10000
+                + pcmData[bank][num * 0x12 + 15 + 32] * 0x1000000
+                ;
+            //不要っぽい?
+            //chWk[al].srcFrequency = (ushort)(chWk[al].ptr
+            //    + pcmData[bank][num * 0x12 + 16 + 32]
+            //    + pcmData[bank][num * 0x12 + 17 + 32] * 0x100
+            //    );
 
             interrupt = false;
             chWk[al].playing = true;
@@ -197,7 +213,7 @@ namespace PMDDotNET.Driver
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, string.Format("ppz8em: SetFrequency: 0x{0:x8}", dx * 0x10000 + cx));
 #endif
-            chWk[al].frequency = dx*0x10000 + cx;
+            chWk[al].frequency = (uint)(dx * 0x10000 + cx);
         }
 
         /// <summary>
@@ -211,7 +227,7 @@ namespace PMDDotNET.Driver
         public void SetLoopPoint(byte al, ushort lpStOfsDX, ushort lpStOfsCX, ushort lpEdOfsDI, ushort lpEdOfsSI)
         {
 #if DEBUG
-            Log.WriteLine(LogLevel.TRACE, string.Format("ppz8em: SetLoopPoint: St:0x{0:x8} Ed:0x{0:x8}"
+            Log.WriteLine(LogLevel.TRACE, string.Format("ppz8em: SetLoopPoint: St:0x{0:x8} Ed:0x{1:x8}"
                 , lpStOfsDX * 0x10000 + lpStOfsCX, lpEdOfsDI * 0x10000 + lpEdOfsSI));
 #endif
             al &= 7;
@@ -309,13 +325,20 @@ namespace PMDDotNET.Driver
                     * chWk[i].panL);
                 r += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
                     * chWk[i].panR);
-                chWk[i].delta += chWk[i].srcFrequency * chWk[i].frequency / 0x8000 / SamplingRate;
+                chWk[i].delta += ((ulong)chWk[i].srcFrequency * (ulong)chWk[i].frequency / (ulong)0x8000) / SamplingRate;
                 chWk[i].ptr+=(int)chWk[i].delta;
                 chWk[i].delta -= (int)chWk[i].delta;
 
                 if(chWk[i].ptr>= chWk[i].end)
                 {
-                    chWk[i].playing = false;
+                    if (chWk[i].loopStartOffset != -1)
+                    {
+                        chWk[i].ptr -= chWk[i].loopEndOffset - chWk[i].loopStartOffset;
+                    }
+                    else
+                    {
+                        chWk[i].playing = false;
+                    }
                 }
             }
 
@@ -335,9 +358,9 @@ namespace PMDDotNET.Driver
         public ushort pan;
         public double panL;
         public double panR;
-        public ushort srcFrequency;
+        public uint srcFrequency;
         public ushort volume;
-        public int frequency;
+        public uint frequency;
 
         public int bank;
         public int ptr;
