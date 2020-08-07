@@ -34,6 +34,10 @@ namespace PMDDotNET.Driver
         {
             this.pw = pw;
             pw.md = mmlData;
+            //pw.md = new MmlDatum[mmlData.Length + 256];
+            //Array.Copy(mmlData, 0, pw.md, 0, mmlData.Length);
+            //for (int i = 0; i < 256; i++) pw.md[mmlData.Length + i] = new MmlDatum(0);
+
             pw.board = 1;//音源あり
             //ポート番号の指定
             pw.fm1_port1 = 0x188;//レジスタ
@@ -3722,11 +3726,12 @@ namespace PMDDotNET.Driver
             goto sm_car_set;
 
         sm_notfm3:;
-            r.dl = pw.partWk[r.di].voicenum;
-            r.stack.Push(r.ax);
-            toneadr_calc();
-            r.ax = r.stack.Pop();
-            r.bl = (byte)pw.inst[r.bx + 24].dat;
+            //r.dl = pw.partWk[r.di].voicenum;
+            //r.stack.Push(r.ax);
+            //toneadr_calc();
+            //r.ax = r.stack.Pop();
+            //r.bl = (byte)pw.inst[r.bx + 24].dat;
+            r.bl = pw.partWk[r.di].alg_fb;
 
         sm_car_set:;
             r.bh = 0;
@@ -6004,8 +6009,12 @@ namespace PMDDotNET.Driver
             r.ax += pw.partWk[r.di]._lfodat;
         od_not_lfo2:;
             fm_block_calc();
-            Log.WriteLine(LogLevel.TRACE, string.Format("cx:{0:X4}  ax:{1:X4}  lfodat:{2}  step:{3}"
-                , r.cx, r.ax, (short)pw.partWk[r.di].lfodat, (sbyte)pw.partWk[r.di].step));
+
+#if DEBUG
+            //Log.WriteLine(LogLevel.TRACE, string.Format("cx:{0:X4}  ax:{1:X4}  lfodat:{2}  step:{3}"
+            //    , r.cx, r.ax, (short)pw.partWk[r.di].lfodat, (sbyte)pw.partWk[r.di].step));
+#endif
+
             //;
             //; SET BLOCK/FNUM TO OPN
             //;	input CX:AX
@@ -7166,7 +7175,10 @@ namespace PMDDotNET.Driver
 
         gpd_loop:;
             pw.inst = pw.md;
-
+            if (r.bx >= pw.inst.Length)
+            {
+                throw new PmdException("お探しの音色番号は見つかりませんでした。");
+            }
             if (pw.inst[r.bx].dat == r.dl)
                 goto gpd_exit;
             r.bx += 26;
@@ -10092,7 +10104,7 @@ namespace PMDDotNET.Driver
             int n = 0;
             if(!int.TryParse(op.Substring(1),out n))
             {
-                throw new PmdException("/D オプションの解析に失敗しました");
+                Log.WriteLine(LogLevel.ERROR, "/D オプションの解析に失敗しました");
             }
             switch(c)
             {
@@ -10117,7 +10129,60 @@ namespace PMDDotNET.Driver
                     pw._fm_voldown = (byte)n;
                     break;
                 default:
-                    throw new PmdException("/D オプションの解析に失敗しました");
+                    Log.WriteLine(LogLevel.ERROR, "/D オプションの解析に失敗しました");
+                    break;
+            }
+        }
+
+
+
+        //10043-10105
+        private void keycheck(string op)
+        {
+            char c = op[0];
+            int n = 0;
+            if (!int.TryParse(op.Substring(1), out n))
+            {
+                Log.WriteLine(LogLevel.ERROR, "/K オプションの解析に失敗しました");
+            }
+            switch (c)
+            {
+                case 'G':
+                    r.al = (byte)n;
+                    if (pw.va != 0)
+                    {
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al &= 0b1110_0000;
+                    }
+                    pw.grph_sp_key = r.al;
+                    break;
+                case 'R':
+                    r.al = (byte)n;
+                    if (pw.va != 0)
+                    {
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al &= 0b1110_0000;
+                    }
+                    pw.rew_sp_key = r.al;
+                    break;
+                case 'E':
+                    r.al = (byte)n;
+                    if (pw.va != 0)
+                    {
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al = r.ror(r.al, 1);
+                        r.al &= 0b1110_0000;
+                    }
+                    pw.esc_sp_key = r.al;
+                    break;
+                default:
+                    Log.WriteLine(LogLevel.ERROR, "/K オプションの解析に失敗しました");
+                    break;
             }
         }
 
@@ -10142,8 +10207,51 @@ namespace PMDDotNET.Driver
                 char c = op[1];//1文字目
                 switch (c)
                 {
-                    case 'D':
+                    case 'D'://音量
                         if (op.Length > 2) fmvd_set(op.Substring(2));
+                        break;
+                    case 'N'://ssgドラム
+                        if(op.Length>2 && op[2]=='-') pw.kp_rhythm_flag = 1;
+                        else pw.kp_rhythm_flag = 0;
+                        break;
+                    case 'P'://ppsdrv
+                        if (op.Length > 2 && op[2] == '-')
+                        {
+                            ppsdrv_check();
+                            pw.ppsdrv_flag = 1;
+                        }
+                        else pw.ppsdrv_flag = 0;
+                        break;
+                    case 'C'://no message
+                        pw.message_flag = 0;
+                        break;
+                    case 'G':
+                        int n = 0;
+                        if (!int.TryParse(op.Substring(1), out n)) pw.ff_tempo = 250;
+                        else pw.ff_tempo = (byte)n;
+                        break;
+                    case 'K':
+                        if (op.Length > 2) keycheck(op.Substring(2));
+                        break;
+                    case 'H':
+                    case '?'://help
+                        throw new NotImplementedException();
+                        break;
+                    case 'M':
+                    case 'V':
+                    case 'E':
+                    case 'F':
+                    case 'I':
+                    case 'W':
+                    case 'A':
+                    case 'S':
+                    case 'R':
+                    case 'Z':
+                    case 'O':
+                        Log.WriteLine(LogLevel.WARNING, string.Format("PMDDotNETは指定のオプションをサポートしません。無視します。({0})", op));
+                        break;
+                    default:
+                        Log.WriteLine(LogLevel.ERROR, string.Format("オプションの解析に失敗しました。無視します。({0})", op));
                         break;
                 }
             }

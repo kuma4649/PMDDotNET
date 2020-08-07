@@ -19,7 +19,7 @@ namespace PMDDotNET.Driver
         private Action<long, int> WaitSendOPNA;
         private object lockObjWriteReg = new object();
         static MmlDatum[] srcBuf = null;
-
+        public Exception renderingException = null;
 
         public Driver(iEncoding enc = null)
         {
@@ -242,8 +242,9 @@ namespace PMDDotNET.Driver
             {
                 pmd.Rendering();
             }
-            catch
+            catch(Exception e)
             {
+                renderingException = e;
                 work.Status = -1;
                 throw;
             }

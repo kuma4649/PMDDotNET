@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using PMDDotNET.Driver;
+using System.Linq;
 
 namespace PMDDotNET.Player
 {
@@ -69,7 +70,7 @@ namespace PMDDotNET.Player
             Log.writeLine += WriteLine;
 #if DEBUG
             //Log.writeLine += WriteLineF;
-            Log.level = LogLevel.TRACE;
+            Log.level = LogLevel.INFO;
 #else
             Log.level = LogLevel.INFO;
 #endif
@@ -147,8 +148,19 @@ namespace PMDDotNET.Player
 
                 string[] pmdVol = SetVolume();
 
-                //OPNAWrite(new ChipDatum(0, 0x29, 0x82));//6chMode
 
+                Common.Environment env = new Common.Environment();
+                env.AddEnv("pmd");
+                env.AddEnv("pmdopt");
+                string[] envPmd = env.GetEnvVal("pmd");
+                string[] envPmdOpt = env.GetEnvVal("pmdopt");
+
+                List<string> opt = (envPmdOpt==null) ? (new List<string>()) : envPmdOpt.ToList();
+                for (int i = fnIndex; i < args.Length; i++)
+                {
+                    opt.Add(args[i]);
+                }
+                mIndex += envPmdOpt == null ? 0 : envPmdOpt.Length;
 
 #if NETCOREAPP
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -163,12 +175,13 @@ namespace PMDDotNET.Player
                 dop.isLoadADPCM = false;
                 dop.loadADPCMOnly = false;
                 dop.ppz8em = ppz8em;
+                dop.envPmd = envPmd;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
-                for(int i = fnIndex; i < args.Length; i++)
+                for(int i = fnIndex; i < opt.Count; i++)
                 {
                     if (i == mIndex) continue;
-                    string op = args[i].ToUpper().Trim();
+                    string op = opt[i].ToUpper().Trim();
                     pop.Add(op);
                     if(op.IndexOf("-D") >= 0 || op.IndexOf("/D") >= 0)
                         pmdvolFound = true;
@@ -254,6 +267,13 @@ namespace PMDDotNET.Player
             }
             finally
             {
+                if (((Driver.Driver)drv).renderingException != null)
+                {
+                    Log.WriteLine(LogLevel.FATAL, "演奏失敗");
+                    Log.WriteLine(LogLevel.FATAL, string.Format("message:{0}", ((Driver.Driver)drv).renderingException.Message));
+                    Log.WriteLine(LogLevel.FATAL, string.Format("stackTrace:{0}", ((Driver.Driver)drv).renderingException.StackTrace));
+                }
+
                 if (audioOutput != null)
                 {
                     audioOutput.Stop();

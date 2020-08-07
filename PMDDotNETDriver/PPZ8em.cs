@@ -90,6 +90,8 @@ namespace PMDDotNET.Driver
             int bank = (dx & 0x8000) != 0 ? 1 : 0;
             int num = dx & 0x7fff;
             chWk[al].bank = bank;
+            chWk[al].num = num;
+
             if (pcmData[bank] != null)
             {
                 chWk[al].ptr = pcmData[bank][num * 0x12 + 32]
@@ -103,6 +105,11 @@ namespace PMDDotNET.Driver
                     + pcmData[bank][num * 0x12 + 6 + 32] * 0x10000
                     + pcmData[bank][num * 0x12 + 7 + 32] * 0x1000000
                     ;
+                if (chWk[al].end >= pcmData[bank].Length)
+                {
+                    ;
+                }
+
 
                 chWk[al].loopStartOffset = chWk[al]._loopStartOffset;
                 if (chWk[al]._loopStartOffset == -1)
@@ -255,6 +262,12 @@ namespace PMDDotNET.Driver
             al &= 7;
             chWk[al]._loopStartOffset = lpStOfsDX * 0x10000 + lpStOfsCX;
             chWk[al]._loopEndOffset = lpEdOfsDI * 0x10000 + lpEdOfsSI;
+
+            if(chWk[al]._loopStartOffset!=null & chWk[al]._loopStartOffset>= chWk[al]._loopEndOffset)
+            {
+                chWk[al]._loopStartOffset = -1;
+                chWk[al]._loopEndOffset = -1;
+            }
         }
 
         /// <summary>
@@ -431,5 +444,6 @@ namespace PMDDotNET.Driver
         public int ptr;
         public int end;
         public double delta;
+        public int num;
     }
 }
