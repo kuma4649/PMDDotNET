@@ -6004,6 +6004,8 @@ namespace PMDDotNET.Driver
             r.ax += pw.partWk[r.di]._lfodat;
         od_not_lfo2:;
             fm_block_calc();
+            Log.WriteLine(LogLevel.TRACE, string.Format("cx:{0:X4}  ax:{1:X4}  lfodat:{2}  step:{3}"
+                , r.cx, r.ax, (short)pw.partWk[r.di].lfodat, (sbyte)pw.partWk[r.di].step));
             //;
             //; SET BLOCK/FNUM TO OPN
             //;	input CX:AX
@@ -7458,7 +7460,7 @@ namespace PMDDotNET.Driver
 
         mdi21_ov:;
             r.al = 0;
-            if (pw.partWk[r.di].mdepth != 0x80)
+            if ((pw.partWk[r.di].mdepth & 0x80)!=0)
                 goto mdi21_s;
             r.al = 0x81;// -127;
             goto mdi21_s;
@@ -7474,7 +7476,7 @@ namespace PMDDotNET.Driver
 
         mdi22_ov:;
             r.al = 0;
-            if (pw.partWk[r.di].mdepth != 0x80)
+            if ((pw.partWk[r.di].mdepth & 0x80) != 0)
                 goto mdi22_s;
             r.al = 0x7f;
             goto mdi22_s;

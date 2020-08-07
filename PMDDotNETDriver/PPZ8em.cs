@@ -26,22 +26,23 @@ namespace PMDDotNET.Driver
             new short[256], new short[256], new short[256], new short[256]
         };
         private static double SamplingRate = 44100.0;
+        private int PCM_VOLUME = 0;
+        private int volume = 0;
 
         public PPZ8em(uint SamplingRate)
         {
             PPZ8em.SamplingRate = (double)SamplingRate;
         }
 
-    /// <summary>
-    /// 0x00 初期化
-    /// </summary>
-    public void Initialize()
+        /// <summary>
+        /// 0x00 初期化
+        /// </summary>
+        public void Initialize()
         {
             bank = 0;
             ptr = 0;
             interrupt = false;
-            MakeVolumeTable(8);
-            for(int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
                 chWk[i].srcFrequency = 16000;
                 chWk[i].pan = 5;
@@ -52,6 +53,9 @@ namespace PMDDotNET.Driver
                 chWk[i]._loopStartOffset = -1;
                 chWk[i]._loopEndOffset = -1;
             }
+            PCM_VOLUME = 0;
+            volume = 0;
+            SetAllVolume(12);
         }
 
         private void MakeVolumeTable(int vol)
@@ -59,16 +63,15 @@ namespace PMDDotNET.Driver
             int i, j;
             double temp;
 
-            int volume = vol;
+            volume = vol;
             int AVolume = (int)(0x1000 * Math.Pow(10.0, vol / 40.0));
-            int PCM_VOLUME = 12;
 
             for (i = 0; i < 16; i++)
             {
                 temp = Math.Pow(2.0, (i + PCM_VOLUME) / 2.0) * AVolume / 0x18000;
                 for (j = 0; j < 256; j++)
                 {
-                    VolumeTable[i][j] = (short)((j - 128) * temp);
+                    VolumeTable[i][j] = (short)(Math.Max(Math.Min((j - 128) * temp, short.MaxValue), short.MinValue));
                 }
             }
         }
@@ -294,6 +297,32 @@ namespace PMDDotNET.Driver
         }
 
         /// <summary>
+        /// 0x16 全体ボリューム
+        /// </summary>
+        public void SetAllVolume(int vol)
+        {
+#if DEBUG
+            Log.WriteLine(LogLevel.TRACE, string.Format("ppz8em: SetAllVolume: {0}", vol));
+#endif
+            if (vol < 16 && vol != PCM_VOLUME)
+            {
+                PCM_VOLUME = vol;
+                MakeVolumeTable(volume);
+            }
+        }
+
+        //-----------------------------------------------------------------------------
+        //	音量調整用
+        //-----------------------------------------------------------------------------
+        public void SetVolume(int vol)
+        {
+            if (vol != volume)
+            {
+                MakeVolumeTable(vol);
+            }
+        }
+
+        /// <summary>
         /// 0x18  ﾁｬﾈﾙ7のADPCMのエミュレート設定
         /// </summary>
         /// <param name="al">0:ﾁｬﾈﾙ7でADPCMのエミュレートしない  1:する</param>
@@ -344,19 +373,25 @@ namespace PMDDotNET.Driver
             int l = 0, r = 0;
             for (int i = 0; i < 8; i++)
             {
-                if (!chWk[i].playing) continue;
-                if (chWk[i].pan==0) continue;
                 if (pcmData[chWk[i].bank] == null) continue;
+                if (!chWk[i].playing) continue;
+                if (chWk[i].pan == 0) continue;
 
-                l += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]] 
+                if (i == 6)
+                {
+                    //Console.WriteLine(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
+                    //* chWk[i].panL);
+                }
+
+                l += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
                     * chWk[i].panL);
                 r += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
                     * chWk[i].panR);
                 chWk[i].delta += ((ulong)chWk[i].srcFrequency * (ulong)chWk[i].frequency / (ulong)0x8000) / SamplingRate;
-                chWk[i].ptr+=(int)chWk[i].delta;
+                chWk[i].ptr += (int)chWk[i].delta;
                 chWk[i].delta -= (int)chWk[i].delta;
 
-                if(chWk[i].ptr>= chWk[i].end)
+                if (chWk[i].ptr >= chWk[i].end)
                 {
                     if (chWk[i].loopStartOffset != -1)
                     {
@@ -369,8 +404,6 @@ namespace PMDDotNET.Driver
                 }
             }
 
-            //emuRenderBuf[0] = 0;
-            //emuRenderBuf[1] = 0;
             emuRenderBuf[0] = (short)Math.Max(Math.Min(emuRenderBuf[0] + l, short.MaxValue), short.MinValue);
             emuRenderBuf[1] = (short)Math.Max(Math.Min(emuRenderBuf[1] + r, short.MaxValue), short.MinValue);
         }
