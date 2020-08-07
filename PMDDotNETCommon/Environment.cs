@@ -15,7 +15,7 @@ namespace PMDDotNET.Common
 
         public void AddEnv(string envname)
         {
-            var env = System.Environment.GetEnvironmentVariable(envname, EnvironmentVariableTarget.User);
+            var env = System.Environment.GetEnvironmentVariable(envname, EnvironmentVariableTarget.Process);
             if(!string.IsNullOrEmpty(env))
             {
                 envs.Add(string.Format("{0}={1}", envname, env));
