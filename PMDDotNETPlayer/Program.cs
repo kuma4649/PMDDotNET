@@ -64,6 +64,9 @@ namespace PMDDotNET.Player
         private static int[] VolumeR = null;
         private static bool isGimicOPNA = false;
         private static PPZ8em ppz8em=null;
+        private static string[] envPmd = null;
+        private static string[] envPmdOpt = null;
+        private static string srcFile = null;
 
         static int Main(string[] args)
         {
@@ -152,15 +155,15 @@ namespace PMDDotNET.Player
                 Common.Environment env = new Common.Environment();
                 env.AddEnv("pmd");
                 env.AddEnv("pmdopt");
-                string[] envPmd = env.GetEnvVal("pmd");
-                string[] envPmdOpt = env.GetEnvVal("pmdopt");
+                envPmd = env.GetEnvVal("pmd");
+                envPmdOpt = env.GetEnvVal("pmdopt");
 
                 List<string> opt = (envPmdOpt==null) ? (new List<string>()) : envPmdOpt.ToList();
                 for (int i = fnIndex; i < args.Length; i++)
                 {
                     opt.Add(args[i]);
                 }
-                mIndex += envPmdOpt == null ? 0 : envPmdOpt.Length;
+                mIndex += (envPmdOpt == null ? 0 : envPmdOpt.Length) - fnIndex;
 
 #if NETCOREAPP
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -178,7 +181,7 @@ namespace PMDDotNET.Player
                 dop.envPmd = envPmd;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
-                for(int i = fnIndex; i < opt.Count; i++)
+                for(int i = 0; i < opt.Count; i++)
                 {
                     if (i == mIndex) continue;
                     string op = opt[i].ToUpper().Trim();
@@ -194,13 +197,15 @@ namespace PMDDotNET.Player
                 }
 
                 Log.WriteLine(LogLevel.INFO, "");
+                srcFile = opt[mIndex];
 
                 ((Driver.Driver)drv).Init(
-                    args[mIndex]
+                    srcFile
                     , OPNAWrite
                     , OPNAWaitSend
                     , dop
                     , pop.ToArray()
+                    , appendFileReaderCallback
                     );
 
                 List<Tuple<string, string>> tags = drv.GetTags();
@@ -421,6 +426,39 @@ namespace PMDDotNET.Player
                     Log.WriteLine(level, string.Format("{0}{1}", new string(' ', wrapPos), mes[i]));
                 }
             }
+        }
+
+        private static Stream appendFileReaderCallback(string arg)
+        {
+            string fn;
+            fn = Path.Combine(
+                Path.GetDirectoryName(srcFile)
+                , arg
+                );
+
+            if (envPmd != null)
+            {
+                int i = 0;
+                while (!File.Exists(fn) && i < envPmd.Length)
+                {
+                    fn = Path.Combine(
+                        envPmd[i++]
+                        , arg
+                        );
+                }
+            }
+
+            FileStream strm;
+            try
+            {
+                strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+            catch (IOException)
+            {
+                strm = null;
+            }
+
+            return strm;
         }
 
         private static int AnalyzeOption(string[] args)

@@ -489,8 +489,13 @@ namespace PMDDotNET.Driver
         private Func<object> ppzrepeat_set()
         {
             ppz_voicetable_calc();
-            r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 6] + ppz8em.pcmData[bank][ptr + 7] * 0x100);
-            r.cx = (ushort)(ppz8em.pcmData[bank][ptr + 4] + ppz8em.pcmData[bank][ptr + 5] * 0x100);// dx: cx = データ量
+
+            r.dx = (ushort)(
+                ppz8em.pcmData[bank] == null ? 0 
+                : (ppz8em.pcmData[bank][ptr + 6] + ppz8em.pcmData[bank][ptr + 7] * 0x100));
+            r.cx = (ushort)(
+                ppz8em.pcmData[bank] == null ? 0 
+                : (ppz8em.pcmData[bank][ptr + 4] + ppz8em.pcmData[bank][ptr + 5] * 0x100));// dx: cx = データ量
 
             r.stack.Push(r.si);
             r.stack.Push(r.di);

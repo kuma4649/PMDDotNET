@@ -374,16 +374,26 @@ namespace PMDDotNET.Driver
             //;-----------------------------------------------------------------------------
             //;	FileをPMDのワークにヘッダだけ読みこむ //KUMA:全部読み込む！
             //;-----------------------------------------------------------------------------
-            string fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "PPC"に変更
+            string fn = pw.filename_ofs;//指定
             byte[] pcmData = GetPCMDataFromFile(fn);
             if (pcmData == null || pcmData.Length < 1)
             {
-                fn = Path.ChangeExtension(pw.filename_ofs, ".P86");//;拡張子 "P86"に変更
+                fn = Path.ChangeExtension(pw.filename_ofs, ".PVI");//;拡張子 "PVI"に変更
                 pcmData = GetPCMDataFromFile(fn);
                 if (pcmData == null || pcmData.Length < 1)
                 {
-                    allload_exit2();
-                    return;
+                    fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "P86"に変更
+                    pcmData = GetPCMDataFromFile(fn);
+                    if (pcmData == null || pcmData.Length < 1)
+                    {
+                        fn = Path.ChangeExtension(pw.filename_ofs, ".P86");//;拡張子 "P86"に変更
+                        pcmData = GetPCMDataFromFile(fn);
+                        if (pcmData == null || pcmData.Length < 1)
+                        {
+                            allload_exit2();
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -398,8 +408,8 @@ namespace PMDDotNET.Driver
             {
                 if (pcmData[10] == 2)//;RAM Type 8bit
                 {
-                    //goto pvi_load;
-                    throw new NotImplementedException();
+                    pvi_load(pcmData);
+                    return;
                 }
             }
         not_pvi:;
@@ -418,10 +428,14 @@ namespace PMDDotNET.Driver
                 return;
             }
 
+            ppc_load_main(pcmData);
+        }
+
         //;-----------------------------------------------------------------------------
         //;	PMDのワークにFilenameを書く
         //;-----------------------------------------------------------------------------
-        ppc_load_main:;
+        private void ppc_load_main(byte[] pcmData)
+        { 
             write_filename_to_pmdwork();
 
             //;-----------------------------------------------------------------------------
@@ -534,6 +548,17 @@ namespace PMDDotNET.Driver
             //;	終了
             //;-----------------------------------------------------------------------------
             r.ax = 0;
+        }
+
+
+
+        //584-634
+        //;==============================================================================
+        //;	.PVI loading
+        //;==============================================================================
+        private void pvi_load(byte[] pcmData)
+        {
+
         }
 
 

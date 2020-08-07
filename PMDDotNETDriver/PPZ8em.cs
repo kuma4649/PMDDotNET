@@ -99,6 +99,10 @@ namespace PMDDotNET.Driver
                     + pcmData[bank][num * 0x12 + 2 + 32] * 0x10000
                     + pcmData[bank][num * 0x12 + 3 + 32] * 0x1000000
                     + 0x20 + 0x12 * 128;
+                if (chWk[al].ptr >= pcmData[bank].Length)
+                {
+                    chWk[al].ptr = pcmData[bank].Length - 1;
+                }
                 chWk[al].end = chWk[al].ptr
                     + pcmData[bank][num * 0x12 + 4 + 32]
                     + pcmData[bank][num * 0x12 + 5 + 32] * 0x100
@@ -107,7 +111,7 @@ namespace PMDDotNET.Driver
                     ;
                 if (chWk[al].end >= pcmData[bank].Length)
                 {
-                    ;
+                    chWk[al].end = pcmData[bank].Length - 1;
                 }
 
 

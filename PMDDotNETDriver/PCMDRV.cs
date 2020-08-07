@@ -712,7 +712,7 @@ namespace PMDDotNET.Driver
             r.ax++;
             goto mvset;
         normal_mvset:;
-            r.ah += pw.partWk[r.di].eenv_volume;//.penv;
+            r.ah = pw.partWk[r.di].eenv_volume;//.penv;
             if ((r.ah & 0x80) == 0)
                 goto mvplus;
             //; -
