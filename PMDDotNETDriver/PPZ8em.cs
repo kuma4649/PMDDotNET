@@ -1,19 +1,24 @@
 ﻿using musicDriverInterface;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace PMDDotNET.Driver
 {
+    //
+    // ppz8l.cpp / ppz8l.h(by C60さん) を参考に作成
+    //
+
     public class PPZ8em
     {
         public byte[][] pcmData = new byte[2][];
         private bool[] isPVI = new bool[2];
-        private channelWork[] chWk = new channelWork[8]
+        private PPZChannelWork[] chWk = new PPZChannelWork[8]
         {
-            new channelWork(),new channelWork(),new channelWork(),new channelWork(),
-            new channelWork(),new channelWork(),new channelWork(),new channelWork()
+            new PPZChannelWork(),new PPZChannelWork(),new PPZChannelWork(),new PPZChannelWork(),
+            new PPZChannelWork(),new PPZChannelWork(),new PPZChannelWork(),new PPZChannelWork()
         };
         public int bank = 0;
         public int ptr = 0;
@@ -135,6 +140,11 @@ namespace PMDDotNET.Driver
                     + pcmData[bank][num * 0x12 + 15 + 32] * 0x1000000
                     ;
                 }
+                if (chWk[al].loopStartOffset == 0xffff && chWk[al].loopEndOffset == 0xffff)
+                {
+                    chWk[al].loopStartOffset = -1;
+                    chWk[al].loopEndOffset = -1;
+                }
 
                 //不要っぽい?
                 //chWk[al].srcFrequency = (ushort)(chWk[al].ptr
@@ -192,6 +202,10 @@ namespace PMDDotNET.Driver
                 this.pcmData[bank] = new byte[pcmData.Length];
                 Array.Copy(pcmData, this.pcmData[bank], pcmData.Length);
                 isPVI[bank] = mode == 0;
+                if (isPVI[bank])
+                {
+                    ret = ConvertPviAdpcmToPziPcm(bank);
+                }
             }
 
             return ret;
@@ -267,7 +281,7 @@ namespace PMDDotNET.Driver
             chWk[al]._loopStartOffset = lpStOfsDX * 0x10000 + lpStOfsCX;
             chWk[al]._loopEndOffset = lpEdOfsDI * 0x10000 + lpEdOfsSI;
 
-            if(chWk[al]._loopStartOffset!=null & chWk[al]._loopStartOffset>= chWk[al]._loopEndOffset)
+            if(chWk[al]._loopStartOffset==0xffff || chWk[al]._loopStartOffset>= chWk[al]._loopEndOffset)
             {
                 chWk[al]._loopStartOffset = -1;
                 chWk[al]._loopEndOffset = -1;
@@ -400,10 +414,9 @@ namespace PMDDotNET.Driver
                     //* chWk[i].panL);
                 }
 
-                l += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
-                    * chWk[i].panL);
-                r += (int)(VolumeTable[chWk[i].volume][pcmData[chWk[i].bank][chWk[i].ptr]]
-                    * chWk[i].panR);
+                int n = chWk[i].ptr >= pcmData[chWk[i].bank].Length ? 0x80 : pcmData[chWk[i].bank][chWk[i].ptr];
+                l += (int)(VolumeTable[chWk[i].volume][n] * chWk[i].panL);
+                r += (int)(VolumeTable[chWk[i].volume][n] * chWk[i].panR);
                 chWk[i].delta += ((ulong)chWk[i].srcFrequency * (ulong)chWk[i].frequency / (ulong)0x8000) / SamplingRate;
                 chWk[i].ptr += (int)chWk[i].delta;
                 chWk[i].delta -= (int)chWk[i].delta;
@@ -425,29 +438,84 @@ namespace PMDDotNET.Driver
             emuRenderBuf[1] = (short)Math.Max(Math.Min(emuRenderBuf[1] + r, short.MaxValue), short.MinValue);
         }
 
+
+
+        private int ConvertPviAdpcmToPziPcm(byte bank)
+        {
+            int[] table1 = new int[16] {
+                1,   3,   5,   7,   9,  11,  13,  15,
+                -1,  -3,  -5,  -7,  -9, -11, -13, -15,
+            };
+            int[] table2 = new int[16] {
+                57,  57,  57,  57,  77, 102, 128, 153,
+                57,  57,  57,  57,  77, 102, 128, 153,
+            };
+
+            List<byte> o = new List<byte>();
+
+            //ヘッダの生成
+            o.Add((byte)'P'); o.Add((byte)'Z'); o.Add((byte)'I'); o.Add((byte)'1');
+            for (int i = 4; i < 0x0b; i++) o.Add(0);
+            byte instCount = pcmData[bank][0xb];
+            o.Add(instCount);
+            for (int i = 0xc; i < 0x20; i++) o.Add(0);
+
+            //音色テーブルのコンバート
+            ulong size2 = 0;
+            for (int i = 0; i < instCount; i++)
+            {
+                uint startaddress = (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100) << (5 + 1);
+                uint size = ((uint)(pcmData[bank][i * 4 + 0x12] + pcmData[bank][i * 4 + 0x13] * 0x100)
+                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100))
+                    << (5 + 1);// endAdr - startAdr
+                size2 += size;
+                short rate = 16000;   // 16kHz
+
+                o.Add((byte)startaddress); o.Add((byte)(startaddress >> 8)); o.Add((byte)(startaddress >> 16)); o.Add((byte)(startaddress >> 24));
+                o.Add((byte)size); o.Add((byte)(size >> 8)); o.Add((byte)(size >> 16)); o.Add((byte)(size >> 24));
+                o.Add((byte)0xff); o.Add((byte)0xff); o.Add((byte)0); o.Add((byte)0);//loop_start
+                o.Add((byte)0xff); o.Add((byte)0xff); o.Add((byte)0); o.Add((byte)0);//loop_end
+                o.Add((byte)rate); o.Add((byte)(rate >> 8));//rate
+            }
+
+            for (int i = instCount; i < 128; i++)
+            {
+                o.Add((byte)0); o.Add((byte)0); o.Add((byte)0); o.Add((byte)0);
+                o.Add((byte)0); o.Add((byte)0); o.Add((byte)0); o.Add((byte)0);
+                o.Add((byte)0xff); o.Add((byte)0xff); o.Add((byte)0); o.Add((byte)0);//loop_start
+                o.Add((byte)0xff); o.Add((byte)0xff); o.Add((byte)0); o.Add((byte)0);//loop_end
+                short rate = 16000;   // 16kHz
+                o.Add((byte)rate); o.Add((byte)(rate >> 8));//rate
+            }
+
+            //ADPCM > PCM に変換
+            int psrcPtr = 0x10 + 4 * 128;
+            for (int i = 0; i < instCount; i++)
+            {
+                short X_N = 0x80; // Xn     (ADPCM>PCM 変換用)
+                short DELTA_N = 127; // DELTA_N(ADPCM>PCM 変換用)
+
+                uint size = ((uint)(pcmData[bank][i * 4 + 0x12] + pcmData[bank][i * 4 + 0x13] * 0x100)
+                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100))
+                    << (5 + 1);// endAdr - startAdr
+
+                for (int j = 0; j < size/2 ; j++)
+                {
+                    byte psrc = pcmData[bank][psrcPtr++];
+                    X_N = (short)Math.Max(Math.Min(X_N + table1[(psrc >> 4) & 0x0f] * DELTA_N / 8, 32767), -32768);
+                    DELTA_N = (short)Math.Max(Math.Min(DELTA_N * table2[(psrc >> 4) & 0x0f] / 64, 24576), 127);
+                    o.Add((byte)(X_N / (32768 / 128) + 128));
+
+                    X_N = (short)Math.Max(Math.Min(X_N + table1[psrc & 0x0f] * DELTA_N / 8, 32767), -32768);
+                    DELTA_N = (short)Math.Max(Math.Min(DELTA_N * table2[psrc & 0x0f] / 64, 24576), 127);
+                    o.Add((byte)(X_N / (32768 / 128) + 128));
+                }
+            }
+
+            pcmData[bank] = o.ToArray();
+            return 0;
+        }
+
     }
 
-    public class channelWork
-    {
-        public int loopStartOffset;
-        public int loopEndOffset;
-        public bool playing;
-        public ushort pan;
-        public double panL;
-        public double panR;
-        public uint srcFrequency;
-        public ushort volume;
-        public uint frequency;
-
-        public int _loopStartOffset;
-        public int _loopEndOffset;
-        //public uint _frequency;
-        public uint _srcFrequency;
-
-        public int bank;
-        public int ptr;
-        public int end;
-        public double delta;
-        public int num;
-    }
 }
