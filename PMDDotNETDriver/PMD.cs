@@ -5658,17 +5658,18 @@ namespace PMDDotNET.Driver
                 r.dh = r.al;
                 r.ah = 0;
                 r.bx += r.ax;
-                r.al = 0x18 - 1;
+
+                r.dh += 0x18 - 1;
                 r.al = pw.rdat[r.bx];
                 r.al &= 0b0001_1111;
                 r.dl = r.al;
-
                 r.al = (byte)pw.md[r.si++].dat;
                 r.al += r.dl;
                 if (r.al < 32)
                     goto rvss00;
                 if ((r.al & 0x80) != 0)
                     goto rvss01;
+
                 r.al = 31;
                 goto rvss00;
             rvss01:;
