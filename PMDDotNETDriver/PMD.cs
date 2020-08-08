@@ -9195,6 +9195,8 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void fm_effect_on()
         {
+            if (pw.efcdat == -1) return;//KUMA: 将来効果音使うときまで封印
+
             //pushf
             //cli
             if (pw.fm_effec_flag == 0)
@@ -9717,6 +9719,7 @@ namespace PMDDotNET.Driver
             r.bx <<= 2;
             r.ax += r.bx;
             pw.efcdat = r.ax;
+            pw.efcdat = -1;//効果音は未使用
 
             Random rnd = new System.Random();
             pw.seed = (ushort)rnd.Next(0, 0xffff);

@@ -193,7 +193,7 @@ namespace PMDDotNET.Driver
         public byte open_work = 0;//label byte
         public int mmlbuf = 0;//Musicdataのaddress+1
         public int tondat = 0;//Voicedataのaddress
-        public int efcdat = 0;//FM Effecdataのaddress
+        public int efcdat = -1;//FM Effecdataのaddress
         public int fm1_port1 = 0;// FM音源 I/O port(表1)
         public int fm1_port2 = 0;//FM音源 I/O port(表2)
         public int fm2_port1 = 0;//FM音源 I/O port(裏1)
