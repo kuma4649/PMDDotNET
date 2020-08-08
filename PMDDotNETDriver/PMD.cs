@@ -796,7 +796,7 @@ namespace PMDDotNET.Driver
             pw.port22h = r.dl;
             opnset44();
 
-            if (pw.board2 == 0)
+            if (pw.board2 != 0)
             {
                 //;==============================================================================
                 //; Rhythm Default = Pan : Mid , Vol: 15

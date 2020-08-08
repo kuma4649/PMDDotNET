@@ -558,7 +558,38 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void pvi_load(byte[] pcmData)
         {
+            //; -----------------------------------------------------------------------------
+            //; ヘッダ / 音色tableの残りを読み込み
+            //; -----------------------------------------------------------------------------
+            //KUMA:pcmDataに一括で入っているため不要
 
+            List<byte> o = new List<byte>();
+            for (int i = 0; i < 30; i++) o.Add(0);
+
+            o.Add(0); o.Add(0); //Endpoint?
+
+            ushort max = 0;
+            for (int i = 0; i < 128; i++)
+            {
+                ushort st = (ushort)((pcmData[i * 4 + 0x10] + pcmData[i * 4 + 0x11] * 0x100) + 0x26);
+                ushort ed = (ushort)((pcmData[i * 4 + 0x12] + pcmData[i * 4 + 0x13] * 0x100) + 0x26);
+                if (max < st) max = st;
+                if (max < ed) max = ed;
+                o.Add((byte)st);
+                o.Add((byte)(st >> 8));
+                o.Add((byte)ed);
+                o.Add((byte)(ed >> 8));
+            }
+            max++;
+            o[0x1e] = (byte)max;
+            o[0x1f] = (byte)(max >> 8);
+            for (int i = 0; i < 128 * 4; i++) o.Add(0);
+            for (int i = 0x210; i < pcmData.Length; i++)
+            {
+                o.Add(pcmData[i]);
+            }
+
+            ppc_load_main(o.ToArray());
         }
 
 
