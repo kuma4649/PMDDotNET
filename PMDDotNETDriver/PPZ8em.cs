@@ -1,9 +1,6 @@
 ﻿using musicDriverInterface;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace PMDDotNET.Driver
 {
@@ -529,7 +526,7 @@ namespace PMDDotNET.Driver
             }
 
             pcmData[bank] = o.ToArray();
-            System.IO.File.WriteAllBytes("a.raw", pcmData[bank]);
+            //System.IO.File.WriteAllBytes("a.raw", pcmData[bank]);
             return 0;
         }
 

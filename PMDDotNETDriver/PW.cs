@@ -1049,11 +1049,36 @@ namespace PMDDotNET.Driver
             ef = MakeMmlDatum(D_008); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;OPENHT		    ;8
             ef = MakeMmlDatum(D_009); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;CRUSHCYMBA	    ;9
             ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;10
-            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;11
-            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;12
-            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;13
-            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;14
-            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;15
+
+            ef = MakeMmlDatum(DM_001); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 11 syuta
+            ef = MakeMmlDatum(DM_002); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 12 Au
+            ef = MakeMmlDatum(DM_003); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 13 syuba
+            ef = MakeMmlDatum(DM_004); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 14 syu
+            ef = MakeMmlDatum(DM_005); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 15 sya-
+            ef = MakeMmlDatum(DM_006); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 16 po
+            ef = MakeMmlDatum(DM_007); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 17 tattu
+            ef = MakeMmlDatum(DM_008); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 18 zusyau
+            ef = MakeMmlDatum(DM_009); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 19 piro
+            ef = MakeMmlDatum(DM_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 20 piron
+            ef = MakeMmlDatum(DM_011); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 21 pirorironn
+            ef = MakeMmlDatum(DM_012); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 22 buu
+            ef = MakeMmlDatum(DM_013); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 23 babon
+            ef = MakeMmlDatum(DM_014); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 24 basyu-
+            ef = MakeMmlDatum(DM_015); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 25 poun
+            ef = MakeMmlDatum(DM_016); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 26 pasyu
+            ef = MakeMmlDatum(DM_017); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 27 KON
+            ef = MakeMmlDatum(DM_018); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 28 dosun
+            ef = MakeMmlDatum(DM_019); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 29 zu
+            ef = MakeMmlDatum(DM_020); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 30 go
+            ef = MakeMmlDatum(DM_021); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 31 poyon
+            ef = MakeMmlDatum(DM_022); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 32 katun
+            ef = MakeMmlDatum(DM_023); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 33 syupin
+            ef = MakeMmlDatum(DM_024); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 34 1UP
+            ef = MakeMmlDatum(DM_025); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 35 PI
+            ef = MakeMmlDatum(DM_026); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 36 pikon
+            ef = MakeMmlDatum(DM_027); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 37 pyuu
+            ef = MakeMmlDatum(DM_028); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 38 PI
+            ef = MakeMmlDatum(DM_029); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 39 click
         }
 
         private MmlDatum[] MakeMmlDatum(byte[] dd)
@@ -1127,5 +1152,182 @@ namespace PMDDotNET.Driver
 	           31,   30,    0,    0,  54,   16, 136,  19,     0,     0,     0
             , 0xff//-1
         };
+        //;
+        //;	Effect for 電撃MIX
+        //;
+
+        private static byte[] DM_001 = new byte[]{//; syuta                   	1994-05-25	23:13:02
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               3,221,  1, 15, 55, 16,232,  3,  0,  0,113
+            ,   2,221,  1,  0, 55, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_002 = new byte[]{//; Au                      	1994-05-25	23:13:07
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               1, 44,  1,  0, 62, 16, 44,  1, 13,  0,  0
+            ,   6, 44,  1,  0, 62, 16, 16, 39,  0, 80,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_003 = new byte[]{//; syuba                   	1994-05-25	23:13:25
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,221,  1,  0, 55, 14, 16, 39,  0,  0, 81
+            ,   4,221,  1, 10, 55, 16,208,  7,  0,  0,241
+            , 0xff//-1
+        };
+        private static byte[] DM_004 = new byte[]{//; syu                     	1994-05-25	23:17:51
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               3,221,  1,  0, 55, 16,244,  1, 13,  0,  0
+            ,   8,221,  1, 15, 55, 16,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_005 = new byte[]{//; sya-                    	1994-05-25	23:19:01
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               3,221,  1, 10, 55, 16,100,  0, 13,  0,  0
+            ,  16,221,  1,  5, 55, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_006 = new byte[]{//; po                      	1994-05-25	23:13:32
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               2,144,  1,  0, 62, 16,244,  1,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_007 = new byte[]{//; tattu                   	1994-05-25	23:13:37
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,221,  1, 15, 55, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_008 = new byte[]{//; zusyau                  	1994-05-25	23:13:42
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               2,221,  1, 31, 55, 15, 16, 39,  0,  0,  0
+            ,  12,221,  1,  0, 55, 16,136, 19,  0,  0, 17
+            , 0xff//-1
+        };
+        private static byte[] DM_009 = new byte[]{//; piro                    	1994-05-25	23:20:41
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               2,144,  1,  0, 62, 16,232,  3,  0,  0,  0
+            ,   2,200,  0,  0, 62, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_010 = new byte[]{//; piron                   	1994-05-25	23:20:26
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,144,  1,  0, 62, 16,208,  7,  0,  0,  0
+            ,   8,200,  0,  0, 62, 16,184, 11,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_011 = new byte[]{//; pirorironn              	1994-05-25	23:21:50
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               3,144,  1,  0, 62, 16,208,  7,  0,  0,  0
+            ,   3,100,  0,  0, 62, 16,208,  7,  0,  0,  0
+            ,   3,200,  0,  0, 62, 16,208,  7,  0,  0,  0
+            ,   3,144,  1,  0, 62, 16,208,  7,  0,  0,  0
+            ,   8,100,  0,  0, 62, 16,184, 11,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_012 = new byte[]{//; buu                     	1994-05-25	23:23:10
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+              16,208,  7,  0, 62, 15, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_013 = new byte[]{//; babon                   	1994-05-25	23:15:40
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,221,  1, 31, 55, 16,136, 19,  0,  0,  0
+            ,   8,221,  1, 31, 54, 16,184, 11,  0,127,241
+            , 0xff//-1
+        };
+        private static byte[] DM_014 = new byte[]{//; basyu-                  	1994-05-25	23:15:44
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,221,  1, 25, 55, 16,208,  7,  0,  0,  0
+            ,  32,221,  1, 20, 55, 16,112, 23,  0,  0, 19
+            , 0xff//-1
+        };
+        private static byte[] DM_015 = new byte[]{//; poun                    	1994-05-25	23:15:27
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               6,200,  0,  0, 54, 16,136, 19,  0, 20,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_016 = new byte[]{//; pasyu                   	1994-05-25	23:22:59
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4, 40,  0, 20, 54, 16, 16, 39,  0, 20,  0
+            ,  16, 20,  0,  5, 54, 16,136, 19,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_017 = new byte[]{//; KON                     	1994-05-25	23:16:07
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               6, 88,  2,  0, 62, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_018 = new byte[]{//; dosun                   	1994-05-25	23:23:57
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,232,  3,  0, 62, 16, 16, 39,  0,127,  0
+            ,  16,221,  1,  0, 54, 16, 16, 39,  0, 64,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_019 = new byte[]{//; zu                      	1994-05-25	23:24:59
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,232,  3, 31, 54, 15, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_020 = new byte[]{//; go                      	1994-05-25	23:24:43
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,255, 15, 31, 54, 15, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_021 = new byte[]{//; poyon                   	1994-05-25	23:26:17
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,221,  1,  0, 62, 16,232,  3,  0,206,  0
+            ,  16,242,  0,  0, 62, 16,112, 23,  0,248,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_022 = new byte[]{//; katun                   	1994-05-25	23:27:10
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,100,  0,  0, 62, 16,244,  1,  0,  0,  0
+            ,   4, 10,  0,  0, 54, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_023 = new byte[]{//; syupin                  	1994-05-25	23:28:18
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               8,221,  1,  5, 55, 16,244,  1, 13,  0,  0
+            ,  24, 30,  0,  0, 54, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_024 = new byte[]{//; 1UP                     	1994-05-25	23:16:52
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4, 44,  1,  0, 62, 16,136, 19,  0,  0,  0
+            ,   4,180,  0,  0, 62, 16,136, 19,  0,  0,  0
+            ,   4,200,  0,  0, 62, 16,136, 19,  0,  0,  0
+            ,  24,150,  0,  0, 62, 16,136, 19,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_025 = new byte[]{//; PI                      	1994-05-25	23:16:35
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               3,238,  0,  0, 62, 14,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_026 = new byte[]{//; pikon                   	1994-05-25	23:29:19
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               4,200,  0,  0, 62, 16,136, 19,  0,  0,  0
+            ,  16,100,  0,  0, 62, 16,136, 19,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_027 = new byte[]{//; pyuu                    	1994-05-25	23:30:33
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+              16,  0,  0,  0, 54, 16,244,  1, 13,  1, 17
+            ,  16, 16,  0, 16, 54, 16,124, 21,  0,  1, 17
+            , 0xff//-1
+        };
+        private static byte[] DM_028 = new byte[]{//; PI                      	1994-05-25	23:16:24
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               1,200,  0,  0, 62, 14,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] DM_029 = new byte[]{//; click                   	1994-05-25	23:14:24
+            //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
+               2,200,  0,  0, 62, 16, 32,  3,  0,  0,  0
+            ,   2,100,  0,  0, 62, 16, 32,  3,  0,  0,  0
+            ,   2, 50,  0,  0, 62, 16, 32,  3,  0,  0,  0
+            ,   2, 25,  0,  0, 62, 16, 32,  3,  0,  0,  0
+            , 0xff//-1
+        };
+
     }
 }
