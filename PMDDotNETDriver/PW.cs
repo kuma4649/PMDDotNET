@@ -1079,6 +1079,121 @@ namespace PMDDotNET.Driver
             ef = MakeMmlDatum(DM_027); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 37 pyuu
             ef = MakeMmlDatum(DM_028); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 38 PI
             ef = MakeMmlDatum(DM_029); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 39 click
+
+            ef = MakeMmlDatum(RS_006); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 40 batan
+            ef = MakeMmlDatum(RS_007); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 41 dodonn
+            ef = MakeMmlDatum(RS_009); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 42 kisya-
+            ef = MakeMmlDatum(RS_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 43 bofu
+            ef = MakeMmlDatum(RS_011); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 44 gogogogo--
+            ef = MakeMmlDatum(RS_012); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 45 karakara
+            ef = MakeMmlDatum(RS_013); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 46 buonn
+            ef = MakeMmlDatum(RS_015); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 47 tyattu
+            ef = MakeMmlDatum(RS_018); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 48 zu
+            ef = MakeMmlDatum(RS_019); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 49 saaaa
+            ef = MakeMmlDatum(RS_020); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 50 za
+            ef = MakeMmlDatum(RS_021); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 51 TYARIN
+            ef = MakeMmlDatum(RS_022); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 52 SYUWAWA
+            ef = MakeMmlDatum(RS_024); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 53 PIN
+            ef = MakeMmlDatum(RS_026); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 54 KAMINARI
+            ef = MakeMmlDatum(RS_027); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 55 PI
+            ef = MakeMmlDatum(RS_028); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 56 KEIKOKU
+            ef = MakeMmlDatum(RS_029); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 57 ETC 1
+            ef = MakeMmlDatum(RS_030); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 58 BUFOFOFO
+            ef = MakeMmlDatum(RS_031); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 59 ETC 3
+            ef = MakeMmlDatum(RS_032); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 60 ETC 4
+            ef = MakeMmlDatum(RS_033); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 61 HADE BOMB
+            ef = MakeMmlDatum(RS_035); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 62 JARARAN
+            ef = MakeMmlDatum(PO_011); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 63 Rain fall
+            ef = MakeMmlDatum(PO_012); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 64 Spinner
+            ef = MakeMmlDatum(PO_013); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 65 Kaminari
+            ef = MakeMmlDatum(PO_014); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 66 Sairen
+            ef = MakeMmlDatum(PO_015); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 67 Door Shut
+            ef = MakeMmlDatum(PO_016); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 68 Kiteki
+            ef = MakeMmlDatum(PO_017); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 69 Ship Bomb
+            ef = MakeMmlDatum(PO_018); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 70 Spinner 2
+            ef = MakeMmlDatum(PO_019); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 71 Helli
+            ef = MakeMmlDatum(PO_020); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 72 Kinzoku Sagyou
+            ef = MakeMmlDatum(PO_021); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 73 Kaze (DAME)
+            ef = MakeMmlDatum(PO_022); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 74 Taikushitu Soto
+            ef = MakeMmlDatum(PO_023); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 75 Punch
+            ef = MakeMmlDatum(PO_024); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 76 Shower
+            ef = MakeMmlDatum(PO_025); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 77 Shokki
+            ef = MakeMmlDatum(PO_026); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 78 Tobikomi
+            ef = MakeMmlDatum(PO_027); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 79 Air Fukidasi
+            ef = MakeMmlDatum(PO_028); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 80 Heavy Door Open
+            ef = MakeMmlDatum(PO_029); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 81 Car Door Shut
+            ef = MakeMmlDatum(PO_030); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 82 Car Come'in
+            ef = MakeMmlDatum(PO_031); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 83 Ice Hikkaki
+            ef = MakeMmlDatum(PO_032); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 84 Ship Crush Down
+            ef = MakeMmlDatum(PO_033); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 85 Toraware
+            ef = MakeMmlDatum(PO_034); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 86 Sekizou Break
+            ef = MakeMmlDatum(PO_035); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 87 Blaster Shot
+            ef = MakeMmlDatum(PO_036); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 88 Seifuku Yabuki
+            ef = MakeMmlDatum(PO_037); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 89 Miminari
+            ef = MakeMmlDatum(PO_038); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 90 Sekizou Ayasige
+            ef = MakeMmlDatum(PO_039); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 91 Voiler & Engine
+            ef = MakeMmlDatum(PO_040); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 92 Suimen
+            ef = MakeMmlDatum(PO_041); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 93 Kika
+            ef = MakeMmlDatum(PO_042); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 94 Change Kakyuu
+            ef = MakeMmlDatum(PO_043); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 95 Change Blue
+            ef = MakeMmlDatum(PO_044); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 96 Youma Funsyutu
+            ef = MakeMmlDatum(PO_045); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 97 Kekkai
+            ef = MakeMmlDatum(PO_046); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 98 Gosintou 1
+            ef = MakeMmlDatum(PO_047); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 99 Gosintou 2
+            ef = MakeMmlDatum(PO_048); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 100 Gosintou 3
+            ef = MakeMmlDatum(PO_049); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 101 Hand Blaster
+            ef = MakeMmlDatum(PO_050); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 102 Magic
+            ef = MakeMmlDatum(PO_051); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 103 Grabiton 1
+            ef = MakeMmlDatum(PO_052); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 104 Grabiton 2
+            ef = MakeMmlDatum(PO_053); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 105 Attack Kakyuu
+            ef = MakeMmlDatum(PO_054); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 106 Attack Blue(TEKITOU)
+            ef = MakeMmlDatum(PO_055); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 107 Attack Red
+            ef = MakeMmlDatum(PO_056); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 108 Attack White
+            ef = MakeMmlDatum(PO_057); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 109 Attack Black
+            ef = MakeMmlDatum(PO_058); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 110 Attack Last
+            ef = MakeMmlDatum(PO_059); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 111 Damage 1
+            ef = MakeMmlDatum(PO_060); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 112 Damage 2
+            ef = MakeMmlDatum(PO_061); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 113 Attack
+            ef = MakeMmlDatum(ND_000); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 114 MAP
+            ef = MakeMmlDatum(ND_001); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 115 SONAR
+            ef = MakeMmlDatum(ND_002); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 116 KOUKOU
+            ef = MakeMmlDatum(ND_003); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 117 MEGIDO
+            ef = MakeMmlDatum(ND_004); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 118 JINARI
+            ef = MakeMmlDatum(ND_005); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 119 SWITCH
+            ef = MakeMmlDatum(ND_006); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 120 DOSYUUNN
+            ef = MakeMmlDatum(ND_007); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 121 GYUOON
+            ef = MakeMmlDatum(ND_008); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 122 PIPIPIPI
+            ef = MakeMmlDatum(ND_009); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 123 SYUBATTU
+            ef = MakeMmlDatum(ND_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 124 BEAM UNARI
+            ef = MakeMmlDatum(ND_011); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 125 BEAM KAKUSAN
+            ef = MakeMmlDatum(ND_012); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 126 ORGAN
+            ef = MakeMmlDatum(ND_013); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 127 PANEL
+            ef = MakeMmlDatum(ND_014); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 128 DRILL
+            ef = MakeMmlDatum(ND_015); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 129 PRAZMA
+            ef = MakeMmlDatum(ND_016); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 130 BABEL
+            ef = MakeMmlDatum(ND_017); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 131 ELEVETOR
+            ef = MakeMmlDatum(ND_018); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 132 MEGIDO HASSYA
+            ef = MakeMmlDatum(ND_019); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 133 DAIBAKUHATU
+            ef = MakeMmlDatum(ND_020); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 134 NAMI
+            ef = MakeMmlDatum(ND_021); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 135 DOOOONN
+            ef = MakeMmlDatum(ND_022); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 136 DOGA
+            ef = MakeMmlDatum(ND_023); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 137 PISI
+            ef = MakeMmlDatum(ND_024); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 138 BLUE WATER
+            ef = MakeMmlDatum(ND_025); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 139 HOWAWAN
+            ef = MakeMmlDatum(ND_026); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 140 ZUGAN
+            ef = MakeMmlDatum(ND_027); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 141 DAAANN
+            ef = MakeMmlDatum(ND_028); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 142 DOGOOOONN
+            ef = MakeMmlDatum(ND_029); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 143 GASYA
+            ef = MakeMmlDatum(ND_030); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 144 BASYUSYUSYU
+            ef = MakeMmlDatum(ND_031); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 145 DOSYUSYUSYU
+            ef = MakeMmlDatum(ND_032); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 146 SYUSYUUUUNN
+            ef = MakeMmlDatum(ND_033); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 147 BASYANN - HYURURURU
+            ef = MakeMmlDatum(ND_034); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 148 ZYURUZYURU
+            ef = MakeMmlDatum(ND_035); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 149 ZUGOGOGOGO
+            ef = MakeMmlDatum(ND_036); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 150 ZUGOOOONN
+            ef = MakeMmlDatum(ND_037); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 151 BI--
+            ef = MakeMmlDatum(ND_038); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 152 BASYUSYUUU
+            ef = MakeMmlDatum(ND_039); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 153 BISYU
         }
 
         private MmlDatum[] MakeMmlDatum(byte[] dd)
@@ -1326,6 +1441,577 @@ namespace PMDDotNET.Driver
             ,   2,100,  0,  0, 62, 16, 32,  3,  0,  0,  0
             ,   2, 50,  0,  0, 62, 16, 32,  3,  0,  0,  0
             ,   2, 25,  0,  0, 62, 16, 32,  3,  0,  0,  0
+            , 0xff//-1
+        };
+
+//;
+//;	Effect for Ｒｕｓｔｙ
+//;
+        private static byte[] RS_006 = new byte[]{// batan                   	1993-01-08	01:44:30
+               2,221,  1, 31, 55, 16,232,  3,  0,  0,  0
+            ,   6,221,  1, 10, 55, 16,208,  7,  0,  0, 17
+            , 0xff//-1
+        };
+        private static byte[] RS_007 = new byte[]{// dodonn                  	1993-01-08	01:39:10
+               4,232,  3, 15, 54, 16, 16, 39,  0,127,  0
+            ,  16,244,  1,  5, 54, 16,136, 19,  0,127,243
+            , 0xff//-1
+        };
+        private static byte[] RS_009 = new byte[]{// kisya-                  	1993-01-08	01:39:47
+               4, 40,  0, 20, 54, 16, 16, 39,  0, 20,  0
+            ,  24, 20,  0,  5, 54, 16, 16, 39,  0,  1,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_010 = new byte[]{// bofu                    	1993-01-08	01:45:38
+               4,232,  3,  0, 54, 15, 16, 39,  0,127,  0
+            ,  32, 10,  0, 10, 55, 16,112, 23,  0,  0,243
+            , 0xff//-1
+        };
+        private static byte[] RS_011 = new byte[]{// gogogogo--              	1993-06-29	12:27:41
+              96,255, 15, 31, 54, 16, 96,234,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_012 = new byte[]{// karakara                	1993-06-29	12:16:36
+              64, 10,  0,  0, 54, 16, 32, 78,  0,  0,129
+            , 0xff//-1
+        };
+        private static byte[] RS_013 = new byte[]{// buonn                   	1993-01-08	01:47:56
+               8,208,  7,  0, 62, 16,144,  1, 13,  0,  0
+            ,   8,208,  7,  0, 62, 16,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_015 = new byte[]{// tyattu                  	1993-01-08	01:49:27
+               4, 20,  0,  8, 54, 16,184, 11,  0,  0,225
+            , 0xff//-1
+        };
+        private static byte[] RS_018 = new byte[]{// zu                      	1993-01-08	01:51:05
+               4,208,  7, 30, 54, 16,160, 15,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_019 = new byte[]{// saaaa                   	1993-06-29	12:28:05
+              60,221,  1,  4, 55, 10, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_020 = new byte[]{// za                      	1993-01-08	01:52:35
+               6,221,  1, 16, 55, 16,136, 19,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_021 = new byte[]{// TYARIN                  	1993-06-29	12:29:19
+               4, 40,  0,  0, 54, 15, 16, 39,  0,  0,  0
+            ,   8, 30,  0,  0, 62, 16,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_022 = new byte[]{// SYUWAWA                 	1993-06-29	12:35:38
+              48,100,  0,  0, 55, 16,136, 19, 13,255, 33
+            ,  12, 50,  0,  0, 55, 13,136, 19,  0,  0, 33
+            ,  12,221,  1,  0, 55, 12, 16, 39,  0,  0, 33
+            ,  12,221,  1,  0, 55, 11, 16, 39,  0,  0, 33
+            ,  12,221,  1,  0, 55, 10, 16, 39,  0,  0, 33
+            ,  12,221,  1,  0, 55,  9, 16, 39,  0,  0, 33
+            , 0xff//-1
+        };
+        private static byte[] RS_024 = new byte[]{// PIN                     	1993-06-29	12:36:42
+               6,100,  0,  0, 62, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_026 = new byte[]{// KAMINARI                	1993-06-29	12:42:57
+               4, 23,  0, 31, 55, 16,208,  7,  0,  0,  0
+            ,  64, 15,  0, 31, 55, 16,152, 58,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_027 = new byte[]{// PI                      	1993-06-29	12:44:03
+               3,238,  0,  0, 62, 14,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_028 = new byte[]{// KEIKOKU                 	1993-06-29	12:46:13
+               7, 44,  1,  0, 62, 16,160, 15,  0,  0,  0
+            ,   7, 44,  1,  0, 62, 16,208,  7,  0,  0,  0
+            ,  48, 44,  1,  0, 62, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_029 = new byte[]{// ETC 1                   	1993-06-29	12:46:54
+              96,208,  7,  0, 62, 16, 16, 39,  0,236,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_030 = new byte[]{// BUFOFOFO                	1993-06-29	12:58:12
+               8,208,  7,  0, 62, 16, 16, 39,  0,176,  0
+            ,   8,  8,  7,  0, 62, 16, 16, 39,  0,176,  0
+            ,   8, 64,  6,  0, 62, 16, 16, 39,  0,176,  0
+            ,  48,120,  5,  0, 62, 16, 16, 39,  0,186,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_031 = new byte[]{// ETC 3                   	1993-06-29	12:49:32
+               8,232,  3,  0, 62, 16, 16, 39,  0, 80,  0
+            ,   8,176,  4,  0, 62, 16, 16, 39,  0, 80,  0
+            ,   8, 20,  5,  0, 62, 16, 16, 39,  0, 80,  0
+            ,  48,120,  5,  0, 62, 16, 16, 39,  0, 80,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_032 = new byte[]{// ETC 4                   	1993-06-29	12:50:11
+              96,  0,  0,  0, 62, 16, 16, 39,  0,128,  0
+            , 0xff//-1
+        };
+        private static byte[] RS_033 = new byte[]{// HADE BOMB               	1993-06-29	12:52:06
+               4,100,  0, 31, 54, 16,208,  7,  0,127,  0
+            ,  32,  0,  0, 31, 54, 16, 16, 39,  0,127,129
+            , 0xff//-1
+        };
+        private static byte[] RS_035 = new byte[]{// JARARAN                 	1993-06-29	13:02:17
+               2,244,  1, 20, 54, 16, 16, 39,  0,252,  0
+            ,   2,144,  1, 15, 54, 16, 16, 39,  0,252, 65
+            ,   2, 44,  1, 10, 62, 16, 16, 39,  0,252, 65
+            ,   2,200,  0,  5, 54, 16, 16, 39,  0,252, 65
+            ,  16,150,  0,  0, 62, 16,184, 11,  0,  0,  0
+            , 0xff//-1
+        };
+
+//;
+//;	Effect for ポゼッショナー
+//;
+
+        private static byte[] PO_011 = new byte[]{// Rain fall               	1990-06-22	05:55:43
+             254,221,  1,  3, 55, 10, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_012 = new byte[]{// Spinner                 	1990-06-22	05:57:18
+              24,140,  0,  0, 62, 16, 88, 27,  0, 14,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_013 = new byte[]{// Kaminari                	1990-06-22	05:59:16
+              48,160, 15, 31, 54, 16, 16, 39,  0,  0,  1
+            , 0xff//-1
+        };
+        private static byte[] PO_014 = new byte[]{// Sairen                  	1990-06-22	06:00:45
+              31,100,  0,  0, 62, 16, 88, 27,  0,255,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_015 = new byte[]{// Door Shut               	1990-06-22	06:03:28
+               6,221,  1,  8, 55, 16,184, 11,  0,  0,241
+            ,   8,144,  1,  0, 54, 16,144,  1, 13,216,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_016 = new byte[]{// Kiteki                  	1990-06-22	06:05:23
+              96,160, 15,  0, 62, 16, 48,117,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_017 = new byte[]{// Ship Bomb               	1990-06-22	06:06:54
+               4,221,  1, 31, 55, 16,208,  7,  0,  0,  0
+            ,  64,221,  1, 20, 55, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_018 = new byte[]{// Spinner 2               	1990-06-22	06:08:08
+              64,120,  0,  0, 54, 16, 16, 39,  0,  2,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_019 = new byte[]{// Helli                   	1990-06-22	06:09:58
+               4,221,  1,  4, 55, 16,208,  7,  0,  0,  0
+            ,   4,221,  1,  0, 55, 16,208,  7,  0,  0,  0
+            ,   4,221,  1,  4, 55, 16,232,  3,  0,  0,  0
+            ,   4,221,  1,  0, 55, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_020 = new byte[]{// Kinzoku Sagyou          	1990-06-22	07:23:41
+              16, 30,  0,  5, 54, 16,160, 15,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_021 = new byte[]{// Kaze (DAME)             	1990-06-22	06:13:46
+              16,220,  5,  0, 62, 15, 16, 39,  0,  0,  0
+            ,   8,220,  5,  0, 62, 15, 16, 39,  0,246,  0
+            ,  48,140,  5,  0, 62, 16, 16, 39,  0, 10,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_022 = new byte[]{// Taikushitu Soto         	1990-06-22	06:15:55
+               4,160, 15, 31, 54, 16,184, 11,  0,  0,  0
+            ,  24,184, 11,  8, 54, 16,136, 19,  0, 40, 20
+            , 0xff//-1
+        };
+        private static byte[] PO_023 = new byte[]{// Punch                   	1990-06-22	06:17:13
+               4,160, 15, 31, 54, 16,208,  7,  0, 10,  0
+            ,   8,221,  1, 28, 54, 16,208,  7,  0,127,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_024 = new byte[]{// Shower                  	1990-06-22	06:19:08
+             254,  0,  0,  0, 55, 10,  0,  0,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_025 = new byte[]{// Shokki                  	1990-06-22	06:22:14
+               6, 31,  0,  4, 54, 16,232,  3,  0,  0,  0
+            ,   8, 30,  0,  0, 54, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_026 = new byte[]{// Tobikomi                	1990-06-22	06:24:09
+               8,220,  5, 25, 54, 16,184, 11,  0,127,  0
+            ,  48,221,  1, 10, 55, 16, 64, 31,  0,  0, 18
+            , 0xff//-1
+        };
+        private static byte[] PO_027 = new byte[]{// Air Fukidasi            	1990-06-22	06:25:35
+               4,208,  7,  0, 55, 16,208,  7,  0,  0,  0
+            ,  48,221,  1,  4, 55, 16, 16, 39,  0,  0, 20
+            , 0xff//-1
+        };
+        private static byte[] PO_028 = new byte[]{// Heavy Door Open         	1990-06-22	07:23:33
+              48,208,  7, 31, 54, 16,152, 58,  0,251,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_029 = new byte[]{// Car Door Shut           	1990-06-22	07:23:30
+              16,232,  3, 31, 54, 16,184, 11,  0,127,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_030 = new byte[]{// Car Come'in             	1990-06-22	06:30:31
+               4,160, 15, 31, 54, 15, 16, 39,  0,  0,  0
+            ,  96,160, 15, 28, 54, 16, 32, 78,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_031 = new byte[]{// Ice Hikkaki             	1990-06-22	06:31:26
+               2, 10,  0,  0, 54, 16,244,  1,  0,  0,  0
+            ,   2, 20,  0,  0, 54, 16,244,  1,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_032 = new byte[]{// Ship Crush Down         	1990-06-22	07:23:23
+              64,160, 15, 20, 54, 16, 48,117,  0,  1, 22
+            , 192,221,  1, 31, 55, 16, 48,117,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_033 = new byte[]{// Toraware                	1990-06-22	06:35:02
+              32,232,  3,  0, 54, 16, 64, 31,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_034 = new byte[]{// Sekizou Break           	1990-06-22	06:36:14
+               4,221,  1, 31, 55, 15, 16, 39,  0,  0,  0
+            ,  64,221,  1, 10, 55, 16, 16, 39,  0,  0, 18
+            , 0xff//-1
+        };
+        private static byte[] PO_035 = new byte[]{// Blaster Shot            	1990-06-22	06:37:55
+               4,221,  1, 31, 55, 16,184, 11,  0,  0,  0
+            ,   4,160, 15, 20, 54, 16,184, 11,  0, 20,  0
+            ,  64,  0,  0,  4, 54, 16, 16, 39,  0,  1, 20
+            , 0xff//-1
+        };
+        private static byte[] PO_036 = new byte[]{// Seifuku Yabuki          	1990-06-22	06:39:58
+              16,221,  1,  4, 55, 14, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_037 = new byte[]{// Miminari                	1990-06-22	06:42:13
+               4,  8,  0,  0, 62, 16,  1,  0,  8,  0,  0
+            ,  64,  0,  0,  0, 62, 16, 64, 31,  0,  1,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_038 = new byte[]{// Sekizou Ayasige         	1990-06-22	06:44:23
+              40,160, 15,  0, 62, 16,232,253,  0,246,  0
+            ,  50, 16, 14,  0, 62, 16, 32, 78,  0, 10,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_039 = new byte[]{// Voiler & Engine         	1990-06-22	07:23:14
+              60,221,  1, 30, 55, 14, 48,117,  0,  0,242
+            ,  16,184, 11,  2, 55, 16,112, 23,  0, 40, 17
+            , 0xff//-1
+        };
+        private static byte[] PO_040 = new byte[]{// Suimen                  	1990-06-22	06:47:58
+               4, 10,  0,  4, 54, 16,232,  3,  0,  0,  0
+            ,   6,221,  1,  0, 55, 16,208,  7,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_041 = new byte[]{// Kika                    	1990-06-22	06:48:29
+              64,221,  1,  0, 55, 16, 16, 39,  0,  0, 20
+            , 0xff//-1
+        };
+        private static byte[] PO_042 = new byte[]{// Change Kakyuu           	1990-06-22	06:50:00
+              48,232,  3,  0, 62, 16, 16, 39,  0, 10,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_043 = new byte[]{// Change Blue             	1990-06-22	06:51:47
+              15,100,  0,  0, 62, 16,232,  3, 14,252,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_044 = new byte[]{// Youma Funsyutu          	1990-06-22	06:54:06
+               6,221,  1,  4, 55, 16,208,  7,  0,  0,  0
+            ,   4,100,  0,  4, 54, 16,160, 15,  0,236,  0
+            ,  64,221,  1,  8, 55, 16, 64, 31,  0,  0,246
+            , 0xff//-1
+        };
+        private static byte[] PO_045 = new byte[]{// Kekkai                  	1990-06-22	07:23:06
+             128,232,  3, 31, 54, 16, 48,117,  0,  1,242
+            , 0xff//-1
+        };
+        private static byte[] PO_046 = new byte[]{// Gosintou 1              	1990-06-22	06:56:47
+               4, 20,  0,  0, 54, 16,232,  3,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_047 = new byte[]{// Gosintou 2              	1990-06-22	06:58:25
+               8,208,  7,  0, 62, 16,232,  3, 13,246,  0
+            ,  64,208,  7,  0, 62, 16, 16, 39,  0,  2,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_048 = new byte[]{// Gosintou 3              	1990-06-22	07:00:22
+               8,221,  1,  0, 55, 16, 32,  3, 13,  0, 17
+            ,  16,221,  1,  0, 55, 16,208,  7,  0,  0, 17
+            , 0xff//-1
+        };
+        private static byte[] PO_049 = new byte[]{// Hand Blaster            	1990-06-22	07:01:53
+               4,160, 15, 31, 54, 16,184, 11,  0,  0,  0
+            ,   4, 40,  0,  0, 54, 16,232,  3,  0,246,  0
+            ,  64,221,  1,  0, 55, 16, 16, 39,  0,  0, 18
+            , 0xff//-1
+        };
+        private static byte[] PO_050 = new byte[]{// Magic                   	1990-06-22	07:04:00
+               4, 32,  0,  0, 62, 16,208,  7,  0,  0,  0
+            ,  24, 32,  0,  0, 54, 16, 64, 31,  0,255,  0
+            ,  90,160, 15, 31, 54, 16, 48,117,  0,216,244
+            , 0xff//-1
+        };
+        private static byte[] PO_051 = new byte[]{// Grabiton 1              	1990-06-22	07:04:41
+               4,221,  1, 31, 55, 16, 16, 39,  0,  0,  0
+            ,  31,221,  1,  0, 55, 16, 16, 39,  0,  0, 17
+            , 0xff//-1
+        };
+        private static byte[] PO_052 = new byte[]{// Grabiton 2              	1990-06-22	07:05:10
+             128,160, 15, 31, 54, 16, 48,117,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_053 = new byte[]{// Attack Kakyuu           	1990-06-22	07:06:38
+               4,160, 15, 31, 54, 16, 16, 39,  0,  0,  0
+            ,  16,221,  1,  0, 55, 16,112, 23,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_054 = new byte[]{// Attack Blue(TEKITOU)    	1990-06-22	07:08:33
+               6,100,  0,  0, 54, 16,244,  1, 13,251,  0
+            ,  16, 70,  0,  0, 54, 16,112, 23,  0,127,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_055 = new byte[]{// Attack Red              	1990-06-22	07:10:10
+              20,184, 11,  0, 54, 14, 16, 39,  0,156,  0
+            ,  16,232,  3,  0, 54, 16,112, 23,  0,100,  0
+            , 0xff//-1
+        };
+        private static byte[] PO_056 = new byte[]{// Attack White            	1990-06-22	07:11:16
+               4,  0,  0,  4, 54, 16, 16, 39,  0,127,241
+            ,  16,  0,  0,  0, 54, 16,112, 23,  0, 10, 17
+            , 0xff//-1
+        };
+        private static byte[] PO_057 = new byte[]{// Attack Black            	1990-06-22	07:22:10
+               4,200,  0,  4, 54, 16,208,  7,  0,127, 17
+            ,  10,  0,  0,  0, 54, 16, 88,  2, 13,  1,  0
+            ,  24, 10,  0,  0, 54, 16,112, 23,  0,  5, 17
+            , 0xff//-1
+        };
+        private static byte[] PO_058 = new byte[]{// Attack Last             	1990-06-22	07:22:14
+              20, 60,  0,  4, 54, 14, 16, 39,  0,255,  0
+            ,  20, 40,  0,  0, 54, 14, 16, 39,  0,  1,113
+            ,  20, 60,  0, 10, 54, 16,112, 23,  0,  1, 20
+            , 0xff//-1
+        };
+        private static byte[] PO_059 = new byte[]{// Damage 1                	1990-06-22	07:17:32
+               4,221,  1, 31, 54, 16,184, 11,  0,127,  0
+            ,  16,221,  1,  0, 55, 16,112, 23,  0,  0, 33
+            , 0xff//-1
+        };
+        private static byte[] PO_060 = new byte[]{// Damage 2                	1990-06-22	07:19:18
+               8,232,  3, 31, 54, 14, 16, 39,  0,100,  0
+            ,   8,120,  5, 31, 54, 15, 16, 39,  0,156,113
+            ,  16, 88,  2, 31, 54, 16,112, 23,  0,127,241
+            , 0xff//-1
+        };
+        private static byte[] PO_061 = new byte[]{// Attack                  	1990-06-22	07:22:55
+               8,  0,  0, 31, 54, 16,184, 11,  0,100,  0
+            ,  24,221,  1,  0, 55, 16, 16, 39,  0,  0, 17
+            , 0xff//-1
+        };
+
+//;
+//;	Effect for ＮＡＤＩＡ
+//;
+
+        private static byte[] ND_000 = new byte[]{// MAP                     	1992-01-27	17:32:40
+              48,221,  1,  0, 62, 16, 16, 39,  0,255,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_001 = new byte[]{// SONAR                   	1992-01-27	17:33:23
+             192,200,  0,  0, 62, 16, 64,156,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_002 = new byte[]{// KOUKOU                  	1992-01-27	17:57:44
+             254,221,  1,  8, 55, 12, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_003 = new byte[]{// MEGIDO                  	1992-01-27	17:35:47
+             192,200,  0,  0, 54, 16, 16, 39, 13,255,  0
+            ,   6,221,  1,  0, 54, 16, 16, 39,  0,127,  0
+            , 192,221,  1,  0, 55, 16, 96,234,  0,  0,248
+            , 0xff//-1
+        };
+        private static byte[] ND_004 = new byte[]{// JINARI                  	1992-01-27	17:36:37
+             254,221,  1, 31, 54, 14, 16, 39,  0,128,113
+            , 0xff//-1
+        };
+        private static byte[] ND_005 = new byte[]{// SWITCH                  	1992-01-27	17:37:21
+               6,221,  1, 15, 55, 16,208,  7,  0,  0,  0
+            ,   6, 20,  0,  0, 54, 16,160, 15,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_006 = new byte[]{// DOSYUUNN                	1992-01-27	17:38:01
+               6,221,  1,  0, 54, 16, 16, 39,  0,127,  0
+            , 192,221,  1,  0, 55, 16, 96,234,  0,  0, 24
+            , 0xff//-1
+        };
+        private static byte[] ND_007 = new byte[]{// GYUOON                  	1992-01-27	17:39:09
+             192,232,  3, 31, 54, 16, 96,234,  0,252,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_008 = new byte[]{// PIPIPIPI                	1992-01-27	17:40:16
+              64,150,  0,  0, 62, 16,176,  4,  8,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_009 = new byte[]{// SYUBATTU                	1992-01-27	17:41:16
+              12,221,  1,  0, 55, 16,232,  3, 13,  0, 20
+            ,  24,221,  1, 15, 55, 16, 64, 31,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_010 = new byte[]{// BEAM UNARI              	1992-01-27	17:42:05
+             254, 25,  0,  0, 54, 14, 16, 39,  0,  0,145
+            , 0xff//-1
+        };
+        private static byte[] ND_011 = new byte[]{// BEAM KAKUSAN            	1992-01-27	17:43:07
+               6,221,  1, 15, 55, 16,160, 15,  0,  0,  0
+            , 192,208,  7,  0, 54, 16, 96,234,  0,248,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_012 = new byte[]{// ORGAN                   	1992-01-27	18:01:45
+              48,221,  1,  0, 62, 14, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_013 = new byte[]{// PANEL                   	1992-01-27	17:57:15
+               6,221,  1,  4, 55, 16,160, 15,  0,  0,  0
+            ,   6,221,  1,  4, 55, 16,160, 15,  0,  0,  0
+            ,   6,221,  1,  4, 55, 16,160, 15,  0,  0,  0
+            ,   6,221,  1,  4, 55, 16,160, 15,  0,  0,  0
+            ,  24, 20,  0, 10, 54, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_014 = new byte[]{// DRILL                   	1992-01-27	17:45:25
+             254,160, 15, 31, 54, 15, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_015 = new byte[]{// PRAZMA                  	1992-01-27	17:45:59
+               6, 20,  0, 15, 55, 16,112, 23,  0,  0,  0
+            ,   6, 20,  0,  0, 54, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_016 = new byte[]{// BABEL                   	1992-01-27	17:46:34
+             254,160, 15,  0, 62, 16, 16, 39, 14,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_017 = new byte[]{// ELEVETOR                	1992-01-27	17:47:27
+              12,233,  1,  0, 54, 14, 16, 39,  0,255,  0
+            , 254,221,  1,  0, 54, 14, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_018 = new byte[]{// MEGIDO HASSYA           	1992-01-27	17:48:04
+             254,160, 15, 15, 54, 15, 16, 39, 13,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_019 = new byte[]{// DAIBAKUHATU             	1992-01-27	18:28:56
+              12,221,  1, 31, 54, 16, 16, 39,  0,127,  0
+            , 144,  0,  0,  0, 54, 16, 96,234,  0,127, 24
+            , 192,160, 15, 31, 54, 16, 80, 70, 14,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_020 = new byte[]{// NAMI                    	1992-01-27	17:50:59
+             254,221,  1,  0, 55, 16, 16, 39, 14,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_021 = new byte[]{// DOOOONN                 	1992-01-27	17:51:39
+              96,208,  7,  0, 54, 16, 16, 39,  0, 40,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_022 = new byte[]{// DOGA                    	1992-01-27	17:52:18
+               6,221,  1, 31, 54, 16, 16, 39,  0,127,  0
+            ,  12,221,  1,  0, 55, 16,160, 15,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_023 = new byte[]{// PISI                    	1992-01-27	17:52:53
+               6, 20,  0, 31, 54, 16, 16, 39,  0,  0,  0
+            ,  24, 20,  0,  0, 54, 16, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_024 = new byte[]{// BLUE WATER              	1992-01-27	17:53:15
+             254, 15,  0,  0, 62, 14, 16, 39,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_025 = new byte[]{// HOWAWAN                 	1992-01-27	17:56:51
+              12,144,  1,  0, 62, 16,100,  0, 13,254,  0
+            ,  12,134,  1,  0, 62, 16,100,  0, 13,254,  0
+            ,  12,124,  1,  0, 62, 16,100,  0, 13,254,  0
+            ,  12,114,  1,  0, 62, 16,100,  0, 13,254,  0
+            ,  48, 90,  1,  0, 62, 16, 16, 39,  0,254,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_026 = new byte[]{// ZUGAN                   	1992-01-27	17:19:49
+               6,221,  1, 31, 55, 16,160, 15,  0,  0,  0
+            ,  64,221,  1, 24, 55, 16, 32, 78,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_027 = new byte[]{// DAAANN                  	1992-01-27	17:20:28
+              48,221,  1, 31, 55, 16,152, 58,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_028 = new byte[]{// DOGOOOONN               	1992-01-27	17:21:14
+               6,221,  1,  1, 54, 16, 16, 39,  0,127,  0
+            , 192,221,  1, 31, 55, 16, 96,234,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_029 = new byte[]{// GASYA                   	1992-01-27	17:22:08
+               3,221,  1, 15, 55, 16,208,  7,  0,  0,  0
+            ,  12,221,  1,  1, 55, 16,160, 15,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_030 = new byte[]{// BASYUSYUSYU             	1992-01-27	17:22:52
+               3,221,  1, 15, 55, 15, 16, 39,  0,  0,  0
+            , 192,221,  1, 31, 55, 16, 96,234,  0,  0,113
+            , 0xff//-1
+        };
+        private static byte[] ND_031 = new byte[]{// DOSYUSYUSYU             	1992-01-27	17:24:31
+             192,  0,  0,  0, 54, 16, 96,234,  0,128, 17
+            , 0xff//-1
+        };
+        private static byte[] ND_032 = new byte[]{// SYUSYUUUUNN             	1992-01-27	17:25:34
+              12,221,  1,  0, 55, 15, 16, 39,  0,  0,113
+            ,  32,221,  1,  0, 55, 16, 32, 78,  0,  0, 17
+            , 0xff//-1
+        };
+        private static byte[] ND_033 = new byte[]{// BASYANN - HYURURURU     	1992-01-27	18:00:33
+               6,221,  1, 31, 55, 16, 16, 39,  0,  0,193
+            ,  32,221,  1,  4, 55, 16, 16, 39,  0,  0,  0
+            , 192,  0,  0,  0, 54, 16, 96,234,  0,  1,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_034 = new byte[]{// ZYURUZYURU              	1992-01-27	17:27:38
+             192,221,  1,  0, 55, 16, 96,234,  0,  0,113
+            , 0xff//-1
+        };
+        private static byte[] ND_035 = new byte[]{// ZUGOGOGOGO              	1992-01-27	17:29:07
+               6,221,  1, 15, 55, 16, 16, 39,  0,  0,  0
+            ,   6,221,  1, 31, 55, 16, 16, 39,  0,  0,241
+            ,   6,221,  1, 31, 55, 16, 16, 39,  0,  0,241
+            ,   6,221,  1, 31, 55, 16, 16, 39,  0,  0,241
+            , 192,221,  1, 31, 55, 16, 96,234,  0,  0,248
+            , 0xff//-1
+        };
+        private static byte[] ND_036 = new byte[]{// ZUGOOOONN               	1992-01-27	17:29:50
+               6,221,  1, 15, 55, 16, 16, 39,  0,  0,  0
+            , 192,221,  1, 31, 55, 16, 48,117,  0,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_037 = new byte[]{// BI--                    	1992-01-27	17:59:08
+              48, 40,  0,  0, 62, 16,100,  0,  8,  0,  0
+            , 0xff//-1
+        };
+        private static byte[] ND_038 = new byte[]{// BASYUSYUUU              	1992-01-27	17:30:38
+              48,221,  1,  0, 55, 16, 16, 39,  0,  0,145
+            , 0xff//-1
+        };
+        private static byte[] ND_039 = new byte[]{// BISYU                   	1992-01-27	17:31:52
+               6,232,  3, 15, 54, 16, 16, 39,  0,127,  0
+            ,  24,221,  1,  0, 55, 16, 16, 39,  0,  0,  0
             , 0xff//-1
         };
 
