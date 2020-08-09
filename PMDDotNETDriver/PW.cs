@@ -1049,6 +1049,11 @@ namespace PMDDotNET.Driver
             ef = MakeMmlDatum(D_008); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;OPENHT		    ;8
             ef = MakeMmlDatum(D_009); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;CRUSHCYMBA	    ;9
             ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;10
+            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;11
+            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;12
+            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;13
+            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;14
+            ef = MakeMmlDatum(D_010); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;RDCYN		    ;15
         }
 
         private MmlDatum[] MakeMmlDatum(byte[] dd)

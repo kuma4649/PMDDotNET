@@ -33,12 +33,12 @@ namespace PMDDotNET.Driver
         private int volume2;
         private int keyoff_vol;
         private int[] EmitTable=new int[16];
-
+        private bool interpolation=true;
 
         public PPSDRV(uint SamplingRate = 44100)
         {
             this.SamplingRate = (double)SamplingRate;
-            SetVolume(10);
+            SetVolume(0);
 
             data_offset1 = data_offset2 = -1;
             data_size1 = data_size2 = -1;
@@ -181,22 +181,23 @@ namespace PMDDotNET.Driver
                     ah1 = ah2 = 0;
                 }
 
-                //		al1 = table[(al1 << 4) + ah1];
-                //		psg.SetReg(0x0a, al1);
-                //if (interpolation)
-                //{
-                    //data =
-                        //(EmitTable[al1] * (0x10000 - data_xor1) + EmitTable[al2] * data_xor1 +
-                         //EmitTable[ah1] * (0x10000 - data_xor2) + EmitTable[ah2] * data_xor2) / 0x10000;
-                //}
-                //else
+                ////		al1 = table[(al1 << 4) + ah1];
+                ////		psg.SetReg(0x0a, al1);
+                if (interpolation)
+                {
+                    data =
+                        (EmitTable[al1] * (0x10000 - data_xor1) + EmitTable[al2] * data_xor1 +
+                        EmitTable[ah1] * (0x10000 - data_xor2) + EmitTable[ah2] * data_xor2) / 0x10000;
+                }
+                else
                 {
                     data = EmitTable[al1] + EmitTable[ah1];
                 }
 
-                keyoff_vol = (keyoff_vol * 255) / 256;
-                data += keyoff_vol;
-                data = Math.Min(Math.Max(data, short.MinValue), short.MaxValue);
+                keyoff_vol = (keyoff_vol * 255) / 258;
+                if(!keyon_flag) data += keyoff_vol;
+                //if(keyoff_vol!=0) Console.WriteLine("keyoff_vol{0}", keyoff_vol);
+                //data = Math.Min(Math.Max(data, short.MinValue), short.MaxValue);
                 emuRenderBuf[0] = (short)Math.Min(Math.Max(emuRenderBuf[0] + data, short.MinValue), short.MaxValue);
                 emuRenderBuf[1] = (short)Math.Min(Math.Max(emuRenderBuf[1] + data, short.MinValue), short.MaxValue);
 
@@ -256,7 +257,9 @@ namespace PMDDotNET.Driver
                 {       // 両方停止
                     if (keyon_flag)
                     {
-                        keyoff_vol += EmitTable[ppsDt[data_size1 - 1]];
+                        int ad = data_size1 - 1;
+                        if (ad >= 0 && ad < ppsDt.Length)
+                            keyoff_vol += EmitTable[ppsDt[ad]] / 8;
                     }
                     keyon_flag = false;     // 発音停止
                                             //			psg.SetReg(0x0a, 0);	// Volume を0に
@@ -271,17 +274,19 @@ namespace PMDDotNET.Driver
                     tick1 = tick2;
                     tick_xor1 = tick_xor2;
                     data_size2 = -1;
-                    /*
-                                if(data_offset2 != NULL) {
-                                    keyoff_vol += EmitTable[data_offset1[data_size1-1]];
-                                }
-                    */
+
+                    int ad = data_size1 - 1;
+                    if (ad >= 0 && ad < ppsDt.Length)
+                        keyoff_vol += EmitTable[ppsDt[ad]] / 8;
+
                 }
                 else if (data_size1 > 1 && data_size2 < 1)
                 {   // ２音目のみが停止
                     if (data_offset2 != -1)
                     {
-                        keyoff_vol += EmitTable[ppsDt[data_size2 - 1]];
+                        int ad = data_size2 - 1;
+                        if (ad >= 0 && ad < ppsDt.Length)
+                            keyoff_vol += EmitTable[ppsDt[ad]] / 8;
                         data_offset2 = -1;
                     }
                 }
@@ -318,9 +323,11 @@ namespace PMDDotNET.Driver
 
                 for (int j = start_pps; j < end_pps; j++)
                 {
+                    //Console.WriteLine("before{0}",o[j]);
                     o[j] = (byte)(o[j] - (j - start_pps) * 16 / (end_pps - start_pps));
                     if ((sbyte)o[j] < 0)
                         o[j] = 0;
+                    //Console.WriteLine("after{0}", o[j]);
                 }
 
             }
