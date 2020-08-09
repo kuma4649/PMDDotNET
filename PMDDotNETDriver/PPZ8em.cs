@@ -466,7 +466,7 @@ namespace PMDDotNET.Driver
             {
                 uint startaddress = (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100) << (5 + 1);
                 uint size = ((uint)(pcmData[bank][i * 4 + 0x12] + pcmData[bank][i * 4 + 0x13] * 0x100)
-                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100))
+                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100)+1)
                     << (5 + 1);// endAdr - startAdr
                 size2 += size;
                 short rate = 16000;   // 16kHz
@@ -492,27 +492,44 @@ namespace PMDDotNET.Driver
             int psrcPtr = 0x10 + 4 * 128;
             for (int i = 0; i < instCount; i++)
             {
-                short X_N = 0x80; // Xn     (ADPCM>PCM 変換用)
-                short DELTA_N = 127; // DELTA_N(ADPCM>PCM 変換用)
+                int X_N = 0x80; // Xn     (ADPCM>PCM 変換用)
+                int DELTA_N = 127; // DELTA_N(ADPCM>PCM 変換用)
 
                 uint size = ((uint)(pcmData[bank][i * 4 + 0x12] + pcmData[bank][i * 4 + 0x13] * 0x100)
-                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100))
+                    - (uint)(pcmData[bank][i * 4 + 0x10] + pcmData[bank][i * 4 + 0x11] * 0x100) + 1)
                     << (5 + 1);// endAdr - startAdr
 
-                for (int j = 0; j < size/2 ; j++)
+                for (int j = 0; j < size / 2; j++)
                 {
                     byte psrc = pcmData[bank][psrcPtr++];
-                    X_N = (short)Math.Max(Math.Min(X_N + table1[(psrc >> 4) & 0x0f] * DELTA_N / 8, 32767), -32768);
-                    DELTA_N = (short)Math.Max(Math.Min(DELTA_N * table2[(psrc >> 4) & 0x0f] / 64, 24576), 127);
+
+                    int n = X_N + table1[(psrc >> 4) & 0x0f] * DELTA_N / 8;
+                    //Console.WriteLine(n);
+                    X_N = Math.Max(Math.Min(n, 32767), -32768);
+
+                    n = DELTA_N * table2[(psrc >> 4) & 0x0f] / 64;
+                    //Console.WriteLine(n);
+                    DELTA_N = Math.Max(Math.Min(n, 24576), 127);
+
                     o.Add((byte)(X_N / (32768 / 128) + 128));
 
-                    X_N = (short)Math.Max(Math.Min(X_N + table1[psrc & 0x0f] * DELTA_N / 8, 32767), -32768);
-                    DELTA_N = (short)Math.Max(Math.Min(DELTA_N * table2[psrc & 0x0f] / 64, 24576), 127);
+
+                    n = X_N + table1[psrc & 0x0f] * DELTA_N / 8;
+                    //Console.WriteLine(n);
+                    X_N = Math.Max(Math.Min(n, 32767), -32768);
+
+                    n = DELTA_N * table2[psrc & 0x0f] / 64;
+                    //Console.WriteLine(n);
+                    DELTA_N = Math.Max(Math.Min(n, 24576), 127);
+
                     o.Add((byte)(X_N / (32768 / 128) + 128));
+
+
                 }
             }
 
             pcmData[bank] = o.ToArray();
+            System.IO.File.WriteAllBytes("a.raw", pcmData[bank]);
             return 0;
         }
 

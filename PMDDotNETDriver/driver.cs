@@ -65,17 +65,28 @@ namespace PMDDotNET.Driver
         {
             List<Tuple<string, string>> tags = new List<Tuple<string, string>>();
 
+            string str;
             ushort adr = pmd.get_memo(1);
-            string str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("title", str));
+            if (adr != 0)
+            {
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("title", str));
+            }
 
             adr = pmd.get_memo(2);
-            str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("composer", str));
+            if (adr != 0)
+            {
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("composer", str));
+            }
 
             adr = pmd.get_memo(3);
-            str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("arranger", str));
+            if (adr != 0)
+            {
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("arranger", str));
+            }
+            
             int al = 4;
             str = "";
             do
@@ -85,27 +96,39 @@ namespace PMDDotNET.Driver
                 al++;
             } while (adr != 0);
             str = str != "" ? str.Substring(2) : "";
-            tags.Add(new Tuple<string, string>("memo", str));
+            if (!string.IsNullOrEmpty(str))
+            {
+                tags.Add(new Tuple<string, string>("memo", str));
+            }
 
             adr = pmd.get_memo(0);
-            str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("PCMFile", str));
-            pmd.pw.ppcFile = str.Trim();
+            if (adr != 0)
+            {
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("PCMFile", str));
+                pmd.pw.ppcFile = str.Trim();
+            }
 
             adr = pmd.get_memo(-1);
-            str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("PPSFile", str));
-            pmd.pw.ppsFile = str.Trim();
+            if (adr != 0)
+            {
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("PPSFile", str));
+                pmd.pw.ppsFile = str.Trim();
+            }
 
             adr = pmd.get_memo(-2);
-            str = getNRDString(ref adr);
-            tags.Add(new Tuple<string, string>("PPZFile", str));
-            pmd.pw.ppz1File = str.Trim();
-            string[] p = pmd.pw.ppz1File.Split(',');
-            if (p.Length > 1)
+            if (adr != 0)
             {
-                pmd.pw.ppz1File = p[0];
-                pmd.pw.ppz2File = p[1];
+                str = getNRDString(ref adr);
+                tags.Add(new Tuple<string, string>("PPZFile", str));
+                pmd.pw.ppz1File = str.Trim();
+                string[] p = pmd.pw.ppz1File.Split(',');
+                if (p.Length > 1)
+                {
+                    pmd.pw.ppz1File = p[0];
+                    pmd.pw.ppz2File = p[1];
+                }
             }
 
             return tags;

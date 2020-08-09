@@ -6990,7 +6990,8 @@ namespace PMDDotNET.Driver
         {
             r.dh = 0xb0 - 1;
             r.dh += pw.partb;
-            r.dl = (byte)pw.inst[r.bx + 24].dat;
+            if (pw.inst != null && r.bx + 24 < pw.inst.Length) r.dl = (byte)pw.inst[r.bx + 24].dat;
+            else r.dl = 0;
 
             if (pw.af_check == 0)//;ALG/FBは設定しないmodeか？
                 goto no_af;
@@ -7074,7 +7075,8 @@ namespace PMDDotNET.Driver
             r.dh += pw.partb;
             r.cx = 4;//; DT / ML
         ns01:;
-            r.dl = (byte)pw.inst[r.bx].dat;
+            if (pw.inst != null && r.bx < pw.inst.Length) r.dl = (byte)pw.inst[r.bx ].dat;
+            else r.dl = 0;
             r.bx++;
             r.carry = ((r.al & 0x80) != 0);
             r.al = (byte)((r.al << 1) | ((r.al & 0x80) >> 7));
@@ -7086,7 +7088,8 @@ namespace PMDDotNET.Driver
             if (r.cx != 0) goto ns01;
             r.cx = 4;//; TL
         ns01b:;
-            r.dl = (byte)pw.inst[r.bx].dat;
+            if (pw.inst != null && r.bx < pw.inst.Length) r.dl = (byte)pw.inst[r.bx].dat;
+            else r.dl = 0;
             r.bx++;
             r.carry = ((r.al & 0x80) != 0);
             r.al = (byte)((r.al << 1) | ((r.al & 0x80) >> 7));
@@ -7100,7 +7103,8 @@ namespace PMDDotNET.Driver
 
             r.cx = 16;//; 残り
         ns01c:;
-            r.dl = (byte)pw.inst[r.bx].dat;
+            if (pw.inst != null && r.bx < pw.inst.Length) r.dl = (byte)pw.inst[r.bx].dat;
+            else r.dl = 0;
             r.bx++;
             r.carry = ((r.al & 0x80) != 0);
             r.al = (byte)((r.al << 1) | ((r.al & 0x80) >> 7));
@@ -7130,10 +7134,13 @@ namespace PMDDotNET.Driver
             r.si = r.bx;
             //r.di += pw.slot1;
 
-            pw.partWk[r.di].slot1 = (byte)pw.inst[r.si+0].dat;
-            pw.partWk[r.di].slot3 = (byte)pw.inst[r.si + 1].dat;
-            pw.partWk[r.di].slot2 = (byte)pw.inst[r.si + 2].dat;
-            pw.partWk[r.di].slot4 = (byte)pw.inst[r.si + 3].dat;
+            if (pw.inst != null && r.si + 3 < pw.inst.Length)
+            {
+                pw.partWk[r.di].slot1 = (byte)pw.inst[r.si + 0].dat;
+                pw.partWk[r.di].slot3 = (byte)pw.inst[r.si + 1].dat;
+                pw.partWk[r.di].slot2 = (byte)pw.inst[r.si + 2].dat;
+                pw.partWk[r.di].slot4 = (byte)pw.inst[r.si + 3].dat;
+            }
 
             r.di = r.stack.Pop();
             r.si = r.stack.Pop();
@@ -8580,51 +8587,60 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         public ushort get_memo(int al)
         {
-            r.al = (byte)al;
-            r.si = (ushort)pw.mmlbuf;
-            if (pw.md[r.si].dat != 0x1a)
-                goto getmemo_errret;//;音色がないfile=メモのアドレス取得不能
-            r.si += 0x18;
-            r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
-            r.si +=(ushort)pw.mmlbuf;
-            r.si -= 4;
-            r.bx= (ushort)(pw.md[r.si+2].dat + pw.md[r.si + 3].dat * 0x100);//;bh=0feh,bl=ver
-            if (r.bl == 0x40)//;Ver4.0 & 00Hの場合
-                goto getmemo_exec;
-            if (r.bh != 0xfe)
-                goto getmemo_errret;//;Ver.4.1以降は 0feh
-            if (r.bl < 0x41)
-                goto getmemo_errret;//;MC version 4.1以前だったらError
-            getmemo_exec:;
-            if (r.bl < 0x42)//;Ver.4.2以降か？
-                goto getmemo_oldver41;
-            r.al++;//; ならalを +1 (0FFHで#PPSFile)
-        getmemo_oldver41:;
-            if (r.bl < 0x48)//;Ver.4.8以降か？
-                goto getmemo_oldver47;
-            r.al++;//; ならalを +1 (0FEHで#PPZFile)
-        getmemo_oldver47:;
-            r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
-            r.si += (ushort)pw.mmlbuf;
-            r.al++;
-        getmemo_loop:;
-            r.dx = (ushort)(pw.md[r.si + 0].dat + pw.md[r.si + 1].dat * 0x100);
-            if (r.dx == 0)
-                goto getmemo_errret;
-            r.si += 2;
-            r.al--;
-            if (r.al != 0)
-                goto getmemo_loop;
-            getmemo_exit:;
-            r.dx += (ushort)pw.mmlbuf;
-            pw.ds_push = 0;// r.cs; セグメントなし
-            pw.dx_push = r.dx;
-            return r.dx;
+            try {
+                r.al = (byte)al;
+                r.si = (ushort)pw.mmlbuf;
+                if (pw.md[r.si].dat != 0x1a)
+                    goto getmemo_errret;//;音色がないfile=メモのアドレス取得不能
+                r.si += 0x18;
+                r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+                r.si += (ushort)pw.mmlbuf;
+                r.si -= 4;
+                r.bx = (ushort)(pw.md[r.si + 2].dat + pw.md[r.si + 3].dat * 0x100);//;bh=0feh,bl=ver
+                if (r.bl == 0x40)//;Ver4.0 & 00Hの場合
+                    goto getmemo_exec;
+                if (r.bh != 0xfe)
+                    goto getmemo_errret;//;Ver.4.1以降は 0feh
+                if (r.bl < 0x41)
+                    goto getmemo_errret;//;MC version 4.1以前だったらError
+                getmemo_exec:;
+                if (r.bl < 0x42)//;Ver.4.2以降か？
+                    goto getmemo_oldver41;
+                r.al++;//; ならalを +1 (0FFHで#PPSFile)
+            getmemo_oldver41:;
+                if (r.bl < 0x48)//;Ver.4.8以降か？
+                    goto getmemo_oldver47;
+                r.al++;//; ならalを +1 (0FEHで#PPZFile)
+            getmemo_oldver47:;
+                r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+                r.si += (ushort)pw.mmlbuf;
+                r.al++;
+            getmemo_loop:;
+                r.dx = (ushort)(pw.md[r.si + 0].dat + pw.md[r.si + 1].dat * 0x100);
+                if (r.dx == 0)
+                    goto getmemo_errret;
+                r.si += 2;
+                r.al--;
+                if (r.al != 0)
+                    goto getmemo_loop;
+                getmemo_exit:;
+                r.dx += (ushort)pw.mmlbuf;
+                pw.ds_push = 0;// r.cs; セグメントなし
+                pw.dx_push = r.dx;
+                return r.dx;
 
-        getmemo_errret:;
-            pw.ds_push = 0;
-            pw.dx_push = 0;
-            return 0;
+            getmemo_errret:;
+                pw.ds_push = 0;
+                pw.dx_push = 0;
+                return 0;
+            }
+            catch
+            {
+                Log.writeLine(LogLevel.WARNING, "メモのアドレスが範囲外を指していることを検出しました。無視します。");
+                pw.ds_push = 0;
+                pw.dx_push = 0;
+                return 0;
+            }
         }
 
 

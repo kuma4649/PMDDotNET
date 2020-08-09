@@ -142,6 +142,7 @@ namespace PMDDotNET.Driver
         {
             //; 拡張子判別(PVI / PZI)
             string ext = Path.GetExtension(pw.filename_ofs).ToUpper().Trim();
+            if (string.IsNullOrEmpty(ext)) pw.filename_ofs = Path.ChangeExtension(pw.filename_ofs, ".PZI");
             if (ext == ".PZI") r.ch = 1;
             else if (ext == ".PVI") r.ch = 0;
 
@@ -158,7 +159,7 @@ namespace PMDDotNET.Driver
             if (ret!=2) goto p8_load_exit;//; file not found or 形式が違うなら
 
             r.ch ^= 1;//; もう片方の形式も
-            ppz8em.LoadPcm(r.cl,r.ch, pcmData);//pcm loadを試してみる
+            ret=ppz8em.LoadPcm(r.cl,r.ch, pcmData);//pcm loadを試してみる
 
         p8_load_exit:;
             r.carry = false;
@@ -376,7 +377,10 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void pps_load_main()
         {
+            string ext = Path.GetExtension(pw.filename_ofs);
+            if (string.IsNullOrEmpty(ext)) pw.filename_ofs = Path.ChangeExtension(pw.filename_ofs, ".PPS");
             byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
+
             ppsdrv.Load(pcmData);
         }
 
