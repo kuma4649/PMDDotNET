@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>-D=emu -B=spb -PPZ=1 C:\Users\kuma\Desktop\pmd\fromTAN-Y\LIM98_01.M2</StartArguments>
+    <StartArguments>-D=emu -B=spb -PPZ=1 -PPS=1 C:\Users\kuma\Desktop\pmd\work.m</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartArguments>-D=GIMIC C:\Users\kuma\Desktop\desire\des_26.m</StartArguments>

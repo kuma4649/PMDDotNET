@@ -15,15 +15,17 @@ namespace PMDDotNET.Driver
         private PMD pmd = null;
         private Pc98 pc98 = null;
         private PPZ8em ppz8em = null;
+        private PPSDRV ppsdrv = null;
         private Func<string, Stream> appendFileReaderCallback = null;
 
-        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, PPZ8em ppz8em, Func<string, Stream> appendFileReaderCallback)
+        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, PPZ8em ppz8em,PPSDRV ppsdrv, Func<string, Stream> appendFileReaderCallback)
         {
             this.pmd = pmd;
             this.pw = pw;
             this.r = r;
             this.pc98 = pc98;
             this.ppz8em = ppz8em;
+            this.ppsdrv = ppsdrv;
             this.appendFileReaderCallback = appendFileReaderCallback;
         }
 
@@ -321,6 +323,61 @@ namespace PMDDotNET.Driver
             r.bx = r.stack.Pop();
             //r.es = r.stack.Pop();
             //r.ds = r.stack.Pop();
+        }
+
+
+
+        //289-
+        public void pps_load(string ppsFile)
+        {
+            //cld
+            //r.stack.Push(r.ds);
+            //r.stack.Push(r.es);
+            r.stack.Push(r.bx);
+            r.stack.Push(r.cx);
+            r.stack.Push(r.dx);
+            r.stack.Push(r.si);
+            r.stack.Push(r.di);
+            r.stack.Push(r.bp);
+
+            pw.filename_ofs = ppsFile;// r.ax;
+            pw.filename_seg = 0;// r.ds;
+            pw.pcmdata_ofs = r.di;
+            pw.pcmdata_seg = 0;// r.es;
+
+            pmd.ppsdrv_check();
+            if (r.carry) goto not_load;
+
+            r.ah = 0x4;
+            ppsdrv.int04();
+
+            pps_load_main();
+
+        not_load:;
+            r.bp = r.stack.Pop();
+            r.di = r.stack.Pop();
+            r.si = r.stack.Pop();
+            r.dx = r.stack.Pop();
+            r.cx = r.stack.Pop();
+            r.bx = r.stack.Pop();
+            //r.es = r.stack.Pop();
+            //r.ds = r.stack.Pop();
+
+        }
+
+
+
+        //345-388
+        //;==============================================================================
+        //;	pps load
+        //;		in	cs:[filename_ofs/seg] Filename
+        //;			cs:[pcmdata_ofs/seg] PPSData位置
+        //;			cs:[pcmdata_size] PPSData容量
+        //;==============================================================================
+        private void pps_load_main()
+        {
+            byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
+            ppsdrv.Load(pcmData);
         }
 
 

@@ -30,13 +30,13 @@ namespace PMDDotNET.Driver
             new short[256], new short[256], new short[256], new short[256],
             new short[256], new short[256], new short[256], new short[256]
         };
-        private static double SamplingRate = 44100.0;
+        private double SamplingRate = 44100.0;
         private int PCM_VOLUME = 0;
         private int volume = 0;
 
-        public PPZ8em(uint SamplingRate)
+        public PPZ8em(uint SamplingRate = 44100)
         {
-            PPZ8em.SamplingRate = (double)SamplingRate;
+            this.SamplingRate = (double)SamplingRate;
         }
 
         /// <summary>

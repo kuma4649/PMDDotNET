@@ -29,7 +29,7 @@ namespace PMDDotNET.Driver
             if (!r.zero) goto effgo2;
             r.stack.Push(r.ax);
             r.ah = 0;
-            ppsdrv.intrpt();
+            ppsdrv.Stop();
             r.ax = r.stack.Pop();
         effgo2:;
             pw.hosei_flag = 3;
@@ -96,10 +96,10 @@ namespace PMDDotNET.Driver
         not_volume_hosei:;
             if (r.bl == 0)
                 goto ppsdrm_ret;
-            r.bl ^= 0b0000_1111;
-            r.ah = 1;
-            r.al &= 0x7f;
-            ppsdrv.intrpt();//; ppsdrv keyon
+            r.bl ^= 0b0000_1111;//volume
+            r.ah = 1;//command
+            r.al &= 0x7f;//num?
+            ppsdrv.Play(r.al, r.bh, r.bl);//; ppsdrv keyon
         ppsdrm_ret:;
             return;
 
@@ -119,7 +119,7 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0)
                 goto eok_nonppsdrv;
             r.ah = 0;
-            ppsdrv.intrpt();//; ppsdrv 強制keyoff
+            ppsdrv.Stop();//; ppsdrv 強制keyoff
         eok_nonppsdrv:;
             r.si = 0;// pw.efftbl[r.bx].Item2;
             r.si += 0;//offset efftbl
@@ -238,7 +238,7 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0)
                 goto ee_nonppsdrv;
             r.ah = 0;
-            ppsdrv.intrpt();//; ppsdrv keyoff
+            ppsdrv.Stop();//; ppsdrv keyoff
         ee_nonppsdrv:;
             r.dx = 0xa00;
             pmd.opnset44();//; volume min

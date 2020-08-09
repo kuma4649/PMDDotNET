@@ -63,7 +63,8 @@ namespace PMDDotNET.Player
         private static int[] VolumeV = null;
         private static int[] VolumeR = null;
         private static bool isGimicOPNA = false;
-        private static PPZ8em ppz8em=null;
+        private static PPZ8em ppz8em = null;
+        private static PPSDRV ppsdrv = null;
         private static string[] envPmd = null;
         private static string[] envPmdOpt = null;
         private static string srcFile = null;
@@ -148,6 +149,7 @@ namespace PMDDotNET.Player
 
                 mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip });
                 ppz8em = new PPZ8em(SamplingRate);
+                ppsdrv = new PPSDRV(SamplingRate);
 
                 string[] pmdVol = SetVolume();
 
@@ -178,6 +180,7 @@ namespace PMDDotNET.Player
                 dop.isLoadADPCM = false;
                 dop.loadADPCMOnly = false;
                 dop.ppz8em = ppz8em;
+                dop.ppsdrv = ppsdrv;
                 dop.envPmd = envPmd;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
@@ -360,9 +363,7 @@ namespace PMDDotNET.Player
             }
             else if (device == 2)//SCCI
             {
-                //pmdのオプションで調整
-                ret.Add("/DF1");
-                ret.Add("/DS0");
+                //SCCIの場合はバランス調整はユーザー任せ
             }
 
 
@@ -624,7 +625,7 @@ Welcome to PMDDotNET !
        -B=86|86B|SPB|OPNA|2608
          拡張音源(OPNA)を指定します。
          SPB/OPNA/2608を指定するとADPCMを利用します。(PMDB2相当)
-         PPCファイルが指定されている場合は再生前にADPCMデータを転送する処理が発生します。
+         .PPC/.PVIファイルが指定されている場合は再生前にADPCMデータを転送する処理が発生します。
          (エミュレーションの場合以外は転送に時間がかかります。)
          以下のオプションが暗黙で指定されます。
            -VV=0,-5,0,0
@@ -660,7 +661,7 @@ Welcome to PMDDotNET !
      実チップ向けボリューム値を設定します。
      実質、GIMICのOPNAモジュール専用オプションで、SSGの音量を0～127で指定します。
 
-   -PPS=n  (TBD)
+   -PPS=n
      PPSDRVを使用するときは1を指定します。0を指定すると使用しません。
      デフォルト値は0です。
      nの指定可能値は0または1です。
@@ -675,7 +676,7 @@ Welcome to PMDDotNET !
      実際には上記以外のオプションや、ファイル名を指定すると全てオリジナルのPMDへ指定したものと解釈されます。
 
    [file.m]
-     .mファイルを指定します。.m2ファイルなどは今のところ未対応です。
+     .mファイルを指定します。拡張子のチェックはしません。
 ");
         }
 
@@ -848,6 +849,7 @@ Welcome to PMDDotNET !
                 {
                     mds.Update(emuRenderBuf, 0, 2, OneFrame);
                     ppz8em.Update(emuRenderBuf);
+                    ppsdrv.Update(emuRenderBuf);
 
                     buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                     buffer[offset + i * 2 + 1] = emuRenderBuf[1];

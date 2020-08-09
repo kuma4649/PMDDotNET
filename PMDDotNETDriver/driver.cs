@@ -203,12 +203,14 @@ namespace PMDDotNET.Driver
             work = new PW(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
             PPZ8em ppz8em = addtionalPMDDotNETOption.ppz8em;
-            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em);
+            PPSDRV ppsdrv = addtionalPMDDotNETOption.ppsdrv;
+            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em, ppsdrv);
 
             GetTags();
 
             if (!string.IsNullOrEmpty(pmd.pw.ppcFile)) pmd.pcmload.pcm_all_load(pmd.pw.ppcFile);
             if (!string.IsNullOrEmpty(pmd.pw.ppz1File) || !string.IsNullOrEmpty(pmd.pw.ppz2File)) pmd.pcmload.ppz_load(pmd.pw.ppz1File, pmd.pw.ppz2File);
+            if (!string.IsNullOrEmpty(pmd.pw.ppsFile)) pmd.pcmload.pps_load(pmd.pw.ppsFile);
         }
 
         public void MusicSTART(int musicNumber)

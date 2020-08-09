@@ -30,10 +30,13 @@ namespace PMDDotNET.Driver
         public PCMLOAD pcmload = null;
 
 
-        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback, PPZ8em ppz8em)
+        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback, PPZ8em ppz8em,PPSDRV ppsdrv)
         {
             this.pw = pw;
             pw.md = mmlData;
+            this.ppz8em = ppz8em;
+            this.ppsdrv = ppsdrv;
+
             //pw.md = new MmlDatum[mmlData.Length + 256];
             //Array.Copy(mmlData, 0, pw.md, 0, mmlData.Length);
             //for (int i = 0; i < 256; i++) pw.md[mmlData.Length + i] = new MmlDatum(0);
@@ -47,15 +50,13 @@ namespace PMDDotNET.Driver
 
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister);
-            this.ppz8em = ppz8em;
             ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em);
             pcmdrv = new PCMDRV(this, pw, r, pc98, ppzdrv);
             ppzdrv.pcmdrv = pcmdrv;
             ppzdrv.init();
             pcmdrv86 = new PCMDRV86();
-            ppsdrv = new PPSDRV();
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
-            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, appendFileReaderCallback);
+            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, appendFileReaderCallback);
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -3143,7 +3144,7 @@ namespace PMDDotNET.Driver
             r.dl &= 1;
             r.al >>= 1;
             r.ah = 5;
-            ppsdrv.intrpt();//int ppsdrv
+            ppsdrv.SetParam(r.al, r.dl);//int ppsdrv
         pdrsw_ret:;
             return null;
         }
@@ -8219,7 +8220,7 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0) goto opi_nonppsdrv;
 
             r.ah = 0;
-            ppsdrv.intrpt();// ppsdrv keyoff
+            ppsdrv.Stop();// ppsdrv keyoff
 
         opi_nonppsdrv:
             r.dx = 0x07bf;// PSG KEYOFF
@@ -9983,9 +9984,9 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	ppsdrv常駐CHECK
         //;==============================================================================
-        private void ppsdrv_check()
+        public void ppsdrv_check()
         {
-            r.carry = !pw.usePPSDRV;//PPSDRV常駐しています！(TBD)
+            r.carry = !pw.usePPSDRV;//PPSDRV常駐しています！
         }
 
 

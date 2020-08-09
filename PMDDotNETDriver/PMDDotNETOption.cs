@@ -16,5 +16,6 @@ namespace PMDDotNET.Driver
         public PPZ8em ppz8em;
         public string[] envPmd;
         public string[] envPmdOpt;
+        public PPSDRV ppsdrv;
     }
 }
