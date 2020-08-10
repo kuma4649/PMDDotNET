@@ -55,6 +55,7 @@ namespace PMDDotNET.Player
         private static Nc86ctl.Nc86ctl nc86ctl;
         private static RSoundChip rsc;
 
+        private static bool isAUTO = true;
         private static bool isNRM = true;
         private static bool isSPB = true;
         private static bool isVA = false;
@@ -99,7 +100,7 @@ namespace PMDDotNET.Player
 
             if (!File.Exists(args[mIndex]))
             {
-                Log.WriteLine(LogLevel.ERROR, "ファイルが見つかりません");
+                Log.WriteLine(LogLevel.ERROR, string.Format("ファイル[{0}]が見つかりません", args[mIndex]));
                 return -1;
             }
 
@@ -151,7 +152,6 @@ namespace PMDDotNET.Player
                 ppz8em = new PPZ8em(SamplingRate);
                 ppsdrv = new PPSDRV(SamplingRate);
 
-                string[] pmdVol = SetVolume();
 
 
                 Common.Environment env = new Common.Environment();
@@ -172,6 +172,7 @@ namespace PMDDotNET.Player
 #endif
                 drv = new Driver.Driver();
                 Driver.PMDDotNETOption dop = new Driver.PMDDotNETOption();
+                dop.isAUTO = isAUTO;
                 dop.isNRM = isNRM;
                 dop.isSPB = isSPB;
                 dop.isVA = isVA;
@@ -193,12 +194,6 @@ namespace PMDDotNET.Player
                         pmdvolFound = true;
                 }
 
-                //Dオプションを指定していない場合はpmdVolを適用させる
-                if (!pmdvolFound)
-                {
-                    foreach (string ao in pmdVol) pop.Add(ao);
-                }
-
                 Log.WriteLine(LogLevel.INFO, "");
                 srcFile = opt[mIndex];
 
@@ -210,6 +205,21 @@ namespace PMDDotNET.Player
                     , pop.ToArray()
                     , appendFileReaderCallback
                     );
+
+
+                //AUTO指定の場合に構成が変わるので、構成情報を受け取ってから音量設定を行う
+                isNRM = dop.isNRM;
+                isSPB=dop.isSPB;
+                isVA = dop.isVA;
+                usePPS = dop.usePPS;
+                usePPZ = dop.usePPZ;
+                string[] pmdOptionVol = SetVolume();
+                //ユーザーがコマンドラインでDオプションを指定していない場合はpmdVolを適用させる
+                if (!pmdvolFound && pmdOptionVol != null && pmdOptionVol.Length>0)
+                {
+                    ((Driver.Driver)drv).resetOption(pmdOptionVol);//
+                }
+
 
                 List<Tuple<string, string>> tags = drv.GetTags();
                 if (tags != null)
@@ -321,25 +331,22 @@ namespace PMDDotNET.Player
                 //  pmd内で1:(0.45～0.50)に補正される
                 //  ・OPNの場合のみpmdのコード上でfmの音量を下げるコードを通過する
                 //  ・GIMIC ProとLiteのターミナルでも mファイルを再生し確認
-                if (VolumeV == null)
+                VolumeV = new int[] { 0, 0, 0, 0 };
+                if (isNRM)
                 {
-                    VolumeV = new int[] { 0, 0, 0, 0 };
-                    if (isNRM)
-                    {
-                        //PC98のOPNを想定
-                        VolumeV[0] = 12;//FM  98は88よりFMが大きい
-                        VolumeV[1] = -5;//SSG
-                        VolumeV[2] = -191;//Rhythm
-                        VolumeV[3] = -191;//Adpcm
-                    }
-                    else
-                    {
-                        //OPNA(-86/SPB)を想定
-                        VolumeV[0] = 0;//FM
-                        VolumeV[1] = -5;//SSG
-                        VolumeV[2] = 0;//Rhythm //未調査
-                        VolumeV[3] = 0;//Adpcm //未調査
-                    }
+                    //PC98のOPNを想定
+                    VolumeV[0] = 12;//FM  98は88よりFMが大きい
+                    VolumeV[1] = -5;//SSG
+                    VolumeV[2] = -191;//Rhythm
+                    VolumeV[3] = -191;//Adpcm
+                }
+                else
+                {
+                    //OPNA(-86/SPB)を想定
+                    VolumeV[0] = 0;//FM
+                    VolumeV[1] = -5;//SSG
+                    VolumeV[2] = 0;//Rhythm //未調査
+                    VolumeV[3] = 0;//Adpcm //未調査
                 }
             }
             else if (device == 1)//GIMIC
@@ -367,6 +374,7 @@ namespace PMDDotNET.Player
             }
 
 
+            //一度目の音量設定時は反映を行わない
             if (VolumeV != null)
             {
                 mds.SetVolumeYM2608FM(VolumeV[0]);
@@ -547,32 +555,41 @@ namespace PMDDotNET.Player
         private static void OptionSetBoard(string v)
         {
             if (string.IsNullOrEmpty(v)) return;
-            if (v == "NRM" || v == "OPN" || v == "2203" || v == "26")
+            if (v == "AUTO")
             {
+                isAUTO = true;
+            }
+            else if (v == "NRM" || v == "OPN" || v == "2203" || v == "26")
+            {
+                isAUTO = false;
                 isNRM = true;
                 isVA = false;
                 isSPB = false;
             }
             else if (v == "86" || v == "86B")
             {
+                isAUTO = false;
                 isNRM = false;
                 isVA = false;
                 isSPB = false;
             }
             else if (v == "SPB" || v == "OPNA" || v == "2608")
             {
+                isAUTO = false;
                 isNRM = false;
                 isVA = false;
                 isSPB = true;
             }
             else if (v == "VA_NRM")
             {
+                isAUTO = false;
                 isNRM = true;
                 isVA = true;
                 isSPB = false;
             }
             else if (v == "VA_86")
             {
+                isAUTO = false;
                 isNRM = false;
                 isVA = true;
                 isSPB = false;
@@ -611,8 +628,31 @@ Welcome to PMDDotNET !
      想定する音源ボードを指定します。
      PMDの振る舞いが変わるほか、エミュレーションや実チップに設定するボリューム値も設定します。
      ボリューム値については後述の-VV=などにて変更可能です。
-       -B=NRM|OPN|2203|26
+       -B=AUTO
          デフォルト値です。
+         -B -PPS -PPZのオプションが自動で設定されます。
+         設定は曲データ中タグのPCMファイル指定状況から判断されます。以下の通りです。
+
+               .PPC          .PPS    .PZI      自動設定オプション
+             --------------------------------------------------------
+               未使用        未使用  未使用    -B=SPB -PPS=0 -PPZ=0
+               .PPC/.PVI     未使用  未使用    -B=SPB -PPS=0 -PPZ=0
+               .P86          未使用  未使用    -B=86B -PPS=0 -PPZ=0
+               (拡張子無し)  未使用  未使用    -B=SPB -PPS=0 -PPZ=0
+               未使用          使用  未使用    -B=SPB -PPS=1 -PPZ=0
+               .PPC/.PVI       使用  未使用    -B=SPB -PPS=1 -PPZ=0
+               .P86            使用  未使用    -B=86B -PPS=1 -PPZ=0
+               (拡張子無し)    使用  未使用    -B=SPB -PPS=1 -PPZ=0
+               未使用        未使用    使用    -B=SPB -PPS=0 -PPZ=1
+               .PPC/.PVI     未使用    使用    -B=SPB -PPS=0 -PPZ=1
+               .P86          未使用    使用    -B=86B -PPS=0 -PPZ=1
+               (拡張子無し)  未使用    使用    -B=SPB -PPS=0 -PPZ=1
+               未使用          使用    使用    -B=SPB -PPS=1 -PPZ=1
+               .PPC/.PVI       使用    使用    -B=SPB -PPS=1 -PPZ=1
+               .P86            使用    使用    -B=86B -PPS=1 -PPZ=1
+               (拡張子無し)    使用    使用    -B=SPB -PPS=1 -PPZ=1
+
+       -B=NRM|OPN|2203|26
          ノーマル音源(OPN)を指定します。
          以下のオプションが暗黙で指定されます。
            -VV=12,-5,-191,-191

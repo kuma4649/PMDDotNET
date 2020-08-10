@@ -941,103 +941,12 @@ namespace PMDDotNET.Driver
 
 
 
-        public PW(PMDDotNETOption dop,string[] op)
+        public PW()
         {
-            board = 1;
-            board2 = dop.isNRM ? 0 : 1;
-            if (board2 != 0)
-            {
-                adpcm = dop.isSPB ? 1 : 0;
-                pcm = dop.isSPB ? 0 : 1;
-            }
-            va = dop.isVA ? 1 : 0;
-            usePPSDRV = dop.usePPS;
-            ppz = dop.usePPZ ? 1 : 0;
-            pmdOption = op;
-
-            fmvd_init = (va + board2 != 0) ? 0 : 16;
-
-            if (va != 0)
-            {
-                ms_cmd = 0x188;// ８２５９マスタポート
-                ms_msk = 0x18a;// ８２５９マスタ／マスク
-                sl_cmd = 0x184;// ８２５９スレーブポート
-                sl_msk = 0x186;// ８２５９スレーブ／マスク
-            }
-
-            if (board2 == 0)
-            {
-                //ノーマル
-                partWk = new partWork[3 + 3 + 5 + 1];
-                part3b = 3; partWk[part3b] = new partWork();
-                part3c = 4; partWk[part3c] = new partWork();
-                part3d = 5; partWk[part3d] = new partWork();
-                part7 = 6; partWk[part7] = new partWork();
-                part8 = 7; partWk[part8] = new partWork();
-                part9 = 8; partWk[part9] = new partWork();
-                part10 = 9; partWk[part10] = new partWork();
-                part11 = 10; partWk[part11] = new partWork();
-                part_e = 11; partWk[part_e] = new partWork();
-
-                max_part1 = 11;//０クリアすべきパート数
-                max_part2 = 11;//初期化すべきパート数
-            }
-            else
-            {
-                //board2
-                if (ppz == 0)
-                {
-                    partWk = new partWork[3 + 3 + 5 + 3 + 1];
-                    part_e = 14; partWk[part_e] = new partWork();
-
-                    max_part1 = 14;//０クリアすべきパート数
-                    max_part2 = 11;//初期化すべきパート数
-                }
-                else
-                {
-                    partWk = new partWork[3 + 3 + 5 + 3 + 8 + 1];
-                    part10a = 14; partWk[part10a] = new partWork();
-                    part10b = 15; partWk[part10b] = new partWork();
-                    part10c = 16; partWk[part10c] = new partWork();
-                    part10d = 17; partWk[part10d] = new partWork();
-                    part10e = 18; partWk[part10e] = new partWork();
-                    part10f = 19; partWk[part10f] = new partWork();
-                    part10g = 20; partWk[part10g] = new partWork();
-                    part10h = 21; partWk[part10h] = new partWork();
-                    part_e = 22; partWk[part_e] = new partWork();
-
-                    max_part1 = 14 + 8;//０クリアすべきパート数
-                    max_part2 = 11;//初期化すべきパート数
-                }
-                part4 = 3; partWk[part4] = new partWork();
-                part5 = 4; partWk[part5] = new partWork();
-                part6 = 5; partWk[part6] = new partWork();
-                part7 = 6; partWk[part7] = new partWork();
-                part8 = 7; partWk[part8] = new partWork();
-                part9 = 8; partWk[part9] = new partWork();
-                part10 = 9; partWk[part10] = new partWork();
-                part11 = 10; partWk[part11] = new partWork();
-                part3b = 11; partWk[part3b] = new partWork();
-                part3c = 12; partWk[part3c] = new partWork();
-                part3d = 13; partWk[part3d] = new partWork();
-            }
-            part1 = 0; partWk[part1] = new partWork();
-            part2 = 1; partWk[part2] = new partWork();
-            part3 = 2; partWk[part3] = new partWork();
-
-            part_table = part_table_nbrd2;
-            if (board2 != 0)
-            {
-                part_table = part_table_brd2;
-                if (ppz != 0)
-                {
-                    part_table = part_table_ppz;
-                }
-            }
-
-
             efftbl = new List<Tuple<byte, MmlDatum[]>>();
             MmlDatum[] ef;
+
+            #region 効果音データ定義
             ef = MakeMmlDatum(D_000); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;BDRM		    ;0
             ef = MakeMmlDatum(D_001); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;SIMONDS    	;1
             ef = MakeMmlDatum(D_002); efftbl.Add(new Tuple<byte, MmlDatum[]>(1, ef)); //;SIMONDSTAML	;2
@@ -1194,9 +1103,131 @@ namespace PMDDotNET.Driver
             ef = MakeMmlDatum(ND_037); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 151 BI--
             ef = MakeMmlDatum(ND_038); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 152 BASYUSYUUU
             ef = MakeMmlDatum(ND_039); efftbl.Add(new Tuple<byte, MmlDatum[]>(2, ef)); //; 153 BISYU
+            #endregion
+
         }
 
-        private MmlDatum[] MakeMmlDatum(byte[] dd)
+        public void SetOption(PMDDotNETOption dop, string[] op)
+        {
+            pmdOption = op;
+
+            if (dop.isAUTO)
+            {
+                dop.isNRM = false;
+                dop.isSPB = true;
+                if (!string.IsNullOrEmpty(ppcFile))
+                {
+                    dop.isSPB = true;//TBD
+                }
+
+                dop.usePPS = false;
+                if (!string.IsNullOrEmpty(ppsFile))
+                {
+                    dop.usePPS = true;
+                }
+
+                dop.usePPZ = false;
+                if (!string.IsNullOrEmpty(ppz1File))
+                {
+                    dop.usePPZ = true;
+                }
+            }
+
+            board = 1;
+            board2 = dop.isNRM ? 0 : 1;
+            if (board2 != 0)
+            {
+                adpcm = dop.isSPB ? 1 : 0;
+                pcm = dop.isSPB ? 0 : 1;
+            }
+            va = dop.isVA ? 1 : 0;
+            usePPSDRV = dop.usePPS;
+            ppz = dop.usePPZ ? 1 : 0;
+
+            fmvd_init = (va + board2 != 0) ? 0 : 16;
+
+            if (va != 0)
+            {
+                ms_cmd = 0x188;// ８２５９マスタポート
+                ms_msk = 0x18a;// ８２５９マスタ／マスク
+                sl_cmd = 0x184;// ８２５９スレーブポート
+                sl_msk = 0x186;// ８２５９スレーブ／マスク
+            }
+
+            if (board2 == 0)
+            {
+                //ノーマル
+                partWk = new partWork[3 + 3 + 5 + 1];
+                part3b = 3; partWk[part3b] = new partWork();
+                part3c = 4; partWk[part3c] = new partWork();
+                part3d = 5; partWk[part3d] = new partWork();
+                part7 = 6; partWk[part7] = new partWork();
+                part8 = 7; partWk[part8] = new partWork();
+                part9 = 8; partWk[part9] = new partWork();
+                part10 = 9; partWk[part10] = new partWork();
+                part11 = 10; partWk[part11] = new partWork();
+                part_e = 11; partWk[part_e] = new partWork();
+
+                max_part1 = 11;//０クリアすべきパート数
+                max_part2 = 11;//初期化すべきパート数
+            }
+            else
+            {
+                //board2
+                if (ppz == 0)
+                {
+                    partWk = new partWork[3 + 3 + 5 + 3 + 1];
+                    part_e = 14; partWk[part_e] = new partWork();
+
+                    max_part1 = 14;//０クリアすべきパート数
+                    max_part2 = 11;//初期化すべきパート数
+                }
+                else
+                {
+                    partWk = new partWork[3 + 3 + 5 + 3 + 8 + 1];
+                    part10a = 14; partWk[part10a] = new partWork();
+                    part10b = 15; partWk[part10b] = new partWork();
+                    part10c = 16; partWk[part10c] = new partWork();
+                    part10d = 17; partWk[part10d] = new partWork();
+                    part10e = 18; partWk[part10e] = new partWork();
+                    part10f = 19; partWk[part10f] = new partWork();
+                    part10g = 20; partWk[part10g] = new partWork();
+                    part10h = 21; partWk[part10h] = new partWork();
+                    part_e = 22; partWk[part_e] = new partWork();
+
+                    max_part1 = 14 + 8;//０クリアすべきパート数
+                    max_part2 = 11;//初期化すべきパート数
+                }
+                part4 = 3; partWk[part4] = new partWork();
+                part5 = 4; partWk[part5] = new partWork();
+                part6 = 5; partWk[part6] = new partWork();
+                part7 = 6; partWk[part7] = new partWork();
+                part8 = 7; partWk[part8] = new partWork();
+                part9 = 8; partWk[part9] = new partWork();
+                part10 = 9; partWk[part10] = new partWork();
+                part11 = 10; partWk[part11] = new partWork();
+                part3b = 11; partWk[part3b] = new partWork();
+                part3c = 12; partWk[part3c] = new partWork();
+                part3d = 13; partWk[part3d] = new partWork();
+            }
+            part1 = 0; partWk[part1] = new partWork();
+            part2 = 1; partWk[part2] = new partWork();
+            part3 = 2; partWk[part3] = new partWork();
+
+            part_table = part_table_nbrd2;
+            if (board2 != 0)
+            {
+                part_table = part_table_brd2;
+                if (ppz != 0)
+                {
+                    part_table = part_table_ppz;
+                }
+            }
+
+
+        }
+
+            private MmlDatum[] MakeMmlDatum(byte[] dd)
         {
             List<MmlDatum> ret = new List<MmlDatum>();
             foreach (byte b in dd) ret.Add(new MmlDatum(b));
@@ -1208,6 +1239,7 @@ namespace PMDDotNET.Driver
         //EFFECT.INC
         public List<Tuple<byte, MmlDatum[]>> efftbl;
 
+        #region 効果音データ
         private static byte[] D_000 = new byte[]{//; Bass Drum               	1990-06-22	05:47:11
             //len freqL freqH noise  mix  Evol envL envH envPtn sweepT sweepN
                 1,  220,    5,   31,  54,   15,   0,   0,     0,   127,     0
@@ -2014,6 +2046,7 @@ namespace PMDDotNET.Driver
             ,  24,221,  1,  0, 55, 16, 16, 39,  0,  0,  0
             , 0xff//-1
         };
+        #endregion
 
     }
 }

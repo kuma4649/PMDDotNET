@@ -64,23 +64,27 @@ namespace PMDDotNET.Driver
         public List<Tuple<string, string>> GetTags()
         {
             List<Tuple<string, string>> tags = new List<Tuple<string, string>>();
+            x86Register lr = new x86Register();
+            PW lpw = new PW();
+            lpw.mmlbuf = 1;
+            lpw.md =srcBuf;
 
             string str;
-            ushort adr = pmd.get_memo(1);
+            ushort adr = get_memo(1,lr,lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("title", str));
             }
 
-            adr = pmd.get_memo(2);
+            adr = get_memo(2, lr, lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("composer", str));
             }
 
-            adr = pmd.get_memo(3);
+            adr = get_memo(3, lr, lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
@@ -91,7 +95,7 @@ namespace PMDDotNET.Driver
             str = "";
             do
             {
-                adr = pmd.get_memo(al);
+                adr = get_memo(al, lr, lpw);
                 if (adr != 0) str += "\r\n" + getNRDString(ref adr);
                 al++;
             } while (adr != 0);
@@ -101,37 +105,97 @@ namespace PMDDotNET.Driver
                 tags.Add(new Tuple<string, string>("memo", str));
             }
 
-            adr = pmd.get_memo(0);
+            adr = get_memo(0, lr, lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PCMFile", str));
-                pmd.pw.ppcFile = str.Trim();
+                work.ppcFile = str.Trim();
             }
 
-            adr = pmd.get_memo(-1);
+            adr = get_memo(-1, lr, lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PPSFile", str));
-                pmd.pw.ppsFile = str.Trim();
+                work.ppsFile = str.Trim();
             }
 
-            adr = pmd.get_memo(-2);
+            adr = get_memo(-2, lr, lpw);
             if (adr != 0)
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PPZFile", str));
-                pmd.pw.ppz1File = str.Trim();
-                string[] p = pmd.pw.ppz1File.Split(',');
+                work.ppz1File = str.Trim();
+                string[] p = work.ppz1File.Split(',');
                 if (p.Length > 1)
                 {
-                    pmd.pw.ppz1File = p[0];
-                    pmd.pw.ppz2File = p[1];
+                    work.ppz1File = p[0];
+                    work.ppz2File = p[1];
                 }
             }
 
             return tags;
+        }
+
+        public ushort get_memo(int al, x86Register r, PW pw)
+        {
+            try
+            {
+
+                r.al = (byte)al;
+                r.si = (ushort)pw.mmlbuf;
+                if (pw.md[r.si].dat != 0x1a)
+                    goto getmemo_errret;//;音色がないfile=メモのアドレス取得不能
+                r.si += 0x18;
+                r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+                r.si += (ushort)pw.mmlbuf;
+                r.si -= 4;
+                r.bx = (ushort)(pw.md[r.si + 2].dat + pw.md[r.si + 3].dat * 0x100);//;bh=0feh,bl=ver
+                if (r.bl == 0x40)//;Ver4.0 & 00Hの場合
+                    goto getmemo_exec;
+                if (r.bh != 0xfe)
+                    goto getmemo_errret;//;Ver.4.1以降は 0feh
+                if (r.bl < 0x41)
+                    goto getmemo_errret;//;MC version 4.1以前だったらError
+                getmemo_exec:;
+                if (r.bl < 0x42)//;Ver.4.2以降か？
+                    goto getmemo_oldver41;
+                r.al++;//; ならalを +1 (0FFHで#PPSFile)
+            getmemo_oldver41:;
+                if (r.bl < 0x48)//;Ver.4.8以降か？
+                    goto getmemo_oldver47;
+                r.al++;//; ならalを +1 (0FEHで#PPZFile)
+            getmemo_oldver47:;
+                r.si = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
+                r.si += (ushort)pw.mmlbuf;
+                r.al++;
+            getmemo_loop:;
+                r.dx = (ushort)(pw.md[r.si + 0].dat + pw.md[r.si + 1].dat * 0x100);
+                if (r.dx == 0)
+                    goto getmemo_errret;
+                r.si += 2;
+                r.al--;
+                if (r.al != 0)
+                    goto getmemo_loop;
+                getmemo_exit:;
+                r.dx += (ushort)pw.mmlbuf;
+                pw.ds_push = 0;// r.cs; セグメントなし
+                pw.dx_push = r.dx;
+                return r.dx;
+
+            getmemo_errret:;
+                pw.ds_push = 0;
+                pw.dx_push = 0;
+                return 0;
+            }
+            catch
+            {
+                Log.writeLine(LogLevel.WARNING, "メモのアドレスが範囲外を指していることを検出しました。無視します。");
+                pw.ds_push = 0;
+                pw.dx_push = 0;
+                return 0;
+            }
         }
 
         private static string getNRDString(ref ushort index)
@@ -199,6 +263,11 @@ namespace PMDDotNET.Driver
             }
         }
 
+        public void resetOption(string[] pmdOption)
+        {
+            pmd.resetOption(pmdOption);
+        }
+
         public void Init(
             byte[] srcBuf,
             Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
@@ -223,17 +292,21 @@ namespace PMDDotNET.Driver
 
             WriteOPNA = opnaWrite;
             WaitSendOPNA = opnaWaitSend;
-            work = new PW(addtionalPMDDotNETOption, addtionalPMDOption);
+            
+            work = new PW();
+            GetTags();
+            work.SetOption(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
+
             PPZ8em ppz8em = addtionalPMDDotNETOption.ppz8em;
             PPSDRV ppsdrv = addtionalPMDDotNETOption.ppsdrv;
-            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em, ppsdrv);
 
-            GetTags();
+            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em, ppsdrv);
 
             if (!string.IsNullOrEmpty(pmd.pw.ppcFile)) pmd.pcmload.pcm_all_load(pmd.pw.ppcFile);
             if (!string.IsNullOrEmpty(pmd.pw.ppz1File) || !string.IsNullOrEmpty(pmd.pw.ppz2File)) pmd.pcmload.ppz_load(pmd.pw.ppz1File, pmd.pw.ppz2File);
             if (!string.IsNullOrEmpty(pmd.pw.ppsFile)) pmd.pcmload.pps_load(pmd.pw.ppsFile);
+
         }
 
         public void MusicSTART(int musicNumber)

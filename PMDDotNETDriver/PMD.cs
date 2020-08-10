@@ -297,6 +297,11 @@ namespace PMDDotNET.Driver
             pw.fadeout_speed = r.al;
         }
 
+        public void resetOption(string[] pmdOption)
+        {
+            set_option(pmdOption);
+        }
+
 
 
         //389-429
@@ -9704,7 +9709,7 @@ namespace PMDDotNET.Driver
             //;==============================================================================
 
             //TBD "PMDOPT=" 検索
-            set_option();
+            set_option(pw.pmdOption);
 
             //;==============================================================================
             //; vmapエリアに"PMD"文字列書込み
@@ -10216,12 +10221,12 @@ namespace PMDDotNET.Driver
         //; ds:si command_line
         //; es pmd_segment
         //;==============================================================================
-        private void set_option()
+        private void set_option(string[] pmdOption)
         {
-            if (pw.pmdOption == null) return;
-            for(int i=0;i<pw.pmdOption.Length;i++)
+            if (pmdOption == null) return;
+            for(int i=0;i<pmdOption.Length;i++)
             {
-                string op = pw.pmdOption[i].ToUpper();
+                string op = pmdOption[i].ToUpper();
                 if (string.IsNullOrEmpty(op)) continue;
                 if (op.Length < 1 || (op[0] != '/' && op[0] != '-')) continue;
 

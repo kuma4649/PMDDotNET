@@ -8,6 +8,7 @@ namespace PMDDotNET.Driver
     {
         public bool isLoadADPCM;
         public bool loadADPCMOnly;
+        public bool isAUTO;
         public bool isVA;
         public bool isNRM;
         public bool usePPS;
