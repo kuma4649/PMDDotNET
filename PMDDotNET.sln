@@ -13,7 +13,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "document", "document", "{979105FF-AB13-4551-922B-677DF37A0821}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGE.txt = CHANGE.txt
+		compile.bat = compile.bat
+		makeZip.bat = makeZip.bat
+		play.bat = play.bat
 		README.md = README.md
+		removeZoneIdent.bat = removeZoneIdent.bat
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCommon", "PMDDotNETCommon\PMDDotNETCommon.csproj", "{0A0DD0A3-CD63-4E4A-A3F8-537CC00DD5C7}"
@@ -26,9 +30,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETDriver", "PMDDotNE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETPlayer", "PMDDotNETPlayer\PMDDotNETPlayer.csproj", "{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETCompilerTestService", "PMDDotNETCompilerTestService\PMDDotNETCompilerTestService.csproj", "{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompilerTestService", "PMDDotNETCompilerTestService\PMDDotNETCompilerTestService.csproj", "{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETCompilerUnitTest", "PMDDotNETCompilerUnitTest\PMDDotNETCompilerUnitTest.csproj", "{C482C57B-4996-4511-AAF8-95ADE3B1F298}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompilerUnitTest", "PMDDotNETCompilerUnitTest\PMDDotNETCompilerUnitTest.csproj", "{C482C57B-4996-4511-AAF8-95ADE3B1F298}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
