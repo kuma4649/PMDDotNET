@@ -295,6 +295,8 @@ namespace PMDDotNET.Driver
             
             work = new PW();
             GetTags();
+            addtionalPMDDotNETOption.PPCHeader = CheckPPC(appendFileReaderCallback);
+
             work.SetOption(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
 
@@ -307,6 +309,33 @@ namespace PMDDotNET.Driver
             if (!string.IsNullOrEmpty(pmd.pw.ppz1File) || !string.IsNullOrEmpty(pmd.pw.ppz2File)) pmd.pcmload.ppz_load(pmd.pw.ppz1File, pmd.pw.ppz2File);
             if (!string.IsNullOrEmpty(pmd.pw.ppsFile)) pmd.pcmload.pps_load(pmd.pw.ppsFile);
 
+        }
+
+        private string CheckPPC(Func<string, Stream> appendFileReaderCallback)
+        {
+            if (string.IsNullOrEmpty(work.ppcFile))
+            {
+                return "";
+            }
+
+            byte[] buf = null;
+            string ext = Path.GetExtension(work.ppcFile);
+            string fn = work.ppcFile;
+            int extn = 0;
+            string[] ppcExtTbl = new string[] { ".PPC", ".P86", ".PVI" };
+            while (true)
+            {
+                buf = Common.Common.GetPCMDataFromFile(work.ppcFile, appendFileReaderCallback);
+                if (buf != null) break;
+                if (extn == 3) break;
+                extn++;
+                fn = Path.ChangeExtension(fn, ppcExtTbl[extn - 1]);
+            }
+            if (buf == null) return "";
+            if (buf.Length < 3) return "";
+
+            string head = string.Format("{0}{1}{2}", (char)buf[0], (char)buf[1], (char)buf[2]);
+            return head;
         }
 
         public void MusicSTART(int musicNumber)

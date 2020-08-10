@@ -98,6 +98,8 @@ namespace PMDDotNET.Player
                 return -1;
             }
 
+            srcFile = args[mIndex];
+
             if (!File.Exists(args[mIndex]))
             {
                 Log.WriteLine(LogLevel.ERROR, string.Format("ファイル[{0}]が見つかりません", args[mIndex]));
@@ -183,6 +185,7 @@ namespace PMDDotNET.Player
                 dop.ppz8em = ppz8em;
                 dop.ppsdrv = ppsdrv;
                 dop.envPmd = envPmd;
+                dop.srcFile = srcFile;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
                 for(int i = 0; i < opt.Count; i++)
@@ -195,7 +198,6 @@ namespace PMDDotNET.Player
                 }
 
                 Log.WriteLine(LogLevel.INFO, "");
-                srcFile = opt[mIndex];
 
                 ((Driver.Driver)drv).Init(
                     srcFile
@@ -630,27 +632,23 @@ Welcome to PMDDotNET !
      ボリューム値については後述の-VV=などにて変更可能です。
        -B=AUTO
          デフォルト値です。
-         -B -PPS -PPZのオプションが自動で設定されます。
+         -B= -PPS= -PPZ=のオプションが自動で設定されます。
          設定は曲データ中タグのPCMファイル指定状況から判断されます。以下の通りです。
 
-               .PPC          .PPS    .PZI      自動設定オプション
-             --------------------------------------------------------
-               未使用        未使用  未使用    -B=SPB -PPS=0 -PPZ=0
-               .PPC/.PVI     未使用  未使用    -B=SPB -PPS=0 -PPZ=0
-               .P86          未使用  未使用    -B=86B -PPS=0 -PPZ=0
-               (拡張子無し)  未使用  未使用    -B=SPB -PPS=0 -PPZ=0
-               未使用          使用  未使用    -B=SPB -PPS=1 -PPZ=0
-               .PPC/.PVI       使用  未使用    -B=SPB -PPS=1 -PPZ=0
-               .P86            使用  未使用    -B=86B -PPS=1 -PPZ=0
-               (拡張子無し)    使用  未使用    -B=SPB -PPS=1 -PPZ=0
-               未使用        未使用    使用    -B=SPB -PPS=0 -PPZ=1
-               .PPC/.PVI     未使用    使用    -B=SPB -PPS=0 -PPZ=1
-               .P86          未使用    使用    -B=86B -PPS=0 -PPZ=1
-               (拡張子無し)  未使用    使用    -B=SPB -PPS=0 -PPZ=1
-               未使用          使用    使用    -B=SPB -PPS=1 -PPZ=1
-               .PPC/.PVI       使用    使用    -B=SPB -PPS=1 -PPZ=1
-               .P86            使用    使用    -B=86B -PPS=1 -PPZ=1
-               (拡張子無し)    使用    使用    -B=SPB -PPS=1 -PPZ=1
+             #    .PPC(ヘッダ)  .PPS    .PZI       自動設定オプション
+             ------------------------------------------------------------
+             01   未使用        未使用  未使用     -B=SPB -PPS=0 -PPZ=0
+             02   .PPC/.PVI     未使用  未使用     -B=SPB -PPS=0 -PPZ=0
+             03   .P86          未使用  未使用     -B=86B -PPS=0 -PPZ=0
+             04   未使用          使用  未使用     -B=SPB -PPS=1 -PPZ=0
+             05   .PPC/.PVI       使用  未使用     -B=SPB -PPS=1 -PPZ=0
+             06   .P86            使用  未使用     -B=86B -PPS=1 -PPZ=0
+             07   未使用        未使用    使用     -B=SPB -PPS=0 -PPZ=1
+             08   .PPC/.PVI     未使用    使用     -B=SPB -PPS=0 -PPZ=1
+             09   .P86          未使用    使用     -B=86B -PPS=0 -PPZ=1
+             10   未使用          使用    使用     -B=SPB -PPS=1 -PPZ=1
+             11   .PPC/.PVI       使用    使用     -B=SPB -PPS=1 -PPZ=1
+             12   .P86            使用    使用     -B=86B -PPS=1 -PPZ=1
 
        -B=NRM|OPN|2203|26
          ノーマル音源(OPN)を指定します。

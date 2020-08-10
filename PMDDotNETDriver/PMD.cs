@@ -1017,42 +1017,42 @@ namespace PMDDotNET.Driver
                 {
                     pcmdrv.pcmmain();
                 }
-            }
 
+                if (pw.ppz != 0)
+                {
+                    r.di = (ushort)pw.part10a;//offset part10a
+                    pw.partb = 0;
+                    ppzdrv.ppzmain();
 
-            if (pw.ppz != 0)
-            {
-                r.di = (ushort)pw.part10a;//offset part10a
-                pw.partb = 0;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10b;//offset part10b
+                    pw.partb = 1;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10b;//offset part10b
-                pw.partb = 1;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10c;//offset part10c
+                    pw.partb = 2;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10c;//offset part10c
-                pw.partb = 2;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10d;//offset part10d
+                    pw.partb = 3;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10d;//offset part10d
-                pw.partb = 3;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10e;//offset part10e
+                    pw.partb = 4;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10e;//offset part10e
-                pw.partb = 4;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10f;//offset part10f
+                    pw.partb = 5;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10f;//offset part10f
-                pw.partb = 5;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10g;//offset part10g
+                    pw.partb = 6;
+                    ppzdrv.ppzmain();
 
-                r.di = (ushort)pw.part10g;//offset part10g
-                pw.partb = 6;
-                ppzdrv.ppzmain();
+                    r.di = (ushort)pw.part10h;//offset part10h
+                    pw.partb = 7;
+                    ppzdrv.ppzmain();
+                }
 
-                r.di = (ushort)pw.part10h;//offset part10h
-                pw.partb = 7;
-                ppzdrv.ppzmain();
             }
 
 

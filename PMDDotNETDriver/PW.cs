@@ -1113,24 +1113,11 @@ namespace PMDDotNET.Driver
 
             if (dop.isAUTO)
             {
+                dop.usePPS = !string.IsNullOrEmpty(ppsFile);
+                dop.usePPZ = !string.IsNullOrEmpty(ppz1File) || !string.IsNullOrEmpty(ppz2File);
                 dop.isNRM = false;
                 dop.isSPB = true;
-                if (!string.IsNullOrEmpty(ppcFile))
-                {
-                    dop.isSPB = true;//TBD
-                }
-
-                dop.usePPS = false;
-                if (!string.IsNullOrEmpty(ppsFile))
-                {
-                    dop.usePPS = true;
-                }
-
-                dop.usePPZ = false;
-                if (!string.IsNullOrEmpty(ppz1File))
-                {
-                    dop.usePPZ = true;
-                }
+                if (dop.PPCHeader == "PCM") dop.isSPB = false;
             }
 
             board = 1;

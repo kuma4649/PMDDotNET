@@ -380,8 +380,16 @@ namespace PMDDotNET.Driver
             string ext = Path.GetExtension(pw.filename_ofs);
             if (string.IsNullOrEmpty(ext)) pw.filename_ofs = Path.ChangeExtension(pw.filename_ofs, ".PPS");
             byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
-
-            ppsdrv.Load(pcmData);
+            if (pcmData == null)
+            {
+                Log.WriteLine(LogLevel.ERROR, string.Format("PPSファイル[{0}]の読み込みに失敗しました。", pw.filename_ofs));
+                pw.usePPSDRV = false;
+                pw.ppsdrv_flag = 0;
+            }
+            else
+            {
+                ppsdrv.Load(pcmData);
+            }
         }
 
 
