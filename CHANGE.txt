@@ -1,4 +1,7 @@
 更新履歴
+TAG034 2020/08/15 2nd
+  PPSDRVの実機再生用にオプション追加。と初期値再調整。
+
 TAG033 2020/08/15
   MDSoundのPPZ8,PPSDRVを使用するように修正。
   PPSDRV使用時、PCMを実ChipのSSGから出力出来るように修正。

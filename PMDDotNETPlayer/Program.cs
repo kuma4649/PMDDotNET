@@ -44,7 +44,7 @@ namespace PMDDotNET.Player
         }
         private static readonly uint SamplingRate = 55467;//44100;
         private static readonly uint SamplingRatePPSGIMIC = 44100;
-        private static readonly uint SamplingRatePPSSCCI = 24000;
+        private static readonly uint SamplingRatePPSSCCI = 16000;
         private static readonly uint samplingBuffer = 1024;
         private static short[] frames = new short[samplingBuffer * 4];
         private static MDSound.MDSound mds = null;
@@ -71,6 +71,8 @@ namespace PMDDotNET.Player
         private static string[] envPmd = null;
         private static string[] envPmdOpt = null;
         private static string srcFile = null;
+        private static int userPPSFREQ = -1;
+        private static int ppsdrvWait = 1;
 
         static int Main(string[] args)
         {
@@ -178,7 +180,20 @@ namespace PMDDotNET.Player
                     Start = ppsdrv.Start,
                     Stop = ppsdrv.Stop,
                     Reset = ppsdrv.Reset,
-                    SamplingRate = device == 0 ? SamplingRate : (device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI),
+                    SamplingRate = (uint)
+                        (
+                            device == 0 
+                            ? SamplingRate 
+                            : (
+                                userPPSFREQ == -1
+                                ? (
+                                device == 1 
+                                ? SamplingRatePPSGIMIC 
+                                : SamplingRatePPSSCCI
+                                )
+                                : (uint)userPPSFREQ
+                            )
+                        ),
                     Clock = opnaMasterClock,
                     Volume = 0,
                     Option = device == 0 ? null : (new object[] { (Action<int, int>)PPSDRVpsg })
@@ -530,6 +545,8 @@ namespace PMDDotNET.Player
                 else if (op.Length > 3 && op.Substring(0, 3) == "VR=") OptionSetVolumeR(op.Substring(3));
                 else if (op.Length > 4 && op.Substring(0, 4) == "PPS=") OptionSetPPS(op.Substring(4));
                 else if (op.Length > 4 && op.Substring(0, 4) == "PPZ=") OptionSetPPZ(op.Substring(4));
+                else if (op.Length > 8 && op.Substring(0, 8) == "PPSFREQ=") OptionSetPPSFREQ(op.Substring(8));
+                else if (op.Length > 8 && op.Substring(0, 8) == "PPSWAIT=") OptionSetPPSWAIT(op.Substring(8));
                 else break;
 
                 i++;
@@ -556,6 +573,25 @@ namespace PMDDotNET.Player
             if (int.TryParse(v, out n))
             {
                 usePPS = n != 0;
+            }
+        }
+
+        private static void OptionSetPPSFREQ(string v)
+        {
+            if (string.IsNullOrEmpty(v)) return;
+            int n;
+            if (int.TryParse(v, out n))
+            {
+                userPPSFREQ = Math.Min(Math.Max(n, 2000), 192000);
+            }
+        }
+        private static void OptionSetPPSWAIT(string v)
+        {
+            if (string.IsNullOrEmpty(v)) return;
+            int n;
+            if (int.TryParse(v, out n))
+            {
+                ppsdrvWait = Math.Min(Math.Max(n, -1), 100);
             }
         }
 
@@ -744,6 +780,19 @@ Welcome to PMDDotNET !
      PPZ8を使用するときは1を指定します。0を指定すると使用しません。
      デフォルト値は0です。
      nの指定可能値は0または1です。
+
+   -PPSFREQ=n
+     PPSDRVの周波数(Hz)を指定します。
+     実Chipのみ有効です。
+     デフォルト値はGIMICは44100、SCCIは16000です。
+     nの指定可能値は2000～192000です。
+
+   -PPSWAIT=n
+     SCCIへ送信する同期の為のウエイト値を指定します。
+     SCCIのみ有効です。
+     デフォルト値は1です。
+     -1の場合は送信しません。
+     nの指定可能値は-1～100です。
 
    [PMD options]
      オリジナルのPMDへ送るオプションを指定します。
@@ -944,7 +993,10 @@ Welcome to PMDDotNET !
             double o = sw.ElapsedTicks / swFreq;
             double oPPS = sw.ElapsedTicks / swFreq;
             double step = 1 / (double)SamplingRate;
-            uint PPSSamplingRate = device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI;
+            uint PPSSamplingRate = (uint)(
+                userPPSFREQ == -1 
+                ? (device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI) 
+                : (uint)userPPSFREQ);
             double stepPPS = 1 / (double)PPSSamplingRate;
 
             trdStopped = false;
@@ -1077,6 +1129,8 @@ Welcome to PMDDotNET !
                     //if (aold != a || dold != d)
                     {
                         rsc.setRegister(0 * 0x100 + a, d);
+                        if (ppsdrvWait > -1) rsc.setRegister(-1, ppsdrvWait);
+
                         //aold = a;
                         //dold = d;
                     }
