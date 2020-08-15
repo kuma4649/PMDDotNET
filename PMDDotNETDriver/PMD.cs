@@ -24,13 +24,19 @@ namespace PMDDotNET.Driver
         private PPZDRV ppzdrv = null;
         private PCMDRV pcmdrv = null;
         private PCMDRV86 pcmdrv86 = null;
-        private PPSDRV ppsdrv = null;
         private EFCDRV efcdrv = null;
-        private PPZ8em ppz8em = null;
+        private Func<ChipDatum,int> ppz8em = null;
+        private Func<ChipDatum, int> ppsdrv = null;
         public PCMLOAD pcmload = null;
 
 
-        public PMD(MmlDatum[] mmlData, Action<ChipDatum> WriteOPNARegister,PW pw, Func<string, Stream> appendFileReaderCallback, PPZ8em ppz8em,PPSDRV ppsdrv)
+        public PMD(
+            MmlDatum[] mmlData,
+            Action<ChipDatum> WriteOPNARegister,
+            PW pw,
+            Func<string, Stream> appendFileReaderCallback,
+            Func<ChipDatum,int> ppz8em,
+            Func<ChipDatum, int> ppsdrv)
         {
             this.pw = pw;
             pw.md = mmlData;
@@ -50,13 +56,14 @@ namespace PMDDotNET.Driver
 
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister);
-            ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em);
+            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, appendFileReaderCallback);
+
+            ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em, pcmload.ppzPcmData);
             pcmdrv = new PCMDRV(this, pw, r, pc98, ppzdrv);
             ppzdrv.pcmdrv = pcmdrv;
             ppzdrv.init();
             pcmdrv86 = new PCMDRV86();
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
-            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, appendFileReaderCallback);
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -398,7 +405,8 @@ namespace PMDDotNET.Driver
                 {
                     r.ax = 0x1800;
                     pw.adpcm_emulate = r.al;
-                    ppz8em.SetAdpcmEmu(r.al);// ADPCMEmulate OFF
+                    ChipDatum cd = new ChipDatum(0x18, r.al, 0);
+                    ppz8em(cd);//.SetAdpcmEmu(r.al);// ADPCMEmulate OFF
                     r.bx = (ushort)pw.part10;//offset part10	//PCMを
                     pw.partWk[r.bx].partmask |= 0x10;//Mask(bit4)
                 }
@@ -424,9 +432,11 @@ namespace PMDDotNET.Driver
                 if (pw.ppz_call_seg != 0)
                 {
                     r.ax = 0x1901;
-                    ppz8em.SetReleaseFlag(0x01);// 常駐解除禁止
+                    ChipDatum cd = new ChipDatum(0x19, 0, 0x01);
+                    ppz8em(cd);//.SetReleaseFlag(0x01);// 常駐解除禁止
                     r.ah = 0;
-                    ppz8em.Initialize();
+                    cd = new ChipDatum(0x00, 0, 0);
+                    ppz8em(cd);//.Initialize();
                     //r.ah = 6;
                     //ppz8em.Reserve();
                 }
@@ -865,7 +875,8 @@ namespace PMDDotNET.Driver
                     {
                         r.al = r.cl;
                         r.al--;
-                        ppz8em.SetPan(r.al, r.dx);
+                        ChipDatum cd = new ChipDatum(0x13, r.al, r.dx);
+                        ppz8em(cd);//.SetPan(r.al, r.dx);
                         r.cx--;
                     } while (r.cx != 0);
                 }
@@ -3149,7 +3160,8 @@ namespace PMDDotNET.Driver
             r.dl &= 1;
             r.al >>= 1;
             r.ah = 5;
-            ppsdrv.SetParam(r.al, r.dl);//int ppsdrv
+            ChipDatum cd = new ChipDatum(0x03, r.al, r.dl);
+            ppsdrv(cd);//.SetParam(r.al, r.dl);//int ppsdrv
         pdrsw_ret:;
             return null;
         }
@@ -8232,7 +8244,8 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0) goto opi_nonppsdrv;
 
             r.ah = 0;
-            ppsdrv.Stop();// ppsdrv keyoff
+            ChipDatum cd = new ChipDatum(0x02, 0, 0);
+            ppsdrv(cd);//.Stop();// ppsdrv keyoff
 
         opi_nonppsdrv:
             r.dx = 0x07bf;// PSG KEYOFF
@@ -8279,11 +8292,13 @@ namespace PMDDotNET.Driver
                     if (pw.ppz_call_seg != 0)
                     {
                         r.ah = 0x12;
-                        ppz8em.StopInterrupt();// FIFO割り込み停止
+                        cd = new ChipDatum(0x12, 0, 0);
+                        ppz8em(cd);//.StopInterrupt();// FIFO割り込み停止
                         r.ax = 0x0200;
                     ppz_off_loop:;
                         r.stack.Push(r.ax);
-                        ppz8em.StopPCM(r.al);// ppz keyoff
+                        cd = new ChipDatum(0x02, r.al, 0);
+                        ppz8em(cd);//.StopPCM(r.al);// ppz keyoff
                         r.ax = r.stack.Pop();
                         r.al++;
                         if (r.al < 8) goto ppz_off_loop;
@@ -8992,7 +9007,8 @@ namespace PMDDotNET.Driver
                         if (pw.adpcm_emulate != 1)
                             goto pmpcm_noadpcm;
                         r.ax = 0x0207;
-                        ppz8em.StopPCM(r.al);//; PPZ8 ch7 発音停止
+                        ChipDatum cd = new ChipDatum(0x02, r.al, 0);
+                        ppz8em(cd);//.StopPCM(r.al);//; PPZ8 ch7 発音停止
                     pmpcm_noadpcm:;
                     }
                     else
@@ -9025,7 +9041,8 @@ namespace PMDDotNET.Driver
                     pmppz_exec:;
                 }
                 r.ah = 2;
-                ppz8em.StopPCM(r.al);// ; ppz stop(al= partb)
+                ChipDatum cd = new ChipDatum(0x02, r.al, 0);
+                ppz8em(cd);//.StopPCM(r.al);// ; ppz stop(al= partb)
             pmppz_noexec:;
                 return;
             }
@@ -9964,21 +9981,24 @@ namespace PMDDotNET.Driver
                 if (r.carry) goto ppzchk_end;
                 pw.ppz_call_seg = 1;
                 r.ax = 0x410;
-                ppz8em.ReadStatus(r.al);//int ppz_vec
+                ChipDatum cd = new ChipDatum(0x04, r.al, 0);
+                ppz8em(cd);//.ReadStatus(r.al);//int ppz_vec
                 r.ah = (byte)pw.int_level;
                 r.ah += 8;
                 if (r.al != r.ah)
                     goto ppzchk_next;
                 //push es
                 r.ax = 0x409;
-                ppz8em.ReadStatus(r.al);//int ppz_vec
+                cd = new ChipDatum(0x04, r.al, 0);
+                ppz8em(cd);//.ReadStatus(r.al);//int ppz_vec
                 r.ax = 0;// r.es;
                          // pop es
                 pw.ppz_call_ofs = r.bx;
                 pw.ppz_call_seg = r.ax;
             ppzchk_next:;
                 r.ax = 0x1901;
-                ppz8em.SetReleaseFlag(r.al);//int ppz_vec; 常駐解除禁止
+                cd = new ChipDatum(0x19, 0, r.al);
+                ppz8em(cd);//.SetReleaseFlag(r.al);//int ppz_vec; 常駐解除禁止
                 if (pw.message_flag == 0)
                 {
                     mask_eoi_set();

@@ -8,7 +8,7 @@ namespace PMDDotNET.Driver
     // ppz8l.cpp / ppz8l.h(by C60さん) を参考に作成
     //
 
-    public class PPZ8em
+    public class _PPZ8em
     {
         public byte[][] pcmData = new byte[2][];
         private bool[] isPVI = new bool[2];
@@ -31,7 +31,7 @@ namespace PMDDotNET.Driver
         private int PCM_VOLUME = 0;
         private int volume = 0;
 
-        public PPZ8em(uint SamplingRate = 44100)
+        public _PPZ8em(uint SamplingRate = 44100)
         {
             this.SamplingRate = (double)SamplingRate;
         }

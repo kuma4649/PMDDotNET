@@ -14,10 +14,8 @@ namespace PMDDotNET.Driver
         public bool usePPS;
         public bool usePPZ;
         public bool isSPB;
-        public PPZ8em ppz8em;
         public string[] envPmd;
         public string[] envPmdOpt;
-        public PPSDRV ppsdrv;
         public string srcFile;
 
         public string PPCHeader { get; internal set; }

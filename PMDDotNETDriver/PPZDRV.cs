@@ -12,18 +12,20 @@ namespace PMDDotNET.Driver
         private PW pw = null;
         private x86Register r = null;
         private Pc98 pc98 = null;
-        private PPZ8em ppz8em = null;
+        private Func<ChipDatum,int> ppz8em = null;
+        private byte[][] pcmData;
         public PCMDRV pcmdrv = null;
         private int bank = 0;
         private int ptr = 0;
 
-        public PPZDRV(PMD pmd, PW pw, x86Register r, Pc98 pc98, PPZ8em ppz8em)
+        public PPZDRV(PMD pmd, PW pw, x86Register r, Pc98 pc98, Func<ChipDatum,int> ppz8em,byte[][] pcmData)
         {
             this.pmd = pmd;
             this.pw = pw;
             this.r = r;
             this.pc98 = pc98;
             this.ppz8em = ppz8em;
+            this.pcmData = pcmData;
         }
 
         public void init()
@@ -466,7 +468,8 @@ namespace PMDDotNET.Driver
                 pmpz_exec:;
             }
             r.ah = 2;
-            ppz8em.StopPCM(r.al);
+            ChipDatum cd = new ChipDatum(0x02, r.al, 0);
+            ppz8em(cd);//.StopPCM(r.al);
 
         pmpz_ret:;
             //r.ax = r.stack.Pop();//; commandsm
@@ -491,11 +494,11 @@ namespace PMDDotNET.Driver
             ppz_voicetable_calc();
 
             r.dx = (ushort)(
-                ppz8em.pcmData[bank] == null ? 0 
-                : (ppz8em.pcmData[bank][ptr + 6] + ppz8em.pcmData[bank][ptr + 7] * 0x100));
+                pcmData[bank] == null ? 0 
+                : (pcmData[bank][ptr + 6] + pcmData[bank][ptr + 7] * 0x100));
             r.cx = (ushort)(
-                ppz8em.pcmData[bank] == null ? 0 
-                : (ppz8em.pcmData[bank][ptr + 4] + ppz8em.pcmData[bank][ptr + 5] * 0x100));// dx: cx = データ量
+                pcmData[bank] == null ? 0 
+                : (pcmData[bank][ptr + 4] + pcmData[bank][ptr + 5] * 0x100));// dx: cx = データ量
 
             r.stack.Push(r.si);
             r.stack.Push(r.di);
@@ -511,7 +514,8 @@ namespace PMDDotNET.Driver
 
             r.ah = 0xe;
             r.al = pw.partb;
-            ppz8em.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
+            ChipDatum cd = new ChipDatum((r.al << 8) | 0x0e, ((r.dx << 16) | r.cx), ((r.di << 16) | r.si));
+            ppz8em(cd);//.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
             r.di = r.stack.Pop();
             r.si = r.stack.Pop();
             r.si += 6;
@@ -544,9 +548,10 @@ namespace PMDDotNET.Driver
             r.dl &= 0x7f;
             r.al++;
         pvc_a:;
-            ppz8em.ReadStatus(r.al);//;in. ES: BX
-            bank = ppz8em.bank;
-            ptr = ppz8em.ptr;
+            ChipDatum cd = new ChipDatum(0x04, r.al, 0);
+            ppz8em(cd);//.ReadStatus(r.al);//;in. ES: BX
+            bank = r.al == 0xd ? 0 : 1;//ppz8em.bank;
+            ptr = 0;//ppz8em.ptr;
 
             ptr += 0x20;//; PZI Header Skip
             r.dx += r.dx;
@@ -654,7 +659,8 @@ namespace PMDDotNET.Driver
             r.dl = r.al;
             r.ah = 0x13;
             r.al = pw.partb;
-            ppz8em.SetPan(r.al, r.dx);
+            ChipDatum cd = new ChipDatum(0x13, r.al, r.dx);
+            ppz8em(cd);//.SetPan(r.al, r.dx);
             return null;
         }
 
@@ -718,7 +724,8 @@ namespace PMDDotNET.Driver
                 r.stack.Push(r.ax);
                 r.ax = 0x1800;
                 pw.adpcm_emulate = r.al;
-                ppz8em.SetAdpcmEmu(r.al);//; ADPCMEmulate OFF
+                ChipDatum cd = new ChipDatum(0x18, r.al, 0);
+                ppz8em(cd);//.SetAdpcmEmu(r.al);//; ADPCMEmulate OFF
                 r.ax = r.stack.Pop();
             cAtz_adchk_exit:;
             }
@@ -729,23 +736,25 @@ namespace PMDDotNET.Driver
             r.stack.Push(r.si);
             r.stack.Push(r.di);
             ppz_voicetable_calc();
-            if (ppz8em.pcmData[bank] != null)
+            if (pcmData[bank] != null)
             {
-                r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0xa] + ppz8em.pcmData[bank][ptr + 0xb] * 0x100);
-                r.cx = (ushort)(ppz8em.pcmData[bank][ptr + 0x8] + ppz8em.pcmData[bank][ptr + 0x9] * 0x100);// dx: cx = Loop Start
-                r.di = (ushort)(ppz8em.pcmData[bank][ptr + 0xe] + ppz8em.pcmData[bank][ptr + 0xf] * 0x100);
-                r.si = (ushort)(ppz8em.pcmData[bank][ptr + 0xc] + ppz8em.pcmData[bank][ptr + 0xd] * 0x100);// dx: cx = Loop End
+                r.dx = (ushort)(pcmData[bank][ptr + 0xa] + pcmData[bank][ptr + 0xb] * 0x100);
+                r.cx = (ushort)(pcmData[bank][ptr + 0x8] + pcmData[bank][ptr + 0x9] * 0x100);// dx: cx = Loop Start
+                r.di = (ushort)(pcmData[bank][ptr + 0xe] + pcmData[bank][ptr + 0xf] * 0x100);
+                r.si = (ushort)(pcmData[bank][ptr + 0xc] + pcmData[bank][ptr + 0xd] * 0x100);// dx: cx = Loop End
                 r.ah = 0xe;
                 r.al = pw.partb;
                 //push es
                 r.stack.Push(r.bx);
-                ppz8em.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
+                ChipDatum cd = new ChipDatum((r.al << 8) | 0x0e, ((r.dx << 16) | r.cx), ((r.di << 16) | r.si));
+                ppz8em(cd);//.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
                 r.bx = r.stack.Pop();
                 //pop es
-                r.dx = (ushort)(ppz8em.pcmData[bank][ptr + 0x10] + ppz8em.pcmData[bank][ptr + 0x11] * 0x100);//;dx = Frequency
+                r.dx = (ushort)(pcmData[bank][ptr + 0x10] + pcmData[bank][ptr + 0x11] * 0x100);//;dx = Frequency
                 r.ah = 0x15;
                 r.al = pw.partb;
-                ppz8em.SetSrcFrequency(r.al, r.dx);
+                cd = new ChipDatum(0x15, r.al, r.dx);
+                ppz8em(cd);//.SetSrcFrequency(r.al, r.dx);
             }
             r.di = r.stack.Pop();
             r.si = r.stack.Pop();
@@ -879,12 +888,14 @@ namespace PMDDotNET.Driver
             r.dx >>= 1;    //; dx = volume(0～15)
             r.ah = 0x07;
             r.al = pw.partb;
-            ppz8em.SetVolume(r.al, r.dx);
+            ChipDatum cd = new ChipDatum(0x07, r.al, r.dx);
+            ppz8em(cd);//.SetVolume(r.al, r.dx);
             return;
         zv_cut:;
             r.ah = 0x02;
             r.al = pw.partb;
-            ppz8em.StopPCM(r.al);// ; volume = 0... keyoff
+            cd = new ChipDatum(0x02, r.al, 0);
+            ppz8em(cd);//.StopPCM(r.al);// ; volume = 0... keyoff
             return;
         }
 
@@ -910,7 +921,8 @@ namespace PMDDotNET.Driver
             r.dl = pw.partWk[r.di].voicenum;
             r.dh = r.dl;
             r.dx &= 0x807f;//; dx=voicenum
-            ppz8em.PlayPCM(r.al, r.dx);//; ppz keyon
+            ChipDatum cd = new ChipDatum(0x01, r.al, r.dx);
+            ppz8em(cd);//.PlayPCM(r.al, r.dx);//; ppz keyon
         keyonz_ret:;
             return;
         }
@@ -1011,7 +1023,8 @@ namespace PMDDotNET.Driver
             r.ah = 0x0b;
             r.al = pw.partb;
             r.dx = r.bx;
-            ppz8em.SetFrequency(r.al, r.dx, r.cx);
+            ChipDatum cd = new ChipDatum(0x0b, r.al, (r.dx << 16) | r.cx);
+            ppz8em(cd);//.SetFrequency(r.al, r.dx, r.cx);
         }
 
 

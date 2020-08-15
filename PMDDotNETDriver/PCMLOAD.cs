@@ -14,11 +14,12 @@ namespace PMDDotNET.Driver
         private PW pw = null;
         private PMD pmd = null;
         private Pc98 pc98 = null;
-        private PPZ8em ppz8em = null;
-        private PPSDRV ppsdrv = null;
+        private Func<ChipDatum, int> ppz8em = null;
+        private Func<ChipDatum, int> ppsdrv = null;
         private Func<string, Stream> appendFileReaderCallback = null;
+        public byte[][] ppzPcmData = new byte[2][];
 
-        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, PPZ8em ppz8em,PPSDRV ppsdrv, Func<string, Stream> appendFileReaderCallback)
+        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, Func<ChipDatum,int> ppz8em, Func<ChipDatum, int> ppsdrv, Func<string, Stream> appendFileReaderCallback)
         {
             this.pmd = pmd;
             this.pw = pw;
@@ -153,13 +154,16 @@ namespace PMDDotNET.Driver
             //; PVI / PZI 読み込み
             p8_load_main:;
             byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
-            int ret = ppz8em.LoadPcm(r.cl,r.ch, pcmData);
+            ppzPcmData[r.cl] = pcmData;
+            ChipDatum cd = new ChipDatum(0x03, r.cl, r.ch, 0, pcmData);//LoadPCM
+            int ret = ppz8em(cd);
 
             if (ret==0) goto p8_load_exit;//KUMA:読み込めた
             if (ret!=2) goto p8_load_exit;//; file not found or 形式が違うなら
 
             r.ch ^= 1;//; もう片方の形式も
-            ret=ppz8em.LoadPcm(r.cl,r.ch, pcmData);//pcm loadを試してみる
+            cd = new ChipDatum(0x03, r.cl, r.ch, 0, pcmData);//LoadPCM
+            ret = ppz8em(cd);//pcm loadを試してみる
 
         p8_load_exit:;
             r.carry = false;
@@ -350,7 +354,8 @@ namespace PMDDotNET.Driver
             if (r.carry) goto not_load;
 
             r.ah = 0x4;
-            ppsdrv.int04();
+            ChipDatum cd = new ChipDatum(0x04, 0, 0);
+            ppsdrv(cd);//.int04();
 
             pps_load_main();
 
@@ -388,7 +393,8 @@ namespace PMDDotNET.Driver
             }
             else
             {
-                ppsdrv.Load(pcmData);
+                ChipDatum cd = new ChipDatum(0x05, 0, 0, 0, pcmData);
+                ppsdrv(cd);//.Load(pcmData);
             }
         }
 

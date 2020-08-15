@@ -43,6 +43,8 @@ namespace PMDDotNET.Player
             }
         }
         private static readonly uint SamplingRate = 55467;//44100;
+        private static readonly uint SamplingRatePPSGIMIC = 44100;
+        private static readonly uint SamplingRatePPSSCCI = 24000;
         private static readonly uint samplingBuffer = 1024;
         private static short[] frames = new short[samplingBuffer * 4];
         private static MDSound.MDSound mds = null;
@@ -64,8 +66,8 @@ namespace PMDDotNET.Player
         private static int[] VolumeV = null;
         private static int[] VolumeR = null;
         private static bool isGimicOPNA = false;
-        private static PPZ8em ppz8em = null;
-        private static PPSDRV ppsdrv = null;
+        private static MDSound.PPZ8 ppz8em = null;
+        private static MDSound.PPSDRV ppsdrv = null;
         private static string[] envPmd = null;
         private static string[] envPmdOpt = null;
         private static string srcFile = null;
@@ -150,9 +152,41 @@ namespace PMDDotNET.Player
                     Option = new object[] { GetApplicationFolder() }
                 };
 
-                mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip });
-                ppz8em = new PPZ8em(SamplingRate);
-                ppsdrv = new PPSDRV(SamplingRate);
+                ppz8em = new MDSound.PPZ8();
+                MDSound.MDSound.Chip chipp = new MDSound.MDSound.Chip
+                {
+                    type = MDSound.MDSound.enmInstrumentType.PPZ8,
+                    ID = 0,
+                    Instrument = ppz8em,
+                    Update = ppz8em.Update,
+                    Start = ppz8em.Start,
+                    Stop = ppz8em.Stop,
+                    Reset = ppz8em.Reset,
+                    SamplingRate = SamplingRate,
+                    Clock = opnaMasterClock,
+                    Volume = 0,
+                    Option = null
+                };
+
+                ppsdrv = new MDSound.PPSDRV();
+                MDSound.MDSound.Chip chipps = new MDSound.MDSound.Chip
+                {
+                    type = MDSound.MDSound.enmInstrumentType.PPSDRV,
+                    ID = 0,
+                    Instrument = ppsdrv,
+                    Update = ppsdrv.Update,
+                    Start = ppsdrv.Start,
+                    Stop = ppsdrv.Stop,
+                    Reset = ppsdrv.Reset,
+                    SamplingRate = device == 0 ? SamplingRate : (device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI),
+                    Clock = opnaMasterClock,
+                    Volume = 0,
+                    Option = device == 0 ? null : (new object[] { (Action<int, int>)PPSDRVpsg })
+                };
+
+                mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip, chipp, chipps });
+                //ppz8em = new PPZ8em(SamplingRate);
+                //ppsdrv = new PPSDRV(SamplingRate);
 
 
 
@@ -182,8 +216,8 @@ namespace PMDDotNET.Player
                 dop.usePPZ = usePPZ;
                 dop.isLoadADPCM = false;
                 dop.loadADPCMOnly = false;
-                dop.ppz8em = ppz8em;
-                dop.ppsdrv = ppsdrv;
+                //dop.ppz8em = ppz8em;
+                //dop.ppsdrv = ppsdrv;
                 dop.envPmd = envPmd;
                 dop.srcFile = srcFile;
                 List<string> pop = new List<string>();
@@ -206,6 +240,8 @@ namespace PMDDotNET.Player
                     , dop
                     , pop.ToArray()
                     , appendFileReaderCallback
+                    , PPZ8Write
+                    , PPSDRVWrite
                     );
 
 
@@ -886,8 +922,8 @@ Welcome to PMDDotNET !
                 for (int i = 0; i < bufCnt; i++)
                 {
                     mds.Update(emuRenderBuf, 0, 2, OneFrame);
-                    ppz8em.Update(emuRenderBuf);
-                    ppsdrv.Update(emuRenderBuf);
+                    //ppz8em.Update(emuRenderBuf);
+                    //ppsdrv.Update(emuRenderBuf);
 
                     buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                     buffer[offset + i * 2 + 1] = emuRenderBuf[1];
@@ -904,8 +940,12 @@ Welcome to PMDDotNET !
 
         private static void RealCallback()
         {
+
             double o = sw.ElapsedTicks / swFreq;
+            double oPPS = sw.ElapsedTicks / swFreq;
             double step = 1 / (double)SamplingRate;
+            uint PPSSamplingRate = device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI;
+            double stepPPS = 1 / (double)PPSSamplingRate;
 
             trdStopped = false;
             try
@@ -915,20 +955,39 @@ Welcome to PMDDotNET !
                     Thread.Sleep(0);
 
                     double el1 = sw.ElapsedTicks / swFreq;
-                    if (el1 - o < step) continue;
-                    if (el1 - o >= step * SamplingRate / 100.0)//閾値10ms
+                    if (el1 - o >= step)
                     {
-                        do
+                        if (el1 - o >= step * SamplingRate / 100.0)//閾値10ms
+                        {
+                            do
+                            {
+                                o += step;
+                            } while (el1 - o >= step);
+                        }
+                        else
                         {
                             o += step;
-                        } while (el1 - o >= step);
-                    }
-                    else
-                    {
-                        o += step;
+                        }
+
+                        OneFrame();
                     }
 
-                    OneFrame();
+                    if (el1 - oPPS >= stepPPS)
+                    {
+                        if (el1 - oPPS >= stepPPS * PPSSamplingRate / 100.0)//閾値10ms
+                        {
+                            do
+                            {
+                                oPPS += stepPPS;
+                            } while (el1 - oPPS >= stepPPS);
+                        }
+                        else
+                        {
+                            oPPS += stepPPS;
+                        }
+
+                        ppsdrv.Update(0, null, 1);
+                    }
 
                 }
             }
@@ -970,6 +1029,57 @@ Welcome to PMDDotNET !
                 case 1:
                 case 2:
                     rsc.setRegister(dat.port * 0x100 + dat.address, dat.data);
+                    break;
+            }
+        }
+
+        private static int PPZ8Write(ChipDatum arg)
+        {
+            if (arg == null) return 0;
+
+            if (arg.port == 0x03)
+            {
+                return ppz8em.LoadPcm(0, (byte)arg.address, (byte)arg.data, (byte[])arg.addtionalData);
+            }
+            else
+            {
+                return ppz8em.Write(0, arg.port, arg.address, arg.data);
+            }
+        }
+
+        private static int PPSDRVWrite(ChipDatum arg)
+        {
+            if (arg == null) return 0;
+
+            if (arg.port == 0x05)
+            {
+                return ppsdrv.Load(0, (byte[])arg.addtionalData);
+            }
+            else
+            {
+                return ppsdrv.Write(0, arg.port, arg.address, arg.data);
+            }
+        }
+
+
+        //static int aold = -1;
+        //static int dold = -1;
+
+        private static void PPSDRVpsg(int a,int d)
+        {
+            switch (device)
+            {
+                case 0:
+                    mds.WriteYM2608(0, 0, (byte)a, (byte)d);
+                    break;
+                case 1:
+                case 2:
+                    //if (aold != a || dold != d)
+                    {
+                        rsc.setRegister(0 * 0x100 + a, d);
+                        //aold = a;
+                        //dold = d;
+                    }
                     break;
             }
         }

@@ -81,6 +81,20 @@ namespace PMDDotNET.Compiler
                         continue;
                     }
                 }
+
+                //PMD option 指定
+                if (((string)prm).IndexOf("PmdOption=") == 0)
+                {
+                    try
+                    {
+                        string[] p = ((string)prm).Split('=')[1].Split(' ');
+                        mcArgs = p;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
             }
         }
 

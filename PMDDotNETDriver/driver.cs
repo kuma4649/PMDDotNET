@@ -16,6 +16,8 @@ namespace PMDDotNET.Driver
         private int renderingFreq = 44100;
         private int opnaMasterClock = 7987200;
         private Action<ChipDatum> WriteOPNA;
+        private Func<ChipDatum, int> WritePPZ8;
+        private Func<ChipDatum, int> WritePPSDRV;
         private Action<long, int> WaitSendOPNA;
         private object lockObjWriteReg = new object();
         static MmlDatum[] srcBuf = null;
@@ -236,20 +238,52 @@ namespace PMDDotNET.Driver
 
         public void Init(string fileName, Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, MmlDatum[] srcBuf, object addtionalOption)
         {
-            throw new NotImplementedException();
+            object[] option = (object[])addtionalOption;
+
+            object[] pdnos = (object[])option[0];
+            PMDDotNETOption pdno = new PMDDotNETOption()
+            {
+                isLoadADPCM = (bool)pdnos[0],
+                loadADPCMOnly = (bool)pdnos[1],
+                isAUTO = (bool)pdnos[2],
+                isVA = (bool)pdnos[3],
+                isNRM = (bool)pdnos[4],
+                usePPS = (bool)pdnos[5],
+                usePPZ = (bool)pdnos[6],
+                isSPB = (bool)pdnos[7],
+                envPmd = (string[])pdnos[8],
+                envPmdOpt = (string[])pdnos[9],
+                srcFile = (string)pdnos[10]
+            };
+
+            string[] po = (string[])option[1];
+            Func<ChipDatum, int> ppz8Write = (Func<ChipDatum, int>)option[2];
+            Func<ChipDatum, int> ppsdrvWrite = (Func<ChipDatum, int>)option[3];
+            Init(
+                srcBuf,
+                opnaWrite, opnaWaitSend,
+                pdno, po
+                , CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName))
+                , ppz8Write
+                , ppsdrvWrite);
         }
 
         public void Init(
             string fileName,
             Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
             PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
-            Func<string, Stream> appendFileReaderCallback = null)
+            Func<string, Stream> appendFileReaderCallback,
+            Func<ChipDatum, int> ppz8Write,
+            Func<ChipDatum, int> ppsdrvWrite)
         {
             if (Path.GetExtension(fileName).ToLower() != ".xml")
             {
                 byte[] srcBuf = File.ReadAllBytes(fileName);
                 if (srcBuf == null || srcBuf.Length < 1) return;
-                Init(srcBuf, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback ?? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)));
+                Init(srcBuf, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption
+                    , appendFileReaderCallback ?? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName))
+                    , ppz8Write
+                    , ppsdrvWrite);
             }
             else
             {
@@ -257,7 +291,11 @@ namespace PMDDotNET.Driver
                 using (StreamReader sr = new StreamReader(fileName, new UTF8Encoding(false)))
                 {
                     MmlDatum[] s = (MmlDatum[])serializer.Deserialize(sr);
-                    Init(s, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback);
+                    Init(s, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption
+                        , appendFileReaderCallback
+                        , ppz8Write
+                        , ppsdrvWrite
+                        );
                 }
 
             }
@@ -272,19 +310,27 @@ namespace PMDDotNET.Driver
             byte[] srcBuf,
             Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
             PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
-            Func<string, Stream> appendFileReaderCallback)
+            Func<string, Stream> appendFileReaderCallback,
+            Func<ChipDatum, int> ppz8Write,
+            Func<ChipDatum, int> ppsdrvWrite)
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
             List<MmlDatum> bl = new List<MmlDatum>();
             foreach (byte b in srcBuf) bl.Add(new MmlDatum(b));
-            Init(bl.ToArray(), opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption, appendFileReaderCallback);
+            Init(bl.ToArray(), opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption
+                        , appendFileReaderCallback
+                        , ppz8Write
+                        , ppsdrvWrite
+                        );
         }
+
 
         public void Init(
             MmlDatum[] srcBuf,
             Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend,
             PMDDotNETOption addtionalPMDDotNETOption, string[] addtionalPMDOption,
-            Func<string, Stream> appendFileReaderCallback)
+            Func<string, Stream> appendFileReaderCallback,Func<ChipDatum,int> ppz8Write
+            , Func<ChipDatum, int> ppsdrvWrite)
         {
             if (srcBuf == null || srcBuf.Length < 1) return;
 
@@ -292,7 +338,9 @@ namespace PMDDotNET.Driver
 
             WriteOPNA = opnaWrite;
             WaitSendOPNA = opnaWaitSend;
-            
+            WritePPZ8 = ppz8Write;
+            WritePPSDRV = ppsdrvWrite;
+
             work = new PW();
             GetTags();
             addtionalPMDDotNETOption.PPCHeader = CheckPPC(appendFileReaderCallback);
@@ -300,10 +348,17 @@ namespace PMDDotNET.Driver
             work.SetOption(addtionalPMDDotNETOption, addtionalPMDOption);
             work.timer = new OPNATimer(44100, 7987200);
 
-            PPZ8em ppz8em = addtionalPMDDotNETOption.ppz8em;
-            PPSDRV ppsdrv = addtionalPMDDotNETOption.ppsdrv;
+            //PPZ8em ppz8em = addtionalPMDDotNETOption.ppz8em;
+            //PPSDRV ppsdrv = addtionalPMDDotNETOption.ppsdrv;
 
-            pmd = new PMD(srcBuf, WriteRegister, work, appendFileReaderCallback, ppz8em, ppsdrv);
+            pmd = new PMD(
+                srcBuf,
+                WriteRegister,
+                work,
+                appendFileReaderCallback,
+                WritePPZ8,
+                WritePPSDRV
+                );
 
             if (!string.IsNullOrEmpty(pmd.pw.ppcFile)) pmd.pcmload.pcm_all_load(pmd.pw.ppcFile);
             if (!string.IsNullOrEmpty(pmd.pw.ppz1File) || !string.IsNullOrEmpty(pmd.pw.ppz2File)) pmd.pcmload.ppz_load(pmd.pw.ppz1File, pmd.pw.ppz2File);

@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PPZ8em.cs" />
+    <Compile Remove="PPZChannelWork.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PMDDotNETCommon\PMDDotNETCommon.csproj" />
   </ItemGroup>
 

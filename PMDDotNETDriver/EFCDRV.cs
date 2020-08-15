@@ -1,4 +1,5 @@
-﻿using System;
+﻿using musicDriverInterface;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,9 +10,9 @@ namespace PMDDotNET.Driver
         private PMD pmd = null;
         private PW pw = null;
         private x86Register r = null;
-        private PPSDRV ppsdrv = null;
+        private Func<ChipDatum, int> ppsdrv = null;
 
-        public EFCDRV(PMD pmd, PW pw, x86Register r, PPSDRV ppsdrv)
+        public EFCDRV(PMD pmd, PW pw, x86Register r, Func<ChipDatum, int> ppsdrv)
         {
             this.pmd = pmd;
             this.pw = pw;
@@ -29,7 +30,8 @@ namespace PMDDotNET.Driver
             if (!r.zero) goto effgo2;
             r.stack.Push(r.ax);
             r.ah = 0;
-            ppsdrv.Stop();
+            ChipDatum cd = new ChipDatum(0x02, 0, 0);
+            ppsdrv(cd);//.Stop();
             r.ax = r.stack.Pop();
         effgo2:;
             pw.hosei_flag = 3;
@@ -99,7 +101,8 @@ namespace PMDDotNET.Driver
             r.bl ^= 0b0000_1111;//volume
             r.ah = 1;//command
             r.al &= 0x7f;//num?
-            ppsdrv.Play(r.al, r.bh, r.bl);//; ppsdrv keyon
+            ChipDatum cd = new ChipDatum(0x01, (r.al << 8) | r.bh, r.bl);
+            ppsdrv(cd);//.Play(r.al, r.bh, r.bl);//; ppsdrv keyon
         ppsdrm_ret:;
             return;
 
@@ -119,7 +122,8 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0)
                 goto eok_nonppsdrv;
             r.ah = 0;
-            ppsdrv.Stop();//; ppsdrv 強制keyoff
+            cd = new ChipDatum(0x02, 0, 0);
+            ppsdrv(cd);//.Stop();//; ppsdrv 強制keyoff
         eok_nonppsdrv:;
             r.si = 0;// pw.efftbl[r.bx].Item2;
             r.si += 0;//offset efftbl
@@ -238,7 +242,8 @@ namespace PMDDotNET.Driver
             if (pw.ppsdrv_flag == 0)
                 goto ee_nonppsdrv;
             r.ah = 0;
-            ppsdrv.Stop();//; ppsdrv keyoff
+            ChipDatum cd = new ChipDatum(0x02, 0, 0);
+            ppsdrv(cd);//.Stop();//; ppsdrv keyoff
         ee_nonppsdrv:;
             r.dx = 0xa00;
             pmd.opnset44();//; volume min
