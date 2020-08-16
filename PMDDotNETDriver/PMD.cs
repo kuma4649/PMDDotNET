@@ -8656,7 +8656,7 @@ namespace PMDDotNET.Driver
             }
             catch
             {
-                Log.writeLine(LogLevel.WARNING, "メモのアドレスが範囲外を指していることを検出しました。無視します。");
+                Log.WriteLine(LogLevel.WARNING, "メモのアドレスが範囲外を指していることを検出しました。無視します。");
                 pw.ds_push = 0;
                 pw.dx_push = 0;
                 return 0;

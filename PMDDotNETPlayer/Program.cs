@@ -672,7 +672,7 @@ namespace PMDDotNET.Player
 
         private static void OptionDispHelp()
         {
-            Log.writeLine(LogLevel.INFO, @"
+            Log.WriteLine(LogLevel.INFO, @"
 Welcome to PMDDotNET !
 
  Usage

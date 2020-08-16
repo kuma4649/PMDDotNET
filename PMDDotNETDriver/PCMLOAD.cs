@@ -239,7 +239,7 @@ namespace PMDDotNET.Driver
 
         private void ppz_error_main2(string msg)
         {
-            Log.writeLine(LogLevel.ERROR, msg);
+            Log.WriteLine(LogLevel.ERROR, msg);
         }
 
         //; PPZ8常駐check
@@ -556,7 +556,7 @@ namespace PMDDotNET.Driver
             if (pw.message != 0)
             {
                 //r.ds = r.cs;
-                Log.writeLine(LogLevel.INFO, pw.allload_mes);//;"ＰＣＭ定義中"の表示
+                Log.WriteLine(LogLevel.INFO, pw.allload_mes);//;"ＰＣＭ定義中"の表示
             }
 
             r.bx = 30;// pw.pcmwork_ofs;//cs:[pcmwork_ofs]
@@ -735,7 +735,7 @@ namespace PMDDotNET.Driver
                          //r.ds = r.ax;
                 r.ah = 0x09;
                 //int 21h
-                Log.writeLine(LogLevel.ERROR, msg);
+                Log.WriteLine(LogLevel.ERROR, msg);
                 r.ax = r.stack.Pop();
             }
 
