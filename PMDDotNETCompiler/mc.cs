@@ -9331,7 +9331,14 @@ namespace PMDDotNET.Compiler
             //; ------------------------------------------------------------------------------
             if (si != 0)
             {
-                mes += System.IO.Path.GetFileName(mml_seg.mml_filename);
+                try
+                {
+                    mes += System.IO.Path.GetFileName(mml_seg.mml_filename);
+                }
+                catch
+                {
+                    mes += mml_seg.mml_filename;
+                }
                 mes += string.Format("({0}) :", mml_seg.line);
             }
 

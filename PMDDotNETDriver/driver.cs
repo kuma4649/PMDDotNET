@@ -253,9 +253,14 @@ namespace PMDDotNET.Driver
                 isSPB = (bool)pdnos[7],
                 envPmd = (string[])pdnos[8],
                 envPmdOpt = (string[])pdnos[9],
-                srcFile = (string)pdnos[10]
+                srcFile = (string)pdnos[10],
+                PPCHeader = (string)pdnos[11]
             };
 
+            Func<string, Stream> appendFileReaderCallback = 
+                (pdnos.Length < 13 || pdnos[12] == null) 
+                ? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)) 
+                : (Func<string, Stream>)pdnos[12];
             string[] po = (string[])option[1];
             Func<ChipDatum, int> ppz8Write = (Func<ChipDatum, int>)option[2];
             Func<ChipDatum, int> ppsdrvWrite = (Func<ChipDatum, int>)option[3];
@@ -263,9 +268,16 @@ namespace PMDDotNET.Driver
                 srcBuf,
                 opnaWrite, opnaWaitSend,
                 pdno, po
-                , CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName))
+                , appendFileReaderCallback
                 , ppz8Write
                 , ppsdrvWrite);
+
+            pdnos[2] = pdno.isAUTO;
+            pdnos[3] = pdno.isVA;
+            pdnos[4] = pdno.isNRM;
+            pdnos[5] = pdno.usePPS;
+            pdnos[6] = pdno.usePPZ;
+            pdnos[7] = pdno.isSPB;
         }
 
         public void Init(

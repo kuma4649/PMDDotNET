@@ -17,7 +17,6 @@ namespace PMDDotNET.Driver
         public string[] envPmd;
         public string[] envPmdOpt;
         public string srcFile;
-
-        public string PPCHeader { get; internal set; }
+        public string PPCHeader;
     }
 }
