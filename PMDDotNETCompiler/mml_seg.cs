@@ -347,9 +347,12 @@ namespace PMDDotNET.Compiler
 		public byte mmlbuf_end;//b
 
 		public Stack<int> hscomSI = new Stack<int>();
+        internal byte ontei;
+        internal int stPos;
+        internal int chipCh;
 
-		//mml_seg ends
+        //mml_seg ends
 
 
-	}
+    }
 }

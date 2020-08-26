@@ -99,6 +99,7 @@ namespace PMDDotNET.Driver
         {
             do
             {
+                pw.cmd = pw.md[r.si];
                 r.al = (byte)pw.md[r.si++].dat;
                 if (r.al < 0x80) goto mp2z;
                 if (r.al == 0x80) goto mp15z;
@@ -133,6 +134,10 @@ namespace PMDDotNET.Driver
             pmd.lfoinitp();
             pmd.oshift();
             fnumsetz();
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            ppz8em(cd);
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].leng = r.al;
@@ -469,6 +474,7 @@ namespace PMDDotNET.Driver
             }
             r.ah = 2;
             ChipDatum cd = new ChipDatum(0x02, r.al, 0);
+            cd.addtionalData = pw.cmd;
             ppz8em(cd);//.StopPCM(r.al);
 
         pmpz_ret:;
@@ -578,6 +584,10 @@ namespace PMDDotNET.Driver
                 r.al = (byte)pw.md[r.si++].dat;//;最初の音程を読み飛ばす(Mask時)
                 return null;
             }
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            ppz8em(cd);
 
             //pop ax; commandsp
             r.al = (byte)pw.md[r.si++].dat;
@@ -895,6 +905,7 @@ namespace PMDDotNET.Driver
             r.ah = 0x02;
             r.al = pw.partb;
             cd = new ChipDatum(0x02, r.al, 0);
+            cd.addtionalData = pw.cmd;
             ppz8em(cd);//.StopPCM(r.al);// ; volume = 0... keyoff
             return;
         }

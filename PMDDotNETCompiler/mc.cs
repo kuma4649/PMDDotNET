@@ -815,6 +815,7 @@ namespace PMDDotNET.Compiler
 
             mml_seg.part = 1;
             mml_seg.pass = 1;
+            mml_seg.chipCh = 0;
 
             return enmPass2JumpTable.cmloop;
         }
@@ -827,6 +828,7 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable cmloop()
         {
 #if !efc
+
             int al = mml_seg.opl_flg;
             al |= mml_seg.x68_flg;
             if (al != 0)
@@ -893,6 +895,7 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable cmloop2()
         {
             work.si = 0;//offset mml_buf
+            Log.WriteLine(LogLevel.DEBUG, string.Format("chipCh:{0}", mml_seg.chipCh));
             cm_init();
 
             byte ah, al;
@@ -1244,6 +1247,9 @@ namespace PMDDotNET.Compiler
             //;	PART INC. & LOOP
             //;==============================================================================
             mml_seg.part++;
+            mml_seg.chipCh++;
+            if (mml_seg.chipCh == 6) mml_seg.chipCh += 3;
+            if (mml_seg.chipCh == 12) mml_seg.chipCh += 6;
 #if efc
             if (mml_seg.part < mml_seg.max_part + 2) goto cmloop;
 #else
@@ -1276,14 +1282,17 @@ namespace PMDDotNET.Compiler
 
             al = (byte)mml_seg.fm3_partchr1;
             mml_seg.fm3_partchr1 = 0;
+            mml_seg.chipCh = 6;
             if (al != 0) goto fm3c_main;
 
             al = (byte)mml_seg.fm3_partchr2;
             mml_seg.fm3_partchr2 = 0;
+            mml_seg.chipCh = 7;
             if (al != 0) goto fm3c_main;
 
             al = (byte)mml_seg.fm3_partchr3;
             mml_seg.fm3_partchr3 = 0;
+            mml_seg.chipCh = 8;
             if (al == 0) goto pcm_check;
 
             fm3c_main:;
@@ -3753,15 +3762,15 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable one_line_compile()
         {
 
-#if DEBUG
+//#if DEBUG
             int n = mml_seg.mml_buf.IndexOf("\r\n", work.si);
             int r = work.si;
             calc_line(ref r);
             Log.WriteLine(LogLevel.DEBUG, string.Format("{0}({1}) \t{2}"
-                , System.IO.Path.GetFileName(mml_seg.mml_filename)
+                , mml_seg.mml_filename
                 , mml_seg.line
                 , mml_seg.mml_buf.Substring(work.si, n - work.si)));
-#endif
+//#endif
 
             char al = (char)0;
             do
@@ -3819,6 +3828,7 @@ namespace PMDDotNET.Compiler
         {
             do
             {
+                mml_seg.stPos = work.si;
                 char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a;
                 if (ch == '　') continue;
                 work.al = (byte)ch;
@@ -4447,7 +4457,10 @@ namespace PMDDotNET.Compiler
                 error('{', 9, work.si);
             }
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xda));
+            MmlDatum md = new MmlDatum(0xda);
+            md.linePos = new LinePos();
+            md.linePos.col = Math.Max(work.si - mml_seg.linehead , 1);
+            m_seg.m_buf.Set(work.di++, md);
             mml_seg.porta_flag = 1;
 
             //; 分散和音開始アドレスをセット  4.8r
@@ -4498,6 +4511,16 @@ namespace PMDDotNET.Compiler
                 error('}', 15, work.si);
             }
 
+            MmlDatum srcMd = m_seg.m_buf.Get(work.di - 4);
+            MmlDatum dstMd = m_seg.m_buf.Get(work.di - 5);
+            dstMd.args = srcMd.args;
+            LinePos lp = dstMd.linePos;
+            dstMd.linePos = srcMd.linePos;
+            dstMd.linePos.col = lp.col;
+            dstMd.linePos.length = Math.Max(work.si - mml_seg.linehead + 1, 1) - lp.col;
+            dstMd.type = srcMd.type;
+            srcMd.linePos = null;
+
             work.al = (byte)m_seg.m_buf.Get(work.di - 2).dat;
             m_seg.m_buf.Set(work.di - 3, new MmlDatum(work.al));
 
@@ -4530,7 +4553,7 @@ namespace PMDDotNET.Compiler
             lngcal();
             cy = futen();
             cch = (byte)m_seg.m_buf.Get(work.di - 1).dat;
-            if (al >= cch)
+            if (al >= cch)//KUMA:ディレイ値が指定音長よりも長い場合はエラー
             {
                 error('}', 8, work.si);
             }
@@ -5946,7 +5969,8 @@ namespace PMDDotNET.Compiler
             if (work.bx == mml_seg.alldet) goto bp7;
             if (mml_seg.porta_flag == 1) goto porta_pitchset;
             work.al = 0xfa;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.al));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.bx >> 8)));
 
@@ -5996,6 +6020,9 @@ namespace PMDDotNET.Compiler
         private enmPass2JumpTable otoset_x()
         {
             work.bx = (work.bx & 0xff00) + (byte)work.al;
+
+            mml_seg.ontei = work.al;
+
             return bp8();
         }
 
@@ -6063,8 +6090,47 @@ namespace PMDDotNET.Compiler
             //;==============================================================================
             //;	音長 DATA SET
             //;==============================================================================
+
             work.al = (byte)mml_seg.leng;
+
+
+            List<object> args = new List<object>();
+            args.Add((mml_seg.octave << 4) | mml_seg.ontei);
+            args.Add(mml_seg.leng);
+            int p = work.si - 1;
+            while (mml_seg.mml_buf[p] == ' ' || mml_seg.mml_buf[p] == '\t') p--;
+            p++;
+            LinePos lp = new LinePos(
+                mml_seg.mml_filename
+                , Math.Max(mml_seg.line, 1)
+                , Math.Max(mml_seg.stPos - mml_seg.linehead + 1, 1)
+                , p - mml_seg.stPos
+                , mml_seg.chipCh < 6
+                    ? "FM"
+                    : (mml_seg.chipCh >= 6 && mml_seg.chipCh <= 8
+                        ? "FM3ex"
+                        : (mml_seg.chipCh >= 9 && mml_seg.chipCh <= 11
+                            ? "SSG"
+                            : (mml_seg.chipCh == 18
+                                ? "ADPCM"
+                                : "PPZ8"
+                              )
+                          )
+                      )
+                , mml_seg.chipCh < 20 ? "YM2608" : "PPZ8"
+                , 0
+                , 0
+                , mml_seg.chipCh - (mml_seg.chipCh < 20 ? 0 : 20)
+                );
+            MmlDatum dmy= m_seg.m_buf.Get(work.di - 1);
+            dmy.type = enmMMLType.Note;
+            dmy.args = args;
+            dmy.linePos = lp;
+
+
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+
+            //m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             mml_seg.prsok |= 1;// 音長flagをset
             mml_seg.prsok &= 0xf3;//音長+タイ,ポルタflagをreset
 

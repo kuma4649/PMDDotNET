@@ -9,12 +9,14 @@ namespace PMDDotNET.Driver
         private ChipDatum cd = new ChipDatum(0, 0, 0);
         private byte fm1_reg = 0;
         private byte fm2_reg = 0;
+        private PW pw = null;
 
         private byte[] psgDat = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        public Pc98(Action<ChipDatum> WriteOPNARegister)
+        public Pc98(Action<ChipDatum> WriteOPNARegister, PW pw)
         {
             this.WriteOPNARegister = WriteOPNARegister;
+            this.pw = pw;
         }
 
         public byte InPort(int v)
@@ -74,6 +76,8 @@ namespace PMDDotNET.Driver
                 cd.port = 0;
                 cd.address = fm1_reg;
                 cd.data = al;
+                //cd.addtionalData = pw.cmd;
+                
                 if (fm1_reg < 0x10)
                 {
                     psgDat[fm1_reg]=al;
@@ -89,6 +93,7 @@ namespace PMDDotNET.Driver
                 cd.port = 1;
                 cd.address = fm2_reg;
                 cd.data = al;
+                //cd.addtionalData = pw.cmd;
                 WriteOPNARegister(cd);
             }
         }

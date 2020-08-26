@@ -28,6 +28,7 @@ namespace PMDDotNET.Driver
         private Func<ChipDatum,int> ppz8em = null;
         private Func<ChipDatum, int> ppsdrv = null;
         public PCMLOAD pcmload = null;
+        private Action<ChipDatum> WriteOPNARegister = null;
 
 
         public PMD(
@@ -55,7 +56,7 @@ namespace PMDDotNET.Driver
             pw.fm2_port2 = 0x18e;//データ(拡張)
 
             r = new x86Register();
-            pc98 = new Pc98(WriteOPNARegister);
+            pc98 = new Pc98(WriteOPNARegister, pw);
             pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, appendFileReaderCallback);
 
             ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em, pcmload.ppzPcmData);
@@ -64,6 +65,7 @@ namespace PMDDotNET.Driver
             ppzdrv.init();
             pcmdrv86 = new PCMDRV86();
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
+            this.WriteOPNARegister = WriteOPNARegister;
 
             Set_int60_jumptable();
             Set_n_int60_jumptable();
@@ -1196,8 +1198,10 @@ namespace PMDDotNET.Driver
         {
             do
             {
+                pw.cmd = pw.md[r.si];
                 r.al = (byte)pw.md[r.si++].dat;
-                if (r.al < 0x80) goto mp2;
+                if (r.al < 0x80) 
+                    goto mp2;
                 if (r.al == 0x80) goto mp15;
 
                 //; ELSE COMMANDS
@@ -1230,6 +1234,10 @@ namespace PMDDotNET.Driver
             lfoinit();
             oshift();
             fnumset();
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            WriteOPNARegister(cd);
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].leng = r.al;
@@ -1588,6 +1596,7 @@ namespace PMDDotNET.Driver
 
         private Func<object> mp1p()//; DATA READ
         {
+            pw.cmd = pw.md[r.si];
             r.al = (byte)pw.md[r.si++].dat;
             if (r.al < 0x80) return mp2p;
             if (r.al == 0x80) return mp15p;
@@ -1627,6 +1636,10 @@ namespace PMDDotNET.Driver
             lfoinitp();
             oshiftp();
             fnumsetp();
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            WriteOPNARegister(cd);
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].leng = r.al;
@@ -4073,6 +4086,10 @@ namespace PMDDotNET.Driver
             if (pw.partWk[r.di].partmask != 0)
                 goto porta_notset;
 
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            WriteOPNARegister(cd);
+
             r.al = (byte)pw.md[r.si++].dat;
             lfoinit();
             oshift();
@@ -4146,6 +4163,10 @@ namespace PMDDotNET.Driver
                 return null;
                 //return porta_notset;
             }
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            WriteOPNARegister(cd);
 
             r.al = (byte)pw.md[r.si++].dat;
             lfoinitp();

@@ -122,6 +122,8 @@ namespace PMDDotNET.Compiler
                 }
             }
 
+            //Console.WriteLine(srcBuf);
+
             this.appendFileReaderCallback = appendFileReaderCallback;
 
             try
@@ -140,6 +142,15 @@ namespace PMDDotNET.Compiler
                     outFFFileBuf = mc.outVoiceBuf;
                     outFFFileName= voice_seg.v_filename;
                 }
+
+                //foreach (MmlDatum d in ret)
+                //{
+                //    if (d.type == enmMMLType.Note)
+                //    {
+                //        Console.WriteLine("{0} {1}", d.linePos.row, d.linePos.col);
+                //        ;
+                //    }
+                //}
 
                 return ret;
                 
