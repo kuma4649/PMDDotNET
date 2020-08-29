@@ -90,7 +90,9 @@ namespace PMDDotNET.Player
             {
                 for (int i = fnIndex; i < args.Length; i++)
                 {
-                    if (Path.GetExtension(args[i]).ToUpper().IndexOf(".M") < 0) continue;
+                    if ((Path.GetExtension(args[i]).ToUpper().IndexOf(".M") < 0)
+                        && (Path.GetExtension(args[i]).ToUpper().IndexOf(".XML") < 0)
+                        ) continue;
                     mIndex = i;
                     break;
                 }

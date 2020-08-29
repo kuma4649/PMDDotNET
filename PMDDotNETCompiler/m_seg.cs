@@ -18,6 +18,7 @@ namespace PMDDotNET.Compiler
         public byte m_start;//b
         public AutoExtendList<MmlDatum> m_buf = new AutoExtendList<MmlDatum>();//[63 * 1024 - 2];
         public byte mbuf_end;
+        public List<Tuple<int, MmlDatum>> dummy = new List<Tuple<int, MmlDatum>>();
 #endif
     }
 }

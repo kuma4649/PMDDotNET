@@ -304,7 +304,7 @@ namespace PMDDotNET.Driver
                 {
                     MmlDatum[] s = (MmlDatum[])serializer.Deserialize(sr);
                     Init(s, opnaWrite, opnaWaitSend, addtionalPMDDotNETOption, addtionalPMDOption
-                        , appendFileReaderCallback
+                        , appendFileReaderCallback ?? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName))
                         , ppz8Write
                         , ppsdrvWrite
                         );

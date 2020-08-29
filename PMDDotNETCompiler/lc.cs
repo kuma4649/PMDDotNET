@@ -171,6 +171,9 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPart_ends com_loop()
         {
+
+            Log.WriteLine(LogLevel.DEBUG, string.Format("partType:{0} partCh:{1} partNum:{2}", part_type, part_chr, part_num));
+
             do
             {
                 byte al;
@@ -179,7 +182,7 @@ namespace PMDDotNET.Compiler
 #if DEBUG
                     Log.WriteLine(LogLevel.TRACE, string.Format("si:{0}", work.si));
 #endif
-                    al = (byte)(work.si<m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++).dat : 0x80);
+                    al = (byte)(work.si < m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++).dat : 0x80);
 
                     if (al == 0x80) return enmPart_ends.part_ends;
                     if (al >= 0x80) break;
@@ -210,6 +213,7 @@ namespace PMDDotNET.Compiler
             print_length();
 
             part_chr++;
+            part_num++;
             if (part_chr < 'K') return enmPart_ends.part_loop;
 
             int di = work.di;
@@ -224,6 +228,8 @@ namespace PMDDotNET.Compiler
                 work.si += 0;//offset m_buf
                 char al_c = bx < 3 ? _fm3_partchr[bx] : _pcm_partchr[bx - 3];
                 part_chr = al_c;
+                part_num = bx < 3 ? bx : (bx - 3);
+                part_type = bx < 3 ? "FM3ex" : "PPZ8";
                 if (work.di < 3) fm3_adr[work.di] = 0;
                 else pcm_adr[work.di - 3] = 0;
 
@@ -454,7 +460,7 @@ namespace PMDDotNET.Compiler
         private void loop_start()
         {
             int ax = (byte)m_seg.m_buf.Get(work.si++).dat;
-            ax += m_seg.m_buf.Get(work.si++).dat*0x100;
+            ax += m_seg.m_buf.Get(work.si++).dat * 0x100;
 
             work.bx = ax;
             work.bx += 1;//offset m_buf+1
@@ -523,7 +529,7 @@ namespace PMDDotNET.Compiler
             al = (byte)~al;
             al += 0;//offset jumptable_0c0h
             jumptable_0c0h[al]();
-            spc0_ret:;
+        spc0_ret:;
         }
 
 
@@ -534,39 +540,72 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private void print_length()
         {
+            int tc = 0;
+            int lc = 0;
+
             if (all_length == 0) return;// データ無し
-            string msg = part_mes+part_chr+ part_chr_n;
+            string msg = part_mes + part_chr + part_chr_n;
+
             int ax = all_length & 0xffff;
             int dx = (all_length >> 16) & 0xffff;
             int bx = max_all & 0xffff;
-            int cx = (max_all>>16) & 0xffff;
+            int cx = (max_all >> 16) & 0xffff;
             if (max_all - all_length < 0)
             {
                 max_all = all_length;// ax | dx * 0x10000;
             }
             //not_over_all:;
             msg += string.Format("{0}", ax);
+            tc = ax;
+
             if (loop_flag != 1) goto pe_loop;
-            if(print_flag!=0) mc.print_mes(loop_mes2);
+            if (print_flag != 0)
+            {
+                mc.print_mes(loop_mes2);
+            }
+
+            work.compilerInfo.partName.Add(part_chr.ToString());
+            work.compilerInfo.totalCount.Add(tc);
+            work.compilerInfo.loopCount.Add(lc);
+
             return;
         pe_loop:;
             dx = (loop_length >> 16) & 0xffff;
             ax = loop_length & 0xffff;
             ax++;
-            if (loop_length+1 == 0) goto pe_00;
+            if (loop_length + 1 == 0) goto pe_00;
             msg += loop_mes;
 
             //mc.print_mes(loop_mes);
             int n = all_length - loop_length;
-            if (max_loop<n)
+            if (max_loop < n)
             {
                 max_loop = n;
             }
             //not_over_loop:;
             msg += string.Format("{0}", n);
+            lc = n;
 
         pe_00:;
-            if (print_flag != 0) mc.print_mes(msg);
+            if (print_flag != 0)
+            {
+                mc.print_mes(msg);
+
+                if (work.compilerInfo.partType == null) work.compilerInfo.partType = new List<string>();
+                work.compilerInfo.partType.Add(part_type);
+
+                if (work.compilerInfo.partNumber == null) work.compilerInfo.partNumber = new List<int>();
+                work.compilerInfo.partNumber.Add(part_num);
+
+                if (work.compilerInfo.partName == null) work.compilerInfo.partName = new List<string>();
+                work.compilerInfo.partName.Add(part_chr.ToString());
+
+                if (work.compilerInfo.totalCount == null) work.compilerInfo.totalCount = new List<int>();
+                work.compilerInfo.totalCount.Add(tc);
+
+                if (work.compilerInfo.loopCount == null) work.compilerInfo.loopCount = new List<int>();
+                work.compilerInfo.loopCount.Add(lc);
+            }
             //mc.print_mes(_crlf_mes);
             //pe_01:;
         }
@@ -677,7 +716,9 @@ namespace PMDDotNET.Compiler
 
 
         public string part_mes = "Part ";
+        public string part_type = "YM2608";
         public char part_chr = ' ';
+        public int part_num = 0;
         private string part_chr_n = "\tLength : ";
         private string loop_mes = "\t/ Loop : ";
         private string loop_mes2 = "\t/ Found Infinite Local Loop!";
@@ -700,7 +741,7 @@ namespace PMDDotNET.Compiler
             (char)0
         };
 
-        public  char[] _pcm_partchr = new char[8]
+        public char[] _pcm_partchr = new char[8]
         {
             (char)0,
             (char)0,

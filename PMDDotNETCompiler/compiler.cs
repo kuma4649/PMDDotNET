@@ -204,8 +204,7 @@ namespace PMDDotNET.Compiler
 
         public CompilerInfo GetCompilerInfo()
         {
-            CompilerInfo ci = new CompilerInfo();
-            return ci;
+            return work.compilerInfo;
         }
 
         public Tuple<string, string>[] GetTags(string srcBuf, Func<string, Stream> appendFileReaderCallback)

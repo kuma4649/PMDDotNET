@@ -1315,6 +1315,7 @@ namespace PMDDotNET.Compiler
             if (mml_seg.pcm_ofsadr == 0) goto rt;// 無し
 
             bx = 0;//offset pcm_partchr1
+            mml_seg.chipCh = -1;
 
             //pcmc_loop:;
             for (int cx = 0; cx < 8; cx++)
@@ -1322,6 +1323,7 @@ namespace PMDDotNET.Compiler
                 al = (byte)mml_seg.pcm_partchr[bx];
                 mml_seg.pcm_partchr[bx] = (char)0;
                 bx++;
+                mml_seg.chipCh++;
                 if (al != 0) goto pcmc_main;
             }
 
@@ -5901,6 +5903,7 @@ namespace PMDDotNET.Compiler
             bh = (byte)(bh << 4);
             bl |= bh;// bl=音階 DATA //KUMA: 上位4bit:オクターブ  下位4bit:音階
             work.bx = bh * 0x100 + bl;
+            mml_seg.ontei = work.al;
 
             return enmPass2JumpTable.ots002;
         }
@@ -6097,32 +6100,8 @@ namespace PMDDotNET.Compiler
             List<object> args = new List<object>();
             args.Add((mml_seg.octave << 4) | mml_seg.ontei);
             args.Add(mml_seg.leng);
-            int p = work.si - 1;
-            while (mml_seg.mml_buf[p] == ' ' || mml_seg.mml_buf[p] == '\t') p--;
-            p++;
-            LinePos lp = new LinePos(
-                mml_seg.mml_filename
-                , Math.Max(mml_seg.line, 1)
-                , Math.Max(mml_seg.stPos - mml_seg.linehead + 1, 1)
-                , p - mml_seg.stPos
-                , mml_seg.chipCh < 6
-                    ? "FM"
-                    : (mml_seg.chipCh >= 6 && mml_seg.chipCh <= 8
-                        ? "FM3ex"
-                        : (mml_seg.chipCh >= 9 && mml_seg.chipCh <= 11
-                            ? "SSG"
-                            : (mml_seg.chipCh == 18
-                                ? "ADPCM"
-                                : "PPZ8"
-                              )
-                          )
-                      )
-                , mml_seg.chipCh < 20 ? "YM2608" : "PPZ8"
-                , 0
-                , 0
-                , mml_seg.chipCh - (mml_seg.chipCh < 20 ? 0 : 20)
-                );
-            MmlDatum dmy= m_seg.m_buf.Get(work.di - 1);
+            LinePos lp = MakeLinePos();
+            MmlDatum dmy = m_seg.m_buf.Get(work.di - 1);
             dmy.type = enmMMLType.Note;
             dmy.args = args;
             dmy.linePos = lp;
@@ -6154,6 +6133,39 @@ namespace PMDDotNET.Compiler
 
             ss_set();// 装飾音符設定
             return bp10();
+        }
+
+        private LinePos MakeLinePos()
+        {
+            int p = work.si - 1;
+            while (mml_seg.mml_buf[p] == ' ' || mml_seg.mml_buf[p] == '\t') p--;
+            p++;
+
+            return new LinePos(
+                mml_seg.mml_filename
+                , Math.Max(mml_seg.line, 1)
+                , Math.Max(mml_seg.stPos - mml_seg.linehead + 1, 1)
+                , p - mml_seg.stPos
+                , mml_seg.ongen == mml_seg.pcm_ex
+                  ? "PPZ8"
+                  : (mml_seg.chipCh < 6
+                    ? "FM"
+                    : (mml_seg.chipCh >= 6 && mml_seg.chipCh <= 8
+                        ? "FM3ex"
+                        : (mml_seg.chipCh >= 9 && mml_seg.chipCh <= 11
+                            ? "SSG"
+                            : (mml_seg.chipCh == 18
+                                ? "ADPCM"
+                                : ""
+                              )
+                          )
+                      )
+                  )
+                , mml_seg.ongen != mml_seg.pcm_ex ? "YM2608" : "PPZ8"
+                , 0
+                , 0
+                , mml_seg.chipCh - (mml_seg.chipCh < 20 ? 0 : 20)
+                );
         }
 
         private enmPass2JumpTable bp10()
@@ -7275,11 +7287,15 @@ namespace PMDDotNET.Compiler
 
             bool cy = lngset(out int bx, out byte alb);
             work.bx = bx;
+
+            m_seg.dummy.Add(new Tuple<int, MmlDatum>(work.di, new MmlDatum(-1, enmMMLType.Volume, MakeLinePos(), bx)));
+
             work.bx += mml_seg.volss2;
             if ((byte)work.bx >= 17)
             {
                 error('v', 2, work.si);
             }
+
 #if !efc
             if (mml_seg.part == mml_seg.pcmpart) return enmPass2JumpTable.vsetm;
             if (mml_seg.ongen == mml_seg.pcm_ex) return enmPass2JumpTable.vsetm;
