@@ -28,7 +28,7 @@ namespace PMDDotNET.Driver
         private Func<ChipDatum,int> ppz8em = null;
         private Func<ChipDatum, int> ppsdrv = null;
         public PCMLOAD pcmload = null;
-        private Action<ChipDatum> WriteOPNARegister = null;
+        public Action<ChipDatum> WriteOPNARegister = null;
 
 
         public PMD(
@@ -1199,6 +1199,7 @@ namespace PMDDotNET.Driver
             do
             {
                 pw.cmd = pw.md[r.si];
+
                 r.al = (byte)pw.md[r.si++].dat;
                 if (r.al < 0x80) 
                     goto mp2;
@@ -2153,6 +2154,7 @@ namespace PMDDotNET.Driver
         private Func<object> commands()
         {
             pw.currentCommandTable = cmdtbl;
+            pw.currentWriter = 0;
             r.bx = 0;//offset cmdtbl
             return command00();
         }
@@ -2160,6 +2162,7 @@ namespace PMDDotNET.Driver
         private Func<object> commandsr()
         {
             pw.currentCommandTable = cmdtblr;
+            pw.currentWriter = 1;
             r.bx = 0;//offset cmdtblr
             return command00();
         }
@@ -2167,6 +2170,7 @@ namespace PMDDotNET.Driver
         private Func<object> commandsp()
         {
             pw.currentCommandTable = cmdtblp;
+            pw.currentWriter = 2;
             r.bx = 0;//offset cmdtblp
             return command00();
         }
@@ -4418,6 +4422,12 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             pw.syousetu_lng = r.al;
 
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Tempo, null, (int)pw.tempo_d, (int)pw.syousetu_lng);
+            cd.addtionalData = md;
+            WriteOPNARegister(cd);
+
             return null;
         }
 
@@ -4559,6 +4569,13 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].volume = r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, (int)r.al);
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -4659,7 +4676,7 @@ namespace PMDDotNET.Driver
         {
             //;	TEMPO = 112CH / [ 256 - TB] timerB -> tempo
             r.bl = 0;
-            r.bl -= pw.tempo_d;
+            r.bl -= pw.tempo_d;//tempo_d レジスタ地
             r.al = 255;
 
             if (r.bl < 18) goto ctbt_exit;
@@ -4955,6 +4972,12 @@ namespace PMDDotNET.Driver
             Log.WriteLine(LogLevel.TRACE, "volupck");
 #endif
 
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Min((int)r.al, 127));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             if (r.al < 128)
                 return vset;
             r.al = 127;
@@ -5003,6 +5026,12 @@ namespace PMDDotNET.Driver
 
         private Func<object> volupckp()
         {
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Min((int)r.al, 15));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             if (r.al < 16)
                 return vset;
             r.al = 15;
@@ -5033,8 +5062,15 @@ namespace PMDDotNET.Driver
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "comvoldown");
 #endif
-            
+
             r.al = pw.partWk[r.di].volume;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Max((int)(r.al - 4), 0));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             r.carry = (r.al < 4);
             r.al -= 4;
             if (!r.carry) return vset;
@@ -5052,6 +5088,13 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             r.ah = r.al;
             r.al = pw.partWk[r.di].volume;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Max((int)(r.al - r.ah), 0));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             r.carry = (r.al < r.ah);
             r.al -= r.ah;
             if (!r.carry) return vset;
@@ -5067,6 +5110,13 @@ namespace PMDDotNET.Driver
 #endif
             
             r.al = pw.partWk[r.di].volume;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Max((int)(r.al - 1), 0));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             if (r.al == 0) return vset;
             r.al--;
             return vset;
@@ -5082,6 +5132,13 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             r.ah = r.al;
             r.al = pw.partWk[r.di].volume;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, Math.Max((int)(r.al - r.ah), 0));
+            cd.addtionalData = md;
+            WriteDummy(cd);
+
             r.carry = (r.al < r.ah);
             r.al -= r.ah;
             if (!r.carry) return vset;
@@ -9187,6 +9244,7 @@ namespace PMDDotNET.Driver
         }
 
         private Action[] n_int60_jumptable;
+
         private void Set_n_int60_jumptable()
         {
             n_int60_jumptable = new Action[] {
@@ -10323,6 +10381,25 @@ namespace PMDDotNET.Driver
                 }
             }
         }
+
+
+
+        public void WriteDummy(ChipDatum cd)
+        {
+            switch (pw.currentWriter)
+            {
+                case 0:
+                case 1:
+                case 2:
+                    WriteOPNARegister(cd);
+                    break;
+                case 3:
+                    ppz8em(cd);
+                    break;
+            }
+        }
+
+
 
 
     }

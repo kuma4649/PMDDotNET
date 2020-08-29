@@ -7007,7 +7007,20 @@ namespace PMDDotNET.Compiler
             byte b = (byte)work.dx;
             work.dx = (work.dx >> 8) + b * 0x100;
 
-            m_seg.m_buf.Set(work.di + 0, new MmlDatum((byte)work.dx));
+            MmlDatum cmd;
+
+            if(work.ctype== enmMMLType.unknown)
+            {
+                cmd = new MmlDatum((byte)work.dx);
+            }
+            else
+            {
+                cmd = new MmlDatum((byte)work.dx, work.ctype, MakeLinePos(), work.cargs);
+                work.ctype = enmMMLType.unknown;
+                work.cargs = null;
+            }
+
+            m_seg.m_buf.Set(work.di + 0, cmd);
             m_seg.m_buf.Set(work.di + 1, new MmlDatum((byte)(work.dx >> 8)));
             work.di += 2;
 
@@ -7288,7 +7301,7 @@ namespace PMDDotNET.Compiler
             bool cy = lngset(out int bx, out byte alb);
             work.bx = bx;
 
-            m_seg.dummy.Add(new Tuple<int, MmlDatum>(work.di, new MmlDatum(-1, enmMMLType.Volume, MakeLinePos(), bx)));
+            // md= new MmlDatum(-1, enmMMLType.Volume, MakeLinePos(), bx);
 
             work.bx += mml_seg.volss2;
             if ((byte)work.bx >= 17)
@@ -7337,6 +7350,10 @@ namespace PMDDotNET.Compiler
         vset4:;
             work.dx = (work.dx & 0xff00) + (byte)work.al;
             mml_seg.nowvol = work.al;
+
+            work.ctype = enmMMLType.Volume;
+            work.cargs = new object[] { (int)work.al };
+
             return enmPass2JumpTable.parset;
         }
 
@@ -7406,6 +7423,9 @@ namespace PMDDotNET.Compiler
             //vset4相当
             work.dx = (work.dx & 0xff00) + (byte)work.al;
             mml_seg.nowvol = work.al;
+
+            work.ctype = enmMMLType.Volume;
+            work.cargs = new object[] { (int)work.al };
             return enmPass2JumpTable.parset;
         }
 #endif
@@ -8226,6 +8246,7 @@ namespace PMDDotNET.Compiler
             bool cy;
             int bx;
             byte al;
+            MmlDatum cmd;
 
             char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (ch == '%') goto volup3;
@@ -8234,11 +8255,13 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
             if (al != 1) goto volup2;
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xf4));
+            cmd = new MmlDatum((byte)0xf4, enmMMLType.Volume , MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             return enmPass2JumpTable.olc0;
 
         volup2:;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xe3));
+            cmd = new MmlDatum((byte)0xe3, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             ongen_sel_vol();
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             return enmPass2JumpTable.olc0;
@@ -8246,7 +8269,8 @@ namespace PMDDotNET.Compiler
         volup3:;
             work.si++;
             cy = lngset(out bx, out al);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xe3));
+            cmd = new MmlDatum((byte)0xe3, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             return enmPass2JumpTable.olc0;
 
@@ -8259,7 +8283,8 @@ namespace PMDDotNET.Compiler
             ongen_sel_vol();
             if (work.al == 0) return enmPass2JumpTable.olc03;//0なら無視
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xde));
+            cmd = new MmlDatum((byte)0xde, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
 
             if (mml_seg.skip_flag == 0) return enmPass2JumpTable.olc0;
@@ -8271,7 +8296,8 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
             if (work.al == 0) return enmPass2JumpTable.olc03;//0なら無視
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xde));
+            cmd = new MmlDatum((byte)0xde, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
 
             if (mml_seg.skip_flag == 0) return enmPass2JumpTable.olc0;
@@ -8290,6 +8316,7 @@ namespace PMDDotNET.Compiler
             bool cy;
             int bx;
             byte al;
+            MmlDatum cmd;
 
             char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (ch == '%') goto voldown3;
@@ -8298,11 +8325,13 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
             if (al != 1) goto voldown2;
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xf3));
+            cmd = new MmlDatum((byte)0xf3, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             return enmPass2JumpTable.olc0;
 
         voldown2:;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xe2));
+            cmd = new MmlDatum((byte)0xe2, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             ongen_sel_vol();
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             return enmPass2JumpTable.olc0;
@@ -8310,7 +8339,8 @@ namespace PMDDotNET.Compiler
         voldown3:;
             work.si++;
             cy = lngset(out bx, out al);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xe2));
+            cmd = new MmlDatum((byte)0xe2, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
             return enmPass2JumpTable.olc0;
 
@@ -8323,7 +8353,8 @@ namespace PMDDotNET.Compiler
             ongen_sel_vol();
             if (work.al == 0) return enmPass2JumpTable.olc03;//0なら無視
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xdd));
+            cmd = new MmlDatum((byte)0xdd, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
 
             if (mml_seg.skip_flag == 0) return enmPass2JumpTable.olc0;
@@ -8335,7 +8366,8 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
             if (work.al == 0) return enmPass2JumpTable.olc03;//0なら無視
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xdd));
+            cmd = new MmlDatum((byte)0xdd, enmMMLType.Volume, MakeLinePos(), null);
+            m_seg.m_buf.Set(work.di++, cmd);
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
 
             if (mml_seg.skip_flag == 0) return enmPass2JumpTable.olc0;

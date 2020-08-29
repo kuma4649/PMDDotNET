@@ -17,5 +17,9 @@ namespace PMDDotNET.Compiler
         public byte ah { get; internal set; }
         public int bx { get; internal set; }
         public int dx { get; internal set; }
+
+        public bool isIDE;
+        public enmMMLType ctype;
+        public object[] cargs;
     }
 }

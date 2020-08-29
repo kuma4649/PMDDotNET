@@ -189,6 +189,9 @@ namespace PMDDotNET.Console
                     }
                     MmlDatum[] dest = null;
 
+                    //xmlの時はIDEモードでコンパイル
+                    compiler.SetCompileSwitch("IDE");
+
                     using (FileStream sourceMML = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         dest = compiler.Compile(sourceMML, appendFileReaderCallback);

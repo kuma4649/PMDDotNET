@@ -129,6 +129,7 @@ namespace PMDDotNET.Compiler
             try
             {
                 work = new work();
+                work.isIDE = isIDE;
                 mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
 
                 MmlDatum[] ret = mc.compile_start();

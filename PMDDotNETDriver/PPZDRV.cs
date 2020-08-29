@@ -295,6 +295,7 @@ namespace PMDDotNET.Driver
         private Func<object> commandsz()
         {
             pw.currentCommandTable = cmdtblz;
+            pw.currentWriter = 3;
             r.bx = 0;//offset cmdtblp
             return pmd.command00();
         }

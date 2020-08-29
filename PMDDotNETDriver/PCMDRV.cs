@@ -542,6 +542,13 @@ namespace PMDDotNET.Driver
         private Func<object> vsetm()
         {
             pw.partWk[r.di].volume = r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Volume, pw.cmd.linePos, (int)r.al);
+            cd.addtionalData = md;
+            pmd.WriteDummy(cd);
+
             return null;
         }
 

@@ -2033,7 +2033,10 @@ namespace PMDDotNET.Driver
             ,  24,221,  1,  0, 55, 16, 16, 39,  0,  0,  0
             , 0xff//-1
         };
-        internal MmlDatum cmd;
+
+        public  MmlDatum cmd;
+        public  LinePos clp;
+        public int currentWriter;
         #endregion
 
     }
