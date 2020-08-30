@@ -7191,10 +7191,13 @@ namespace PMDDotNET.Compiler
             work.dx = ((byte)'q') * 0x100 + (byte)work.dx;
             get_clock();
 
-            work.dx = work.al * 0x100 + (byte)0xfe;
-
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.dx));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.dx >> 8)));
+            //work.dx = work.al * 0x100 + (byte)0xfe;
+            //m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.dx));
+            //m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.dx >> 8)));
+            work.ctype = enmMMLType.Gatetime;
+            work.cargs = new object[] { (int)work.al };
+            work.dx = 0xfe00 + work.al;
+            parset();
 
             al = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (al != '-') goto qseta;
@@ -7221,8 +7224,14 @@ namespace PMDDotNET.Compiler
         qrnd_set:;
             if ((work.dx & 0xff00) == 0) goto qseta;
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.dx));
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.dx >> 8)));
+            //m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.dx));
+            //m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.dx >> 8)));
+
+            byte b = (byte)work.dx;
+            work.dx = (work.dx >> 8) + b * 0x100;
+            work.ctype = enmMMLType.Gatetime;
+            work.cargs = new object[] { (int)work.al };
+            parset();
 
         qseta:;
             al = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
@@ -7233,6 +7242,8 @@ namespace PMDDotNET.Compiler
             work.dx = ((byte)'q') * 0x100 + (byte)work.dx;
             get_clock();
             work.dx = 0xb300 + work.al;
+            work.ctype = enmMMLType.Gatetime;
+            work.cargs = new object[] { (int)work.al };
             return enmPass2JumpTable.parset;
         }
 
@@ -7265,6 +7276,8 @@ namespace PMDDotNET.Compiler
         q2_not_inc:;
             work.al = (byte)~work.al;
             work.dx = 0xc400 + work.al;
+            work.ctype = enmMMLType.Gatetime;
+            work.cargs = new object[] { (int)work.al };
             return enmPass2JumpTable.parset;
         }
 
@@ -7281,6 +7294,8 @@ namespace PMDDotNET.Compiler
             cy = lngset(out bx, out al);
             work.al = (byte)~work.al;
             work.dx = 0xc400 + work.al;
+            work.ctype = enmMMLType.Gatetime;
+            work.cargs = new object[] { (int)work.al };
             return enmPass2JumpTable.parset;
         }
 

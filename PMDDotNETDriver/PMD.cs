@@ -4512,6 +4512,8 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].qdata = r.al;
             pw.partWk[r.di].qdat3 = 0;
+            comq_dmy();
+
             return null;
         }
 
@@ -4523,6 +4525,8 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].qdat2 = r.al;
+            comq_dmy();
+
             return null;
         }
 
@@ -4534,6 +4538,8 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].qdat3 = r.al;
+            comq_dmy();
+
             return null;
         }
 
@@ -4551,10 +4557,24 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].qdatb = r.al;
+            comq_dmy();
 
             return null;
         }
 
+        private void comq_dmy()
+        {
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            MmlDatum md = new MmlDatum(-1, enmMMLType.Gatetime, pw.cmd.linePos
+                , (int)pw.partWk[r.di].qdatb // Q%
+                , (int)pw.partWk[r.di].qdata // q [X] -x  ,  x    :数値1
+                , (int)pw.partWk[r.di].qdat2 // q  x  -x  , [X]   :数値3
+                , (int)pw.partWk[r.di].qdat3 // q  x [-X] ,  x    :数値2
+                );
+            cd.addtionalData = md;
+            WriteDummy(cd);
+        }
 
 
         //3403-3410
