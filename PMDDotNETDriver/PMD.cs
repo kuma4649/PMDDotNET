@@ -4445,6 +4445,15 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].voicenum = r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Instrument, pw.cmd.linePos
+                , (int)0xff
+                , (int)pw.partWk[r.di].voicenum
+                );
+            WriteDummy(cd);
+
             r.dl = r.al;
             if (pw.partWk[r.di].partmask != 0)//;パートマスクされているか？
                 goto comAt_mask;

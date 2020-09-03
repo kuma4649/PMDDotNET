@@ -552,6 +552,8 @@ namespace PMDDotNET.Compiler
 #endif
             }
 
+            mml_seg.includeFileHistory.Clear();
+            mml_seg.includeFileHistory.Add(mml_seg.mml_filename);
         }
 
 
@@ -1111,6 +1113,11 @@ namespace PMDDotNET.Compiler
 #endif
 
             Log.WriteLine(LogLevel.DEBUG, string.Format("Part: {0} compile start" , (char)('A' - 1 + mml_seg.part) ));
+            
+            //mml_seg.includeFileHistoryPos = 0;
+            //mml_seg.currentMMLFile = mml_seg.includeFileHistory[0];
+            //mml_seg.includeFileHistoryStack.Clear();
+            //mml_seg.includeFileLineStack.Clear();
 
             return enmPass2JumpTable.cloop;
         }
@@ -1131,6 +1138,21 @@ namespace PMDDotNET.Compiler
             char al = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
             if (al == 0x1a) 
                 return enmPass2JumpTable.part_end;
+            if (al == 1)
+            {
+                //include file enter
+                //mml_seg.includeFileHistoryPos++;
+                //mml_seg.includeFileHistoryStack.Push(mml_seg.currentMMLFile);
+                //mml_seg.includeFileLineStack.Push(mml_seg.line);
+                //mml_seg.line = 0;
+                //mml_seg.currentMMLFile = mml_seg.includeFileHistory[mml_seg.includeFileHistoryPos];
+            }
+            if (al == 2)
+            {
+                //include file exit
+                //mml_seg.currentMMLFile = mml_seg.includeFileHistoryStack.Pop();
+                //mml_seg.line = mml_seg.includeFileLineStack.Pop();
+            }
             if (al < (' ' + 1)) goto c_fin;
             if (al == ';') goto c_fin;
             if (al != '`') goto c_no_skip;
@@ -3099,6 +3121,8 @@ namespace PMDDotNET.Compiler
 
             int p_si = work.si;//SI= CR位置 を保存
             work.si += 2;// SI= 次の行の先頭位置(に読み込む予定)
+
+            mml_seg.includeFileHistory.Add(mml_seg.mml_filename2);
 
             //;------------------------------------------------------------------------------
             //;	現在のMML残りをMMLバッファ末端に移動
@@ -6142,7 +6166,7 @@ namespace PMDDotNET.Compiler
             p++;
 
             return new LinePos(
-                mml_seg.mml_filename
+                mml_seg.currentMMLFile//.mml_filename
                 , Math.Max(mml_seg.line, 1)
                 , Math.Max(mml_seg.stPos - mml_seg.linehead + 1, 1)
                 , p - mml_seg.stPos
@@ -7542,11 +7566,18 @@ namespace PMDDotNET.Compiler
         nc00:;
             if (mml_seg.part == mml_seg.pcmpart) goto repeat_check;
             if (mml_seg.ongen == mml_seg.pcm_ex) goto repeat_check;
-            if (mml_seg.part != mml_seg.rhythm2) return enmPass2JumpTable.parset;
+            if (mml_seg.part != mml_seg.rhythm2)
+            {
+                work.ctype = enmMMLType.Instrument;
+                work.cargs = new object[] { };
+                return enmPass2JumpTable.parset;
+            }
             if (mml_seg.towns_flg == 1) goto repeat_check;// townsの K = PCM part
             if (mml_seg.skip_flag != 0) return enmPass2JumpTable.olc0;
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.dx));
+            MmlDatum cmd;
+            cmd = new MmlDatum((byte)work.dx, enmMMLType.Instrument, MakeLinePos(), new object[] { } );
+            m_seg.m_buf.Set(work.di++, cmd);
 
             mml_seg.length_check1 = 1;// 音長データがあったよ
             mml_seg.length_check2 = 1;
@@ -7566,7 +7597,8 @@ namespace PMDDotNET.Compiler
             //work.bx *= 4;
             //work.bx = (byte)work.bx;
             work.bx += 0;//offset psgenvdat
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xf0));
+            cmd = new MmlDatum((byte)0xf0, enmMMLType.Instrument, MakeLinePos(), new object[] { });
+            m_seg.m_buf.Set(work.di++, cmd);
             cx = 4;
             if (work.bx > 9)
             {
@@ -7586,7 +7618,12 @@ namespace PMDDotNET.Compiler
 
         repeat_check:;
             ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
-            if (ch != ',') return enmPass2JumpTable.parset;
+            if (ch != ',')
+            {
+                work.ctype = enmMMLType.Instrument;
+                work.cargs = new object[] { };
+                return enmPass2JumpTable.parset;
+            }
 
             int ax = work.dx;
             ax = (byte)(ax >> 8) | (((byte)ax) * 0x100);
@@ -9340,6 +9377,7 @@ namespace PMDDotNET.Compiler
             mml_seg.hscomSI.Push(work.si);
             mml_seg.hsflag++;
             work.si = ax;
+            calc_line(ref ax);
             return enmPass2JumpTable.olc02;// olc0
         }
 
@@ -9347,6 +9385,8 @@ namespace PMDDotNET.Compiler
         {
             mml_seg.hsflag--;
             work.si = mml_seg.hscomSI.Pop();
+            int ax = work.si;
+            calc_line(ref ax);
 
             return enmPass2JumpTable.olc03;
         }
@@ -9564,6 +9604,9 @@ namespace PMDDotNET.Compiler
                 return;
             }
 
+            mml_seg.includeFileHistoryPos = 0;
+            mml_seg.currentMMLFile = mml_seg.includeFileHistory[mml_seg.includeFileHistoryPos];
+
             Stack<int> lineStack = new Stack<int>();
             int bx = 0;
             int ah = 0;// Main/Include Flag
@@ -9610,6 +9653,10 @@ namespace PMDDotNET.Compiler
                         {
                             al = si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[si++] : (char)0x1a;
                         } while (al != 0x0a);//ファイル名部分を飛ばす
+
+                        mml_seg.includeFileHistoryStack.Push(mml_seg.currentMMLFile);
+                        mml_seg.currentMMLFile = mml_seg.includeFileHistory[++mml_seg.includeFileHistoryPos];
+
                         break;
                     }
                     else if (al == 2)//Include->Main check code
@@ -9619,6 +9666,7 @@ namespace PMDDotNET.Compiler
                         ah--;//Include階層を一つ減らす
 
                         si++;
+                        mml_seg.currentMMLFile = mml_seg.includeFileHistoryStack.Pop();
                         break;
                     }
 

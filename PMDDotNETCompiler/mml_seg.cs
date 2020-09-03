@@ -72,7 +72,7 @@ namespace PMDDotNET.Compiler
 #endif
 #endif
 
-		public  string finmes = "Compile Completed.";
+		public string finmes = "Compile Completed.";
 		public string mes_crlf = "" + mc.cr + mc.lf + mc.eof;
 
 		public string mes_title = mc.cr + mc.lf + "演奏を開始します。" + mc.cr + mc.lf + mc.cr + mc.lf
@@ -91,7 +91,7 @@ namespace PMDDotNET.Compiler
 		public string mcopt_txt = "MCOPT=";
 
 #if !tempo_old_flag
-		public  int tempo = 0;
+		public int tempo = 0;
 #endif
 		public int timerb = 0;//b
 		public int octave = 4;//b
@@ -212,8 +212,8 @@ namespace PMDDotNET.Compiler
 		public int lastprg = 0;//w
 
 		public int prsok = 0;//b 直前のbyte
-                             // bit 1 ･･･ 音長
-                             // bit 2 ･･･ 加工
+							 // bit 1 ･･･ 音長
+							 // bit 2 ･･･ 加工
 							 // bit 3 ･･･ +タイ
 							 // bit 4 ･･･ ポルタ
 							 // bit 7 ･･･ リズム
@@ -310,7 +310,7 @@ namespace PMDDotNET.Compiler
 		//分散和音ワーク
 		public int bunsan_start;//w 開始オフセット
 		public byte bunsan_count;//b 音符数
-		public byte[] bunsan_work=new byte[16];// 音階x16
+		public byte[] bunsan_work = new byte[16];// 音階x16
 		public byte bunsan_length;//b 全体の長さ
 		public byte bunsan_1cnt;//b 一音符の長さ
 		public byte bunsan_tieflag;//b タイフラグ
@@ -340,19 +340,25 @@ namespace PMDDotNET.Compiler
 		public int[] memo_adr = new int[129];//w
 		public string composer_seg = null;//w
 		public string arranger_seg = null;//w
-		//public string composer_adr;//w
-		//public string arranger_adr;//w
+										  //public string composer_adr;//w
+										  //public string arranger_adr;//w
 
 		public string mml_buf = null;//61*1024-1 dup(?); max 61k(.mml file)
 		public byte mmlbuf_end;//b
 
 		public Stack<int> hscomSI = new Stack<int>();
-        internal byte ontei;
-        internal int stPos;
-        internal int chipCh;
+		internal byte ontei;
+		internal int stPos;
+		internal int chipCh;
 
-        //mml_seg ends
+		public List<string> includeFileHistory = new List<string>();
+		public int includeFileHistoryPos;
+		public string currentMMLFile;
+		public Stack<string> includeFileHistoryStack = new Stack<string>();
+		//public Stack<int> includeFileLineStack = new Stack<int>();
+
+		//mml_seg ends
 
 
-    }
+	}
 }

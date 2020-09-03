@@ -711,6 +711,7 @@ namespace PMDDotNET.Driver
         private Func<object> comAtz()
         {
             Func<object> ret = null;
+            ChipDatum cd;
 
             r.al = (byte)pw.md[r.si++].dat;
             if (pw.ademu != 0)
@@ -735,12 +736,20 @@ namespace PMDDotNET.Driver
                 r.stack.Push(r.ax);
                 r.ax = 0x1800;
                 pw.adpcm_emulate = r.al;
-                ChipDatum cd = new ChipDatum(0x18, r.al, 0);
+                cd = new ChipDatum(0x18, r.al, 0);
                 ppz8em(cd);//.SetAdpcmEmu(r.al);//; ADPCMEmulate OFF
                 r.ax = r.stack.Pop();
             cAtz_adchk_exit:;
             }
             pw.partWk[r.di].voicenum = r.al;
+
+            //IDE向け
+            cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Instrument, pw.cmd.linePos
+                , (int)0xff
+                , (int)pw.partWk[r.di].voicenum
+                );
+            pmd.WriteDummy(cd);
 
         ppz_neiro_reset:;
             //    push es
@@ -757,7 +766,7 @@ namespace PMDDotNET.Driver
                 r.al = pw.partb;
                 //push es
                 r.stack.Push(r.bx);
-                ChipDatum cd = new ChipDatum((r.al << 8) | 0x0e, ((r.dx << 16) | r.cx), ((r.di << 16) | r.si));
+                cd = new ChipDatum((r.al << 8) | 0x0e, ((r.dx << 16) | r.cx), ((r.di << 16) | r.si));
                 ppz8em(cd);//.SetLoopPoint(r.al, r.dx, r.cx, r.di, r.si);
                 r.bx = r.stack.Pop();
                 //pop es
