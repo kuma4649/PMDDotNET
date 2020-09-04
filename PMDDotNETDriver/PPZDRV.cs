@@ -664,13 +664,20 @@ namespace PMDDotNET.Driver
         }
 
         private Func<object> pansetz_main()
-        { 
+        {
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Pan, pw.cmd.linePos
+                , (int)r.al
+                );
+            pmd.WriteDummy(cd);
+
             pw.partWk[r.di].fmpan = r.al;
             r.dx = 0;
             r.dl = r.al;
             r.ah = 0x13;
             r.al = pw.partb;
-            ChipDatum cd = new ChipDatum(0x13, r.al, r.dx);
+            cd = new ChipDatum(0x13, r.al, r.dx);
             ppz8em(cd);//.SetPan(r.al, r.dx);
             return null;
         }

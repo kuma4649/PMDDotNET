@@ -4790,6 +4790,14 @@ namespace PMDDotNET.Driver
             r.ax = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
             r.si += 2;
             pw.partWk[r.di].detune = r.ax;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Detune, pw.cmd.linePos
+                , (int)(short)pw.partWk[r.di].detune
+                );
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -4808,6 +4816,14 @@ namespace PMDDotNET.Driver
             r.ax = (ushort)(pw.md[r.si].dat + pw.md[r.si + 1].dat * 0x100);
             r.si += 2;
             pw.partWk[r.di].detune += r.ax;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Detune, pw.cmd.linePos
+                , (int)(short)pw.partWk[r.di].detune
+                );
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -4940,6 +4956,14 @@ namespace PMDDotNET.Driver
 
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].shift = r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.KeyShift, pw.cmd.linePos
+                , (int)(sbyte)pw.partWk[r.di].shift
+                );
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -4957,6 +4981,14 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             r.al += pw.partWk[r.di].shift;
             pw.partWk[r.di].shift = r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.KeyShift, pw.cmd.linePos
+                , (int)(sbyte)pw.partWk[r.di].shift
+                );
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -5554,6 +5586,13 @@ namespace PMDDotNET.Driver
 
         private Func<object> panset_main()
         {
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Pan, pw.cmd.linePos
+                , (int)r.al
+                );
+            WriteDummy(cd);
+
             r.al = r.ror(r.al, 1);
             r.al = r.ror(r.al, 1);
             r.al &= 0b1100_0000;

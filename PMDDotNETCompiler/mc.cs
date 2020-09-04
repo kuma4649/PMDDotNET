@@ -7873,7 +7873,7 @@ namespace PMDDotNET.Compiler
         detset_exit:;
             if (mml_seg.bend != 0) return enmPass2JumpTable.olc03;
             work.al = 0xfa;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al, enmMMLType.Detune, MakeLinePos(), (int)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.bx >> 8)));
             return enmPass2JumpTable.olc0;
@@ -7883,7 +7883,7 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         detset_2:;
             cy = getnum(out bx, out dl);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xd5));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0xd5, enmMMLType.Detune, MakeLinePos(), (int)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)(work.bx >> 8)));
             return enmPass2JumpTable.olc0;
@@ -8210,11 +8210,15 @@ namespace PMDDotNET.Compiler
             work.si++;
             cy = getnum(out bx, out dl);
             work.dx = 0xe7 * 0x100 + dl;
+            work.ctype = enmMMLType.KeyShift;
+            work.cargs = new object[] { (int)dl };
             return enmPass2JumpTable.parset;            //__ command
 
         osf00:;
             cy = getnum(out bx, out dl);
             work.dx = 0xf5 * 0x100 + dl;
+            work.ctype = enmMMLType.KeyShift;
+            work.cargs = new object[] { (int)dl };
             return enmPass2JumpTable.parset;            //_ command
 
         master_trans_set:;
@@ -9028,7 +9032,7 @@ namespace PMDDotNET.Compiler
                 error('p', 2, work.si);
             }
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xec));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0xec, enmMMLType.Pan, MakeLinePos(), (int)work.bx));
             m_seg.m_buf.Set(work.di++, new MmlDatum((byte)work.bx));
 
             return enmPass2JumpTable.olc0;
@@ -9036,7 +9040,8 @@ namespace PMDDotNET.Compiler
         panset_extend:;
             work.si++;
             cy = getnum(out bx, out dl);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xc3));
+            int prm1 = dl;
+            m_seg.m_buf.Set(work.di++, new MmlDatum(0xc3, enmMMLType.Pan, MakeLinePos(), (int)prm1, (int)0));
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
             m_seg.m_buf.Set(work.di++, new MmlDatum(0));
 
@@ -9046,6 +9051,7 @@ namespace PMDDotNET.Compiler
             cy = getnum(out bx, out dl);
             if (dl == 0) return enmPass2JumpTable.olc0;
 
+            m_seg.m_buf.Set(work.di - 3, new MmlDatum(0xc3, enmMMLType.Pan, MakeLinePos(), (int)prm1, (int)1));
             m_seg.m_buf.Set(work.di - 1, new MmlDatum(1));
             return enmPass2JumpTable.olc0;
         }
