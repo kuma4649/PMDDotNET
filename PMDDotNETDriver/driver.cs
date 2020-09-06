@@ -112,7 +112,7 @@ namespace PMDDotNET.Driver
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PCMFile", str));
-                work.ppcFile = str.Trim();
+                if(work!=null) work.ppcFile = str.Trim();
             }
 
             adr = get_memo(-1, lr, lpw);
@@ -120,7 +120,7 @@ namespace PMDDotNET.Driver
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PPSFile", str));
-                work.ppsFile = str.Trim();
+                if (work != null) work.ppsFile = str.Trim();
             }
 
             adr = get_memo(-2, lr, lpw);
@@ -128,12 +128,15 @@ namespace PMDDotNET.Driver
             {
                 str = getNRDString(ref adr);
                 tags.Add(new Tuple<string, string>("PPZFile", str));
-                work.ppz1File = str.Trim();
-                string[] p = work.ppz1File.Split(',');
-                if (p.Length > 1)
+                if (work != null)
                 {
-                    work.ppz1File = p[0];
-                    work.ppz2File = p[1];
+                    work.ppz1File = str.Trim();
+                    string[] p = work.ppz1File.Split(',');
+                    if (p.Length > 1)
+                    {
+                        work.ppz1File = p[0];
+                        work.ppz2File = p[1];
+                    }
                 }
             }
 
@@ -228,7 +231,43 @@ namespace PMDDotNET.Driver
         /// </summary>
         public GD3Tag GetGD3TagInfo(byte[] srcBuf)
         {
-            throw new NotImplementedException();
+            List<MmlDatum> sc = new List<MmlDatum>();
+            foreach (byte b in srcBuf) sc.Add(new MmlDatum(b));
+            Driver.srcBuf = sc.ToArray();
+            List<Tuple<string, string>> lstTag = GetTags();
+            GD3Tag gd3tag = new GD3Tag();
+            gd3tag.dicItem.Clear();
+            foreach (Tuple<string, string> ttag in lstTag)
+            {
+                if (ttag.Item1 == "title")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Title)) gd3tag.dicItem.Remove(enmTag.Title);
+                    gd3tag.dicItem.Add(enmTag.Title, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.TitleJ)) gd3tag.dicItem.Remove(enmTag.TitleJ);
+                    gd3tag.dicItem.Add(enmTag.TitleJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1 == "composer")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Composer)) gd3tag.dicItem.Remove(enmTag.Composer);
+                    gd3tag.dicItem.Add(enmTag.Composer, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.ComposerJ)) gd3tag.dicItem.Remove(enmTag.ComposerJ);
+                    gd3tag.dicItem.Add(enmTag.ComposerJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1 == "arranger")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Arranger)) gd3tag.dicItem.Remove(enmTag.Arranger);
+                    gd3tag.dicItem.Add(enmTag.Arranger, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.ArrangerJ)) gd3tag.dicItem.Remove(enmTag.ArrangerJ);
+                    gd3tag.dicItem.Add(enmTag.ArrangerJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1 == "memo")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Memo)) gd3tag.dicItem.Remove(enmTag.Memo);
+                    gd3tag.dicItem.Add(enmTag.Memo, new string[] { ttag.Item2 });
+                }
+            }
+            return gd3tag;
+
         }
 
         public object GetWork()
@@ -446,7 +485,8 @@ namespace PMDDotNET.Driver
 
         public int SetLoopCount(int loopCounter)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return 0;
         }
 
         public void ShotEffect()
@@ -496,7 +536,8 @@ namespace PMDDotNET.Driver
 
         public int GetNowLoopCounter()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return 0;
         }
 
 
@@ -520,5 +561,9 @@ namespace PMDDotNET.Driver
             };
         }
 
+        public void SetDriverSwitch(params object[] param)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

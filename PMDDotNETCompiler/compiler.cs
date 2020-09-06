@@ -58,6 +58,12 @@ namespace PMDDotNET.Compiler
 
             foreach (object prm in param)
             {
+                if(prm is Func<string, Stream>)
+                {
+                    appendFileReaderCallback=(Func<string, Stream>)prm;
+                    continue;
+                }
+
                 if (!(prm is string)) continue;
 
                 //IDEフラグオン
@@ -339,7 +345,40 @@ namespace PMDDotNET.Compiler
 
         public GD3Tag GetGD3TagInfo(byte[] srcBuf)
         {
-            throw new NotImplementedException();
+            string text = System.Text.Encoding.GetEncoding("shift_jis").GetString(srcBuf);
+            Tuple<string, string>[] tags = GetTags(text, appendFileReaderCallback);
+            GD3Tag gd3tag = new GD3Tag();
+            gd3tag.dicItem.Clear();
+            foreach (Tuple<string, string> ttag in tags)
+            {
+                if (ttag.Item1.ToLower().Trim() == "#title")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Title)) gd3tag.dicItem.Remove(enmTag.Title);
+                    gd3tag.dicItem.Add(enmTag.Title, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.TitleJ)) gd3tag.dicItem.Remove(enmTag.TitleJ);
+                    gd3tag.dicItem.Add(enmTag.TitleJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1.ToLower().Trim() == "#composer")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Composer)) gd3tag.dicItem.Remove(enmTag.Composer);
+                    gd3tag.dicItem.Add(enmTag.Composer, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.ComposerJ)) gd3tag.dicItem.Remove(enmTag.ComposerJ);
+                    gd3tag.dicItem.Add(enmTag.ComposerJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1.ToLower().Trim() == "#arranger")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Arranger)) gd3tag.dicItem.Remove(enmTag.Arranger);
+                    gd3tag.dicItem.Add(enmTag.Arranger, new string[] { ttag.Item2 });
+                    if (gd3tag.dicItem.ContainsKey(enmTag.ArrangerJ)) gd3tag.dicItem.Remove(enmTag.ArrangerJ);
+                    gd3tag.dicItem.Add(enmTag.ArrangerJ, new string[] { ttag.Item2 });
+                }
+                else if (ttag.Item1.ToLower().Trim() == "#memo")
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.Memo)) gd3tag.dicItem.Remove(enmTag.Memo);
+                    gd3tag.dicItem.Add(enmTag.Memo, new string[] { ttag.Item2 });
+                }
+            }
+            return gd3tag;
         }
     }
 }
