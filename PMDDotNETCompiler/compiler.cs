@@ -377,6 +377,11 @@ namespace PMDDotNET.Compiler
                     if (gd3tag.dicItem.ContainsKey(enmTag.Memo)) gd3tag.dicItem.Remove(enmTag.Memo);
                     gd3tag.dicItem.Add(enmTag.Memo, new string[] { ttag.Item2 });
                 }
+                else if (ttag.Item1.ToLower().Trim().IndexOf("#fi") != -1)
+                {
+                    if (gd3tag.dicItem.ContainsKey(enmTag.SongObjFilename)) gd3tag.dicItem.Remove(enmTag.SongObjFilename);
+                    gd3tag.dicItem.Add(enmTag.SongObjFilename, new string[] { ttag.Item2 });
+                }
             }
             return gd3tag;
         }
