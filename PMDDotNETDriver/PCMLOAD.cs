@@ -389,14 +389,23 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void pps_load_main()
         {
-            string ext = Path.GetExtension(pw.filename_ofs);
-            if (string.IsNullOrEmpty(ext)) pw.filename_ofs = Path.ChangeExtension(pw.filename_ofs, ".PPS");
-            byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
-            if (pcmData == null)
+            string fn;
+            byte[] pcmData;
+
+            fn = Path.ChangeExtension(pw.filename_ofs, ".PPS");//;拡張子 "PPS"に変更
+            pcmData = GetPCMDataFromFile(fn);
+
+            if (pcmData == null || pcmData.Length < 1)
             {
-                Log.WriteLine(LogLevel.ERROR, string.Format("PPSファイル[{0}]の読み込みに失敗しました。", pw.filename_ofs));
-                pw.usePPSDRV = false;
-                pw.ppsdrv_flag = 0;
+                fn = pw.filename_ofs;//指定
+                pcmData = GetPCMDataFromFile(fn); //MMLの指定で読み込んでみる
+
+                if (pcmData == null || pcmData.Length < 1)
+                {
+                    Log.WriteLine(LogLevel.ERROR, string.Format("PPSファイル[{0}]の読み込みに失敗しました。", pw.filename_ofs));
+                    pw.usePPSDRV = false;
+                    pw.ppsdrv_flag = 0;
+                }
             }
             else
             {
@@ -456,15 +465,20 @@ namespace PMDDotNET.Driver
             //;-----------------------------------------------------------------------------
             //;	FileをPMDのワークにヘッダだけ読みこむ //KUMA:全部読み込む！
             //;-----------------------------------------------------------------------------
-            string fn = pw.filename_ofs;//指定
-            byte[] pcmData = GetPCMDataFromFile(fn);
+            string fn;
+            byte[] pcmData;
+            
+            fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "PPC"に変更
+            pcmData = GetPCMDataFromFile(fn);
+
             if (pcmData == null || pcmData.Length < 1)
             {
-                fn = Path.ChangeExtension(pw.filename_ofs, ".PVI");//;拡張子 "PVI"に変更
-                pcmData = GetPCMDataFromFile(fn);
+                fn = pw.filename_ofs;//指定
+                pcmData = GetPCMDataFromFile(fn); //MMLの指定で読み込んでみる
+
                 if (pcmData == null || pcmData.Length < 1)
                 {
-                    fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "P86"に変更
+                    fn = Path.ChangeExtension(pw.filename_ofs, ".PVI");//;拡張子 "PVI"に変更
                     pcmData = GetPCMDataFromFile(fn);
                     if (pcmData == null || pcmData.Length < 1)
                     {
@@ -697,12 +711,18 @@ namespace PMDDotNET.Driver
             //;-----------------------------------------------------------------------------
             //;	P86Data,Size確認
             //;-----------------------------------------------------------------------------
-            string fn = pw.filename_ofs;//指定
-            byte[] pcmData = GetPCMDataFromFile(fn);
+            string fn;
+            byte[] pcmData;
+
+            fn = Path.ChangeExtension(pw.filename_ofs, ".P86");//;拡張子 "P86"に変更
+            pcmData = GetPCMDataFromFile(fn);
+
             if (pcmData == null || pcmData.Length < 1)
             {
-                fn = Path.ChangeExtension(pw.filename_ofs, ".P86");//;拡張子 "P86"に変更
-                pcmData = GetPCMDataFromFile(fn);
+
+                fn = pw.filename_ofs;//指定
+                pcmData = GetPCMDataFromFile(fn); //MMLの指定で読み込んでみる
+
                 if (pcmData == null || pcmData.Length < 1)
                 {
                     fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "PPC"に変更
