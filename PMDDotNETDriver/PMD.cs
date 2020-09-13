@@ -27,6 +27,7 @@ namespace PMDDotNET.Driver
         private EFCDRV efcdrv = null;
         private Func<ChipDatum,int> ppz8em = null;
         private Func<ChipDatum, int> ppsdrv = null;
+        private Func<ChipDatum, int> p86em = null;
         public PCMLOAD pcmload = null;
         public Action<ChipDatum> WriteOPNARegister = null;
 
@@ -37,12 +38,14 @@ namespace PMDDotNET.Driver
             PW pw,
             Func<string, Stream> appendFileReaderCallback,
             Func<ChipDatum,int> ppz8em,
-            Func<ChipDatum, int> ppsdrv)
+            Func<ChipDatum, int> ppsdrv,
+            Func<ChipDatum, int> p86em)
         {
             this.pw = pw;
             pw.md = mmlData;
             this.ppz8em = ppz8em;
             this.ppsdrv = ppsdrv;
+            this.p86em = p86em;
 
             //pw.md = new MmlDatum[mmlData.Length + 256];
             //Array.Copy(mmlData, 0, pw.md, 0, mmlData.Length);
@@ -57,13 +60,13 @@ namespace PMDDotNET.Driver
 
             r = new x86Register();
             pc98 = new Pc98(WriteOPNARegister, pw);
-            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, appendFileReaderCallback);
+            pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, p86em, appendFileReaderCallback);
 
             ppzdrv = new PPZDRV(this, pw, r, pc98, ppz8em, pcmload.ppzPcmData);
             pcmdrv = new PCMDRV(this, pw, r, pc98, ppzdrv);
             ppzdrv.pcmdrv = pcmdrv;
             ppzdrv.init();
-            pcmdrv86 = new PCMDRV86();
+            pcmdrv86 = new PCMDRV86(this, pw, r, pc98, p86em, pcmload.p86PcmData);
             efcdrv = new EFCDRV(this, pw, r, ppsdrv);
             this.WriteOPNARegister = WriteOPNARegister;
 
@@ -2552,7 +2555,7 @@ namespace PMDDotNET.Driver
             return null;
         }
 
-        private Func<object> jump4()
+        public Func<object> jump4()
         {
 #if DEBUG
             Log.WriteLine(LogLevel.TRACE, "jump4");
@@ -6077,7 +6080,7 @@ namespace PMDDotNET.Driver
             return;
         }
 
-        private void fnrest()
+        public void fnrest()
         { 
             pw.partWk[r.di].onkai = 0xff;
             if ((pw.partWk[r.di].lfoswi & 0x11) != 0)

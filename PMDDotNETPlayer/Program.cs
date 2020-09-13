@@ -68,6 +68,7 @@ namespace PMDDotNET.Player
         private static bool isGimicOPNA = false;
         private static MDSound.PPZ8 ppz8em = null;
         private static MDSound.PPSDRV ppsdrv = null;
+        private static P86 p86em = null;
         private static string[] envPmd = null;
         private static string[] envPmdOpt = null;
         private static string srcFile = null;
@@ -201,7 +202,24 @@ namespace PMDDotNET.Player
                     Option = device == 0 ? null : (new object[] { (Action<int, int>)PPSDRVpsg })
                 };
 
-                mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip, chipp, chipps });
+                p86em = new P86();
+                MDSound.MDSound.Chip chip86 = new MDSound.MDSound.Chip
+                {
+                    type = MDSound.MDSound.enmInstrumentType.mpcmX68k,//TBD
+                    ID = 0,
+                    Instrument = p86em,
+                    Update = p86em.Update,
+                    Start = p86em.Start,
+                    Stop = p86em.Stop,
+                    Reset = p86em.Reset,
+                    SamplingRate = SamplingRate,
+                    Clock = opnaMasterClock,
+                    Volume = 0,
+                    Option = null
+                };
+
+
+                mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip, chipp, chipps, chip86 });
                 //ppz8em = new PPZ8em(SamplingRate);
                 //ppsdrv = new PPSDRV(SamplingRate);
 
@@ -259,6 +277,7 @@ namespace PMDDotNET.Player
                     , appendFileReaderCallback
                     , PPZ8Write
                     , PPSDRVWrite
+                    , P86Write
                     );
 
 
@@ -1137,6 +1156,20 @@ Welcome to PMDDotNET !
                         //dold = d;
                     }
                     break;
+            }
+        }
+
+        private static int P86Write(ChipDatum arg)
+        {
+            if (arg == null) return 0;
+
+            if (arg.port == 0x00)
+            {
+                return p86em.LoadPcm(0, (byte)arg.address, (byte)arg.data, (byte[])arg.addtionalData);
+            }
+            else
+            {
+                return p86em.Write(0, arg.port, arg.address, arg.data);
             }
         }
 

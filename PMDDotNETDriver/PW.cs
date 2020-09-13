@@ -653,48 +653,159 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         //;	Datas
         //;==============================================================================
-        //trans_size equ	256	;1回の転送byte数
-        //play86_flag db	0	;発音中? flag
-        //trans_flag db	0	; 転送するdataが残っているか? flag
-        //start_ofs dw	0	; 発音中PCMデータ番地(offset下位)
-        //start_ofs2 dw	0	; 発音中PCMデータ番地(offset上位)
-        //size1 dw	0	; 残りサイズ(下位word)
-        //size2 dw	0	; 残りサイズ(上位word)
-        //_start_ofs dw	0	; 発音開始PCMデータ番地(offset下位)
-        //_start_ofs2 dw	0	; 発音開始PCMデータ番地(offset上位)
-        //_size1 dw	0	; PCMデータサイズ(下位word)
-        //_size2 dw	0	; PCMデータサイズ(上位word)
-        //addsize1 db	0	; PCMアドレス加算値(整数部)
-        //addsize2 dw	0	; PCMアドレス加算値(小数点部)
-        //addsizew dw	0	; PCMアドレス加算値(小数点部, 転送中work)
-        //repeat_ofs dw	0	; リピート開始位置(offset下位)
-        //repeat_ofs2 dw	0	; リピート開始位置(offset上位)
-        //repeat_size1 dw	0	; リピート後のサイズ(下位word)
-        //repeat_size2 dw	0	; リピート後のサイズ(上位word)
-        //release_ofs dw	0	; リリース開始位置(offset下位)
-        //release_ofs2 dw	0	; リリース開始位置(offset上位)
-        //release_size1 dw	0	; リリース後のサイズ(下位word)
-        //release_size2 dw	0	; リリース後のサイズ(上位word)
-        //repeat_flag db	0	; リピートするかどうかのflag
-        // release_flag1   db	0	;リリースするかどうかのflag
-        // release_flag2   db	0	;リリースしたかどうかのflag
+        public int trans_size = 256;//	;1回の転送byte数
+        public byte play86_flag;// db	0	;発音中? flag
+        public byte trans_flag;// db	0	; 転送するdataが残っているか? flag
+        public ushort start_ofs;// dw	0	; 発音中PCMデータ番地(offset下位)
+        public ushort start_ofs2;// dw	0	; 発音中PCMデータ番地(offset上位)
+        public ushort size1;// dw	0	; 残りサイズ(下位word)
+        public ushort size2;// dw	0	; 残りサイズ(上位word)
+        public ushort _start_ofs;// dw	0	; 発音開始PCMデータ番地(offset下位)
+        public ushort _start_ofs2;// dw	0	; 発音開始PCMデータ番地(offset上位)
+        public ushort _size1;// dw	0	; PCMデータサイズ(下位word)
+        public ushort _size2;// dw	0	; PCMデータサイズ(上位word)
+        public byte addsize1;// db	0	; PCMアドレス加算値(整数部)
+        public ushort addsize2;// dw	0	; PCMアドレス加算値(小数点部)
+        public ushort addsizew;// dw	0	; PCMアドレス加算値(小数点部, 転送中work)
+        public ushort repeat_ofs;// dw	0	; リピート開始位置(offset下位)
+        public ushort repeat_ofs2;// dw	0	; リピート開始位置(offset上位)
+        public ushort repeat_size1;// dw	0	; リピート後のサイズ(下位word)
+        public ushort repeat_size2;// dw	0	; リピート後のサイズ(上位word)
+        public ushort release_ofs;// dw	0	; リリース開始位置(offset下位)
+        public ushort release_ofs2;// dw	0	; リリース開始位置(offset上位)
+        public ushort release_size1;// dw	0	; リリース後のサイズ(下位word)
+        public ushort release_size2;// dw	0	; リリース後のサイズ(上位word)
+        public byte repeat_flag;// db	0	; リピートするかどうかのflag
+        public byte release_flag1;//   db	0	;リリースするかどうかのflag
+        public byte release_flag2;//   db	0	;リリースしたかどうかのflag
         public byte pcm86_pan_flag = 0;// b 0 ;パンデータ１(bit0= 左 / bit1 = 右 / bit2 = 逆)
         public byte com_end = 0xb1;
-
-        //pcm86_pan_dat db	0	; パンデータ２(音量を下げるサイドの音量値)
+        public byte pcm86_pan_dat;// db	0	; パンデータ２(音量を下げるサイドの音量値)
 
         //; pan_flagによる転送table
         //trans_table dw double_trans, left_trans
-
         //        dw right_trans, double_trans
-
         //        dw double_trans_g, left_trans_g
-
         //        dw right_trans_g, double_trans_g
 
         //; 周波数table Include
 
         //    include tunedata.inc
+        //;==============================================================================
+        //;	周波数table 16.54kHz = o5g
+        //;==============================================================================
+        //fq macro   data1,data2
+        //   db  data1
+        //   dw  data2
+        //   endm
+
+        public Tuple<byte, ushort>[] pcm_tune_data86 = new Tuple<byte, ushort>[]{
+            //; 周波数*32+ 加算値(整数部) , 加算値(小数部)
+            new Tuple<byte, ushort>(0*32+0 ,0x02AB7)//;o1  4.13438 C
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x02D41)//;o1  4.13438 C#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x02FF2)//;o1  4.13438 D
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x032CB)//;o1  4.13438 D#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x035D1)//;o1  4.13438 E
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x03904)//;o1  4.13438 F
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x03C68)//;o1  4.13438 F#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x03FFF)//;o1  4.13438 G
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x043CE)//;o1  4.13438 G#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x047D6)//;o1  4.13438 A
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x04C1B)//;o1  4.13438 A#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x050A2)//;o1  4.13438 B
+            
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0556E)//;o2  4.13438 C
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x05A82)//;o2  4.13438 C#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x05FE4)//;o2  4.13438 D
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x06597)//;o2  4.13438 D#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x06BA2)//;o2  4.13438 E
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x07209)//;o2  4.13438 F
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x078D0)//;o2  4.13438 F#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x07FFF)//;o2  4.13438 G
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0879C)//;o2  4.13438 G#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x08FAC)//;o2  4.13438 A
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x09837)//;o2  4.13438 A#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0A145)//;o2  4.13438 B
+            
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0AADC)//;o3  4.13438 C
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0B504)//;o3  4.13438 C#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0BFC8)//;o3  4.13438 D
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0CB2F)//;o3  4.13438 D#
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0D744)//;o3  4.13438 E
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0E412)//;o3  4.13438 F
+            ,new Tuple<byte,ushort>( 0*32+0 ,0x0F1A1)//;o3  4.13438 F#
+            ,new Tuple<byte,ushort>( 0*32+1 ,0x00000)//;o3  4.13438 G
+            ,new Tuple<byte,ushort>( 1*32+0 ,0x0CB6B)//;o3  5.51250 G#
+            ,new Tuple<byte,ushort>( 1*32+0 ,0x0D783)//;o3  5.51250 A
+            ,new Tuple<byte,ushort>( 1*32+0 ,0x0E454)//;o3  5.51250 A#
+            ,new Tuple<byte,ushort>( 1*32+0 ,0x0F1E7)//;o3  5.51250 B
+            
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0AADC)//;o4  8.26875 C
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0B504)//;o4  8.26875 C#
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0BFC8)//;o4  8.26875 D
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0CB2F)//;o4  8.26875 D#
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0D744)//;o4  8.26875 E
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0E412)//;o4  8.26875 F
+            ,new Tuple<byte,ushort>( 2*32+0 ,0x0F1A1)//;o4  8.26875 F#
+            ,new Tuple<byte,ushort>( 2*32+1 ,0x00000)//;o4  8.26875 G
+            ,new Tuple<byte,ushort>( 3*32+0 ,0x0CB6B)//;o4 11.02500 G#
+            ,new Tuple<byte,ushort>( 3*32+0 ,0x0D783)//;o4 11.02500 A
+            ,new Tuple<byte,ushort>( 3*32+0 ,0x0E454)//;o4 11.02500 A#
+            ,new Tuple<byte,ushort>( 3*32+0 ,0x0F1E7)//;o4 11.02500 B
+            
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0AADC)//;o5 16.53750 C
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0B504)//;o5 16.53750 C#
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0BFC8)//;o5 16.53750 D
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0CB2F)//;o5 16.53750 D#
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0D744)//;o5 16.53750 E
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0E412)//;o5 16.53750 F
+            ,new Tuple<byte,ushort>( 4*32+0 ,0x0F1A1)//;o5 16.53750 F#
+            ,new Tuple<byte,ushort>( 4*32+1 ,0x00000)//;o5 16.53750 G
+            ,new Tuple<byte,ushort>( 5*32+0 ,0x0CB6B)//;o5 22.05000 G#
+            ,new Tuple<byte,ushort>( 5*32+0 ,0x0D783)//;o5 22.05000 A
+            ,new Tuple<byte,ushort>( 5*32+0 ,0x0E454)//;o5 22.05000 A#
+            ,new Tuple<byte,ushort>( 5*32+0 ,0x0F1E7)//;o5 22.05000 B
+            
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0AADC)//;o6 33.07500 C
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0B504)//;o6 33.07500 C#
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0BFC8)//;o6 33.07500 D
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0CB2F)//;o6 33.07500 D#
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0D744)//;o6 33.07500 E
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0E412)//;o6 33.07500 F
+            ,new Tuple<byte,ushort>( 6*32+0 ,0x0F1A1)//;o6 33.07500 F#
+            ,new Tuple<byte,ushort>( 6*32+1 ,0x00000)//;o6 33.07500 G
+            ,new Tuple<byte,ushort>( 7*32+0 ,0x0CB6B)//;o6 44.10000 G#
+            ,new Tuple<byte,ushort>( 7*32+0 ,0x0D783)//;o6 44.10000 A
+            ,new Tuple<byte,ushort>( 7*32+0 ,0x0E454)//;o6 44.10000 A#
+            ,new Tuple<byte,ushort>( 7*32+0 ,0x0F1E7)//;o6 44.10000 B
+            
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x0004A)//;o7 44.10000 C
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x00F87)//;o7 44.10000 C#
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x01FAC)//;o7 44.10000 D
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x030C7)//;o7 44.10000 D#
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x042E7)//;o7 44.10000 E
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x0561C)//;o7 44.10000 F
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x06A72)//;o7 44.10000 F#
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x08000)//;o7 44.10000 G
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x096D6)//;o7 44.10000 G#
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x0AF06)//;o7 44.10000 A
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x0C8A8)//;o7 44.10000 A#
+            ,new Tuple<byte,ushort>( 7*32+1 ,0x0E3CF)//;o7 44.10000 B
+            
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x00094)//;o8 44.10000 C
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x01F0E)//;o8 44.10000 C#
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x03F59)//;o8 44.10000 D
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x0618F)//;o8 44.10000 D#
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x085CE)//;o8 44.10000 E
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x0AC38)//;o8 44.10000 F
+            ,new Tuple<byte,ushort>( 7*32+2 ,0x0D4E5)//;o8 44.10000 F#
+            ,new Tuple<byte,ushort>( 7*32+3 ,0x00000)//;o8 44.10000 G
+            ,new Tuple<byte,ushort>( 7*32+3 ,0x02DAC)//;o8 44.10000 G#
+            ,new Tuple<byte,ushort>( 7*32+3 ,0x05E0D)//;o8 44.10000 A
+            ,new Tuple<byte,ushort>( 7*32+3 ,0x09150)//;o8 44.10000 A#
+            ,new Tuple<byte,ushort>( 7*32+3 ,0x0C79E)//;o8 44.10000 B
+        };
+
 
 
 
@@ -1130,6 +1241,7 @@ namespace PMDDotNET.Driver
             va = dop.isVA ? 1 : 0;
             usePPSDRV = dop.usePPS;
             ppz = dop.usePPZ ? 1 : 0;
+            useP86DRV = !dop.isNRM && !dop.isSPB;
 
             fmvd_init = (va + board2 != 0) ? 0 : 16;
 

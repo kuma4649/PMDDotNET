@@ -16,10 +16,16 @@ namespace PMDDotNET.Driver
         private Pc98 pc98 = null;
         private Func<ChipDatum, int> ppz8em = null;
         private Func<ChipDatum, int> ppsdrv = null;
+        private Func<ChipDatum, int> p86em = null;
         private Func<string, Stream> appendFileReaderCallback = null;
         public byte[][] ppzPcmData = new byte[2][];
+        public byte[][] p86PcmData = new byte[2][];
 
-        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98, Func<ChipDatum,int> ppz8em, Func<ChipDatum, int> ppsdrv, Func<string, Stream> appendFileReaderCallback)
+        public PCMLOAD(PMD pmd, PW pw, x86Register r,Pc98 pc98
+            , Func<ChipDatum,int> ppz8em
+            , Func<ChipDatum, int> ppsdrv
+            , Func<ChipDatum, int> p86em
+            , Func<string, Stream> appendFileReaderCallback)
         {
             this.pmd = pmd;
             this.pw = pw;
@@ -27,6 +33,7 @@ namespace PMDDotNET.Driver
             this.pc98 = pc98;
             this.ppz8em = ppz8em;
             this.ppsdrv = ppsdrv;
+            this.p86em = p86em;
             this.appendFileReaderCallback = appendFileReaderCallback;
         }
 
@@ -416,8 +423,8 @@ namespace PMDDotNET.Driver
             check_p86drv();
             if (!r.carry)
             {
-                //goto p86_load;
-                throw new NotImplementedException();
+                p86_load();
+                return;
             }
             r.ah = 9;
             pmd.int60_main(r.ax);//;board check
@@ -665,6 +672,58 @@ namespace PMDDotNET.Driver
             }
 
             ppc_load_main(o.ToArray());
+        }
+
+
+
+        //670-737
+        //;==============================================================================
+        //;	P86 data 一括load
+        //;		in	cs:[filename_ofs/seg] Filename
+        //;==============================================================================
+        private void p86_load()
+        {
+            //;-----------------------------------------------------------------------------
+            //;	P86drvのcheck
+            //;-----------------------------------------------------------------------------
+            if (false)
+            {
+                //常駐チェックと
+                //バージョンチェック
+            }
+
+            filename_set();
+
+            //;-----------------------------------------------------------------------------
+            //;	P86Data,Size確認
+            //;-----------------------------------------------------------------------------
+            string fn = pw.filename_ofs;//指定
+            byte[] pcmData = GetPCMDataFromFile(fn);
+            if (pcmData == null || pcmData.Length < 1)
+            {
+                fn = Path.ChangeExtension(pw.filename_ofs, ".P86");//;拡張子 "P86"に変更
+                pcmData = GetPCMDataFromFile(fn);
+                if (pcmData == null || pcmData.Length < 1)
+                {
+                    fn = Path.ChangeExtension(pw.filename_ofs, ".PPC");//;拡張子 "PPC"に変更
+                    pcmData = GetPCMDataFromFile(fn);
+                    if (pcmData == null || pcmData.Length < 1)
+                    {
+                        goto p86load_error;
+                    }
+                }
+            }
+
+            //p86load_complete:
+            r.ax = 0;//; 正常終了
+            p86PcmData[0] = pcmData;//bank 0固定
+            ChipDatum cd = new ChipDatum(0x00, 0, 0, 0, pcmData);//LoadPCM
+            p86em(cd);
+
+            return;
+
+        p86load_error:;
+            allload_exit2();//;File not found
         }
 
 
