@@ -68,7 +68,7 @@ namespace PMDDotNET.Player
         private static bool isGimicOPNA = false;
         private static MDSound.PPZ8 ppz8em = null;
         private static MDSound.PPSDRV ppsdrv = null;
-        private static P86 p86em = null;
+        private static MDSound.P86 p86em = null;
         private static string[] envPmd = null;
         private static string[] envPmdOpt = null;
         private static string srcFile = null;
@@ -202,7 +202,7 @@ namespace PMDDotNET.Player
                     Option = device == 0 ? null : (new object[] { (Action<int, int>)PPSDRVpsg })
                 };
 
-                p86em = new P86();
+                p86em = new MDSound.P86();
                 MDSound.MDSound.Chip chip86 = new MDSound.MDSound.Chip
                 {
                     type = MDSound.MDSound.enmInstrumentType.mpcmX68k,//TBD
