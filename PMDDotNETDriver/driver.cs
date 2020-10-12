@@ -61,6 +61,11 @@ namespace PMDDotNET.Driver
             return pmd.pw.status2 != 0xff ? 1 : 0;
         }
 
+        public int GetNowLoopCounter()
+        {
+            return pmd.pw.nowLoopCounter;
+        }
+
         /// <summary>
         /// ドライバ固有のタグを取得
         /// </summary>
@@ -544,11 +549,11 @@ namespace PMDDotNET.Driver
             }
         }
 
-        public int GetNowLoopCounter()
-        {
-            //throw new NotImplementedException();
-            return 0;
-        }
+        //public int GetNowLoopCounter()
+        //{
+        //    //throw new NotImplementedException();
+        //    return 0;
+        //}
 
 
         private static Func<string, Stream> CreateAppendFileReaderCallback(string dir)

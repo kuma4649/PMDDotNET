@@ -341,6 +341,12 @@ namespace PMDDotNET.Player
                         }
                         break;
                     }
+
+                    if (loop != 0 && drv.GetNowLoopCounter() > loop)
+                    {
+                        System.Threading.Thread.Sleep((int)(latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
+                        break;
+                    }
                 }
 
                 drv.MusicSTOP();

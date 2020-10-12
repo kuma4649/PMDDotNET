@@ -953,126 +953,179 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private void mmain()
         {
+            int w = 0;//kuma: added
+
             pw.loop_work = 3;
+            pw.nowLoopCounter = int.MaxValue;
 
             if (pw.x68_flg != 0) goto mmain_fm;
 
 
             r.di = (ushort)pw.part7;//offset part7
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 1;
             psgmain();//; SSG1
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part8;//offset part8
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 2;
             psgmain();//; SSG2
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part9;//offset part9
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 3;
             psgmain();//; SSG3
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
 
-        mmain_fm:;
+            mmain_fm:;
             if (pw.board2 != 0)
             {
                 sel46();
 
                 r.di = (ushort)pw.part4;//offset part4
+                w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                 pw.partb = 1;
                 fmmain();//; FM4 OPNA
+                if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                 r.di = (ushort)pw.part5;//offset part5
+                w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                 pw.partb = 2;
                 fmmain();//; FM5 OPNA
+                if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                 r.di = (ushort)pw.part6;//offset part6
+                w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                 pw.partb = 3;
                 fmmain();//; FM6 OPNA
+                if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                 sel44();
             }
 
 
             r.di = (ushort)pw.part1;//offset part1
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 1;
             fmmain();//; FM1
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part2;//offset part2
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 2;
             fmmain();//; FM2
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part3;//offset part3
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             pw.partb = 3;
             fmmain();//; FM3
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
 
             r.di = (ushort)pw.part3b;//offset part3b
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             fmmain();//; FM3 拡張１
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part3c;//offset part3c
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             fmmain();//; FM3 拡張２
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
             r.di = (ushort)pw.part3d;//offset part3d
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             fmmain();//; FM3 拡張３
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
 
             if (pw.x68_flg != 0) goto mmain_exit;
 
 
             r.di = (ushort)pw.part11;//offset part11
+            w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
             rhythmmain();//; RHYTHM
+            if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
 
             if (pw.board2 != 0)
             {
                 r.di = (ushort)pw.part10;//offset part10
+                w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                 if (pw.useP86DRV)
                 {
                     pcmdrv86.pcmmain();//; ADPCM/PCM(IN "pcmdrv.asm"/"pcmdrv86.asm")
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
                 }
                 else
                 {
                     pcmdrv.pcmmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
                 }
 
                 if (pw.ppz != 0)
                 {
                     r.di = (ushort)pw.part10a;//offset part10a
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 0;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10b;//offset part10b
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 1;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10c;//offset part10c
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 2;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10d;//offset part10d
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 3;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10e;//offset part10e
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 4;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10f;//offset part10f
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 5;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10g;//offset part10g
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 6;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
                     r.di = (ushort)pw.part10h;//offset part10h
+                    w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
                     pw.partb = 7;
                     ppzdrv.ppzmain();
+                    if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
                 }
 
             }
 
 
         mmain_exit:;
+
+
+            Console.WriteLine("loop counter:{0}", pw.nowLoopCounter);
+
+
 
             if (pw.loop_work != 0) goto mmain_loop;
             return;
@@ -1232,6 +1285,7 @@ namespace PMDDotNET.Driver
             //; "L"があった時
             r.si = r.bx;
             pw.partWk[r.di].loopcheck = 1;
+            pw.partWk[r.di].loopCounter++;
             return mp1;
 
         mp2:;//; F-NUMBER SET
@@ -1511,6 +1565,7 @@ namespace PMDDotNET.Driver
                 //    ; "L"があった時
                 r.si = r.bx;
                 pw.partWk[r.di].loopcheck = 1;
+                pw.partWk[r.di].loopCounter++;
             } while (true);
         }
 
@@ -1632,6 +1687,7 @@ namespace PMDDotNET.Driver
             //; "L"があった時
             r.si = r.bx;
             pw.partWk[r.di].loopcheck = 1;
+            pw.partWk[r.di].loopCounter++;
             return mp1p;
         }
 
@@ -1808,6 +1864,7 @@ namespace PMDDotNET.Driver
                 //    ; "L"があった時
                 r.si = r.bx;
                 pw.partWk[r.di].loopcheck = 1;
+                pw.partWk[r.di].loopCounter++;
             } while (true);
 
         psgmnp_4:;
@@ -1988,6 +2045,7 @@ namespace PMDDotNET.Driver
             //    ; "L"があった時
             r.si = r.bx;
             pw.partWk[r.di].loopcheck = 1;
+            pw.partWk[r.di].loopCounter++;
             goto reom;
 
         rf00:;

@@ -420,6 +420,8 @@ namespace PMDDotNET.Driver
             public byte shift_def;// b? ; 1 マスター転調値
             public byte qdat3;// b? ; 1 q Random
 
+            public int loopCounter;
+
             public void Clear()
             {
                 address = 0;// w?	; 2 ｴﾝｿｳﾁｭｳ ﾉ ｱﾄﾞﾚｽ
@@ -509,6 +511,8 @@ namespace PMDDotNET.Driver
                 onkai_def = 0;// b 1 演奏中の音階データ(転調処理前 / ?fh:rest)
                 shift_def = 0;// b? ; 1 マスター転調値
                 qdat3 = 0;// b? ; 1 q Random
+
+                loopCounter = 0;
             }
         }
 

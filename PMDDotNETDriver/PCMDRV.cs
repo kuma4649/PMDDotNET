@@ -113,6 +113,7 @@ namespace PMDDotNET.Driver
             //; 'L' ｶﾞ ｱｯﾀﾄｷ
             r.si = r.bx;
             pw.partWk[r.di].loopcheck = 1;
+            pw.partWk[r.di].loopCounter++;
             return mp1m;
 
         mp2m:;//; F - NUMBER SET
@@ -265,6 +266,7 @@ namespace PMDDotNET.Driver
                 //; "L"があった時
                 r.si = r.bx;
                 pw.partWk[r.di].loopcheck = 1;
+                pw.partWk[r.di].loopCounter++;
             } while (true);
         }
 
