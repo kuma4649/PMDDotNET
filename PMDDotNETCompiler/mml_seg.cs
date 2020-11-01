@@ -355,10 +355,11 @@ namespace PMDDotNET.Compiler
 		public int includeFileHistoryPos;
 		public string currentMMLFile;
 		public Stack<string> includeFileHistoryStack = new Stack<string>();
-		//public Stack<int> includeFileLineStack = new Stack<int>();
 
-		//mml_seg ends
+        //public Stack<int> includeFileLineStack = new Stack<int>();
+
+        //mml_seg ends
 
 
-	}
+    }
 }

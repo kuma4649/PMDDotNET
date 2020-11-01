@@ -86,15 +86,19 @@ namespace PMDDotNET.Driver
 
             lock (pw.SystemInterrupt)
             {
-                pw.timer.timer();
-                pw.timeCounter++;
-                if ((pw.timer.StatReg & 3) != 0)
+                do
                 {
-                    lock (r.lockobj)
+                    pw.timer.timer();
+                    pw.timeCounter++;
+                    if ((pw.timer.StatReg & 3) != 0)
                     {
-                        FM_Timer_main();
+                        lock (r.lockobj)
+                        {
+                            FM_Timer_main();
+                        }
                     }
-                }
+                } while (pw.jumpIndex != -1 && pw.nowLoopCounter<1);
+
                 //work.SystemInterrupt = false;
             }
         }
@@ -1123,7 +1127,7 @@ namespace PMDDotNET.Driver
         mmain_exit:;
 
 
-            Console.WriteLine("loop counter:{0}", pw.nowLoopCounter);
+            //Console.WriteLine("loop counter:{0}", pw.nowLoopCounter);
 
 
 
@@ -1255,6 +1259,8 @@ namespace PMDDotNET.Driver
             do
             {
                 pw.cmd = pw.md[r.si];
+                if (r.si == pw.jumpIndex) 
+                    pw.jumpIndex = -1;//KUMA:Added
 
                 r.al = (byte)pw.md[r.si++].dat;
                 if (r.al < 0x80) 
@@ -1610,6 +1616,8 @@ namespace PMDDotNET.Driver
             r.si = (ushort)pw.partWk[pw.part_data_table[r.di]].address; //; si = PART DATA ADDRESS
             if (r.si == 0) return;
 
+            if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
+
             Func<object> ret = null;
             if (pw.partWk[r.di].partmask != 0)
                 ret = psgmain_nonplay;
@@ -1656,6 +1664,10 @@ namespace PMDDotNET.Driver
         private Func<object> mp1p()//; DATA READ
         {
             pw.cmd = pw.md[r.si];
+
+            if (r.si == pw.jumpIndex)
+                pw.jumpIndex = -1;//KUMA:Added
+
             r.al = (byte)pw.md[r.si++].dat;
             if (r.al < 0x80) return mp2p;
             if (r.al == 0x80) return mp15p;
@@ -1927,6 +1939,8 @@ namespace PMDDotNET.Driver
             r.si = (ushort)pw.partWk[pw.part_data_table[r.di]].address; //; si = PART DATA ADDRESS
             if (r.si == 0) return;
 
+            if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
+
             //; 音長 -1
             pw.partWk[r.di].leng--;
             if (pw.partWk[r.di].leng != 0)
@@ -1965,6 +1979,10 @@ namespace PMDDotNET.Driver
         private void rlnset()
         {
             r.al = (byte)pw.rd[r.bx].dat;// mov al,[bx]
+
+            if (r.bx == pw.jumpIndex)
+                pw.jumpIndex = -1;//KUMA:Added
+
             r.bx++;
 
             pw.rhyadr = r.bx;
@@ -1989,7 +2007,13 @@ namespace PMDDotNET.Driver
         reom:;
             do
             {
-                r.al = (byte)pw.md[r.si++].dat;
+                r.al = (byte)pw.md[r.si].dat;
+
+                if (r.si == pw.jumpIndex)
+                    pw.jumpIndex = -1;//KUMA:Added
+
+                r.si++;
+
                 if (r.al == 0x80) goto rfin;
                 if (r.al < 0x80) break;
 

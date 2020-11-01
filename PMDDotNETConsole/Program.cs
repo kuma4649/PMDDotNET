@@ -97,8 +97,11 @@ namespace PMDDotNET.Console
                     ffFileBuf = File.ReadAllBytes(ffFile);
                     compiler.SetFfFileBuf(ffFileBuf);
                 }
+
+#if DEBUG
                 //compiler.SetCompileSwitch("IDE");
-                //compiler.SetCompileSwitch("SkipPoint=R19:C30");
+                //compiler.SetCompileSwitch("SkipPoint=R60:C13");
+#endif
 
                 if (!isXml)
                 {

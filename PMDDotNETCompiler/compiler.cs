@@ -28,7 +28,7 @@ namespace PMDDotNET.Compiler
         public voice_seg voice_seg = null;
         public byte[] outFFFileBuf { get; private set; } = null;
         public string outFFFileName { get; private set; } = null;
-
+        public int skipIndex = -1;//スキップ位置
 
         //内部
         private string srcBuf = null;
@@ -47,12 +47,12 @@ namespace PMDDotNET.Compiler
 
         public void Init()
         {
+            this.isIDE = false;
+            this.skipPoint = Point.Empty;
         }
 
         public void SetCompileSwitch(params object[] param)
         {
-            this.isIDE = false;
-            this.skipPoint = Point.Empty;
 
             if (param == null) return;
 
@@ -138,11 +138,18 @@ namespace PMDDotNET.Compiler
                 work.isIDE = isIDE;
                 mc mc = new mc(this, mcArgs, srcBuf, ffBuf, work, env);
 
+                mc.skipPoint = this.skipPoint;
                 MmlDatum[] ret = mc.compile_start();
                 memo_writeAddress = mc.memo_writeAddress;
                 vdat_setAddress = mc.vdat_setAddress;
                 mml_seg = mc.mml_seg;
                 voice_seg = mc.voice_seg;
+                work.compilerInfo.jumpClock = -1;
+                if (mc.skipSW == 3)
+                {
+                    skipIndex = mc.skipIndex + 1;//ひとつずらす
+                    work.compilerInfo.jumpClock = skipIndex;
+                }
 
                 outFFFileBuf = null; if (mc.outVoiceBuf != null)
                 {

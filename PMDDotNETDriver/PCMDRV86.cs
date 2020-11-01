@@ -94,7 +94,12 @@ namespace PMDDotNET.Driver
         {
             do
             {
-                r.al = (byte)pw.md[r.si++].dat;
+                r.al = (byte)pw.md[r.si].dat;
+
+                if (r.si == pw.jumpIndex)
+                    pw.jumpIndex = -1;//KUMA:Added
+
+                r.si++;
                 if (r.al < 0x80) goto mp2m;
                 if (r.al == 0x80) goto mp15m;
 

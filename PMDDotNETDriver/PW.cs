@@ -1054,6 +1054,9 @@ namespace PMDDotNET.Driver
 	        , 0x0f1a5//;11 b
         };
 
+        //pmdDotNET 独自
+        public int jumpIndex = -1;
+
 
 
         public PW()
@@ -1225,6 +1228,9 @@ namespace PMDDotNET.Driver
         public void SetOption(PMDDotNETOption dop, string[] op)
         {
             pmdOption = op;
+
+            jumpIndex = dop.jumpIndex;
+            //Console.WriteLine("{0}", jumpIndex);
 
             if (dop.isAUTO)
             {

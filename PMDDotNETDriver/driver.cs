@@ -299,13 +299,21 @@ namespace PMDDotNET.Driver
                 envPmd = (string[])pdnos[8],
                 envPmdOpt = (string[])pdnos[9],
                 srcFile = (string)pdnos[10],
-                PPCHeader = (string)pdnos[11]
+                PPCHeader = (string)pdnos[11],
+                jumpIndex = -1
             };
 
             Func<string, Stream> appendFileReaderCallback = 
                 (pdnos.Length < 13 || pdnos[12] == null) 
                 ? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)) 
                 : (Func<string, Stream>)pdnos[12];
+
+            if (pdnos.Length == 14)
+            {
+                pdno.jumpIndex = (int)pdnos[13];
+            }
+
+
             string[] po = (string[])option[1];
             Func<ChipDatum, int> ppz8Write = (Func<ChipDatum, int>)option[2];
             Func<ChipDatum, int> ppsdrvWrite = (Func<ChipDatum, int>)option[3];

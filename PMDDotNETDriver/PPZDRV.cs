@@ -53,6 +53,10 @@ namespace PMDDotNET.Driver
             if (r.si == 0)
                 return;// goto pcmmain_ret;
 
+            if (r.si == pw.jumpIndex)
+                pw.jumpIndex = -1;//KUMA:Added
+            //Console.WriteLine("{0}", r.si);
+
             Func<object> ret = null;
             if (pw.partWk[r.di].partmask != 0)
                 ret = ppzmain_nonplay;
@@ -100,6 +104,10 @@ namespace PMDDotNET.Driver
             do
             {
                 pw.cmd = pw.md[r.si];
+
+                if (r.si == pw.jumpIndex)
+                    pw.jumpIndex = -1;//KUMA:Added
+
                 r.al = (byte)pw.md[r.si++].dat;
                 if (r.al < 0x80) goto mp2z;
                 if (r.al == 0x80) goto mp15z;

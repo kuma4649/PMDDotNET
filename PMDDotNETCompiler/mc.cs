@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using musicDriverInterface;
 using PMDDotNET.Common;
@@ -22,8 +23,16 @@ namespace PMDDotNET.Compiler
 
         //DotNET独自パラメータ
         public byte[] outVoiceBuf = null;//音色出力用バッファ(ファイル名はv_filename)
-        public int memo_writeAddress { get; private set; } = -1;
-        public int vdat_setAddress { get; private set; } = -1;
+        public int memo_writeAddress = -1;
+        public int vdat_setAddress = -1;
+        public Point skipPoint = Point.Empty;//スキップ処理:mml上の行と桁を示す
+        public int skipIndex = -1;//スキップ処理:mファイル上の位置を示す
+        public int skipSW = 0;//スキップ処理:進捗を示す 
+        //0 : mml上のスキップ位置の行に達するのを待っている状態
+        //1 : mml上のスキップ位置の桁に達するのを待っている状態
+        //2 : 行と桁が達成されたので音程コマンドがやってくるのを待っている状態
+        //3 : 処理完了
+        public int skipPointCol = -1;//スキップ処理:桁の位置をmml上の文字数に置き換えた値
 
 
 
@@ -1113,7 +1122,7 @@ namespace PMDDotNET.Compiler
 #endif
 
             Log.WriteLine(LogLevel.DEBUG, string.Format("Part: {0} compile start" , (char)('A' - 1 + mml_seg.part) ));
-            
+
             //mml_seg.includeFileHistoryPos = 0;
             //mml_seg.currentMMLFile = mml_seg.includeFileHistory[0];
             //mml_seg.includeFileHistoryStack.Clear();
@@ -1133,6 +1142,8 @@ namespace PMDDotNET.Compiler
         {
 
         c_next:;
+
+            skipPointCol = work.si + skipPoint.X;
 
             byte ah_b, al_b;
             char al = (work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
@@ -3796,6 +3807,17 @@ namespace PMDDotNET.Compiler
                 , mml_seg.mml_filename
                 , mml_seg.line
                 , mml_seg.mml_buf.Substring(work.si, n - work.si)));
+
+            //KUMA:スキップ処理：指定された行かチェック。もしそうなら、スキップ処理の進捗を一つ上げて桁チェック状態にする。
+            if (!skipPoint.IsEmpty && skipSW == 0 && mml_seg.line == skipPoint.Y + 1)
+            {
+                skipSW = 1;
+            }
+            else if (skipSW == 1)//KUMA:同一行で、同一桁にならずに次の行に移った(つまり行末を示していたり音程コマンドが見つからなかった)場合は強制的に次のコマンドにスキップポイントを含める
+            {
+                skipSW = 2;
+            }
+
 //#endif
 
             char al = (char)0;
@@ -4031,6 +4053,12 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable olc00()
         {
+            //KUMA:スキップしたい桁まで移動していた場合は、スキップ処理の進捗をひとつあげる
+            if (skipSW == 1 && skipPointCol <= work.si - 1)
+            {
+                skipSW = 2;
+            }
+
             work.bx = 0;//offset comtbl
             // olc1:
             do
@@ -4046,6 +4074,10 @@ namespace PMDDotNET.Compiler
                 }
             } while (true);
 
+            //KUMA:コマンドのインデックスと格納アドレスを一時保存
+            int bbx = work.bx;
+            int bdi = work.di;
+
             byte dh = (byte)work.al;
             work.dx = (dh * 0x100) | (byte)work.dx;
             if (comtbl[work.bx].Item2 != null)
@@ -4053,7 +4085,20 @@ namespace PMDDotNET.Compiler
 #if DEBUG
                 Log.WriteLine(LogLevel.TRACE, string.Format("olc00:command:{0}", (char)dh));
 #endif
-                return comtbl[work.bx].Item2();
+                enmPass2JumpTable ret = comtbl[work.bx].Item2();
+
+                //KUMA:スキップ位置を割り出す
+                if (skipSW == 2)
+                {
+                    //音階コマンドのみ対象とする
+                    if (bbx < 9)
+                    {
+                        skipIndex = bdi;
+                        skipSW = 3;
+                    }
+                }
+
+                return ret;
             }
 
             throw new PMDDotNET.Common.PmdErrorExitException(string.Format("まだ移植できてないコマンドを検出しました({0})", (char)dh));
@@ -6120,7 +6165,6 @@ namespace PMDDotNET.Compiler
 
             work.al = (byte)mml_seg.leng;
 
-
             List<object> args = new List<object>();
             args.Add((mml_seg.octave << 4) | mml_seg.ontei);
             args.Add(mml_seg.leng);
@@ -6564,7 +6608,13 @@ namespace PMDDotNET.Compiler
             d = (byte)m_seg.m_buf.Get(work.di - 4).dat;
             if (ah != d) return;
             //prs1:;
+            
+            if (work.di - 1 == skipIndex)
+            {
+                skipIndex -= 3;
+            }
             work.di -= 3;
+
             mml_seg.prsok |= 2;//加工したflag
 
             d = (byte)m_seg.m_buf.Get(work.di).dat;
@@ -6577,9 +6627,21 @@ namespace PMDDotNET.Compiler
 
             m_seg.m_buf.Set(work.di, new MmlDatum(255));
             work.al++;//255 over
+
+            if (work.di - 1 == skipIndex)
+            {
+                skipIndex += 3;
+            }
             work.di += 3;
+
             if (ah != 0xf) goto prs200;
+
+            if (work.di - 1 == skipIndex)
+            {
+                skipIndex --;
+            }
             work.di--;
+
             m_seg.m_buf.Set(work.di - 1, new MmlDatum(ah));//r&r -> rr に変更
         prs200:;
             mml_seg.leng = work.al;
@@ -6594,6 +6656,11 @@ namespace PMDDotNET.Compiler
             if (d != 0xf) return;
 
             prs3:;
+
+            if (work.di - 1 == skipIndex)
+            {
+                skipIndex -= 2;
+            }
             work.di -= 2;
 
             mml_seg.prsok |= 2;//加工したflag
@@ -6607,6 +6674,11 @@ namespace PMDDotNET.Compiler
 
             m_seg.m_buf.Set(work.di, new MmlDatum(255));
             work.al++;//255 over
+
+            if (work.di - 1 == skipIndex)
+            {
+                skipIndex += 2;
+            }
             work.di += 2;
             goto prs200;
         }
@@ -9655,10 +9727,10 @@ namespace PMDDotNET.Compiler
                         mml_seg.line = 1;//1行目から
                         ah++;//Include階層を一つ増やす
                         bx = si + 1;//MMLのファイル名位置をBXに保存
-                        do
-                        {
-                            al = si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[si++] : (char)0x1a;
-                        } while (al != 0x0a);//ファイル名部分を飛ばす
+                        //do
+                        //{
+                            //al = si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[si++] : (char)0x1a;
+                        //} while (al != 0x0a);//ファイル名部分を飛ばす
 
                         mml_seg.includeFileHistoryStack.Push(mml_seg.currentMMLFile);
                         mml_seg.currentMMLFile = mml_seg.includeFileHistory[++mml_seg.includeFileHistoryPos];
@@ -9684,23 +9756,26 @@ namespace PMDDotNET.Compiler
             if (ah == 0)
             {
                 si = dx;// Error位置をSIに戻す
+                mml_seg.mml_filename = mml_seg.currentMMLFile;
                 return;
             }
 
             si = bx;
-            while (mml_seg.mml_buf[si] != 'e' && mml_seg.mml_buf[si] != 'E')//includeをスキップする
-            {
-                si++;
-            }
-            si++;
+            mml_seg.mml_filename = mml_seg.currentMMLFile;
 
-            mml_seg.mml_filename = ""; //offset mml_filename
-            do
-            {
-                mml_seg.mml_filename += mml_seg.mml_buf[si++];//Include中にError --> MML Filenameを変更
-            } while (si != mml_seg.mml_buf.Length && mml_seg.mml_buf[si] >= 0x20);
-            si = dx;// Error位置をSIに戻す
-            mml_seg.mml_filename = mml_seg.mml_filename.Trim();
+            //while (mml_seg.mml_buf[si] != 'e' && mml_seg.mml_buf[si] != 'E')//includeをスキップする
+            //{
+            //    si++;
+            //}
+            //si++;
+
+            //mml_seg.mml_filename = ""; //offset mml_filename
+            //do
+            //{
+            //    mml_seg.mml_filename += mml_seg.mml_buf[si++];//Include中にError --> MML Filenameを変更
+            //} while (si != mml_seg.mml_buf.Length && mml_seg.mml_buf[si] >= 0x20);
+            //si = dx;// Error位置をSIに戻す
+            //mml_seg.mml_filename = mml_seg.mml_filename.Trim();
 
         }
 

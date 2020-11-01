@@ -18,5 +18,6 @@ namespace PMDDotNET.Driver
         public string[] envPmdOpt;
         public string srcFile;
         public string PPCHeader;
+        public int jumpIndex;
     }
 }
