@@ -258,7 +258,7 @@ namespace PMDDotNET.Driver
                 {
                     pw.cmd = pw.md[r.si];
                     r.al = (byte)pw.md[r.si++].dat;
-                    if (r.al == 0x80) break;
+                    if (r.al == 0x80) break;//KUMA: 未チェック(TAG050で　==になおした)
                     if (r.al < 0x80) return pmd.fmmnp_3;
 
                     object o = commandsm();

@@ -1567,7 +1567,7 @@ namespace PMDDotNET.Driver
             {
                 do
                 {
-                    pw.cmd = pw.md[r.si++];
+                    pw.cmd = pw.md[r.si];
                     r.al = (byte)pw.md[r.si++].dat;
                     if (r.al == 0x80) break;
                     if (r.al < 0x80) return fmmnp_3;
@@ -2308,13 +2308,13 @@ namespace PMDDotNET.Driver
 
         public Func<object> command00()
         {
-            if (r.si - 1 < pw.md.Length && pw.md[r.si - 1].type == enmMMLType.IDE)//KUMA: Added
-            {
-                //alレジスタは無関係でtypeがIDEならばIDE向け特殊コマンドとして処理する
-                //(コンパイラ側はIDEからのコンパイル要求時のみこの状態を作り出すように調整が必要。)
-                ExecIDESpecialCommand(pw.md[r.si - 1]);
-                return null;
-            }
+            //if (r.si - 1 < pw.md.Length && pw.md[r.si - 1].type == enmMMLType.IDE)//KUMA: Added
+            //{
+            //    //alレジスタは無関係でtypeがIDEならばIDE向け特殊コマンドとして処理する
+            //    //(コンパイラ側はIDEからのコンパイル要求時のみこの状態を作り出すように調整が必要。)
+            //    ExecIDESpecialCommand(pw.md[r.si - 1]);
+            //    return null;
+            //}
 
             if (r.al < pw.com_end)
             {

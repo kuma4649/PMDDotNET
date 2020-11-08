@@ -253,7 +253,7 @@ namespace PMDDotNET.Driver
             {
                 do
                 {
-                    pw.cmd = pw.md[r.si++];
+                    pw.cmd = pw.md[r.si];
                     r.al = (byte)pw.md[r.si++].dat;
                     if (r.al == 0x80) break;
                     if (r.al < 0x80) return pmd.fmmnp_3;
