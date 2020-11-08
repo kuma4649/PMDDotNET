@@ -176,25 +176,24 @@ namespace PMDDotNET.Compiler
 
             do
             {
-                byte al;
+                MmlDatum al;
                 do
                 {
 #if DEBUG
                     Log.WriteLine(LogLevel.TRACE, string.Format("si:{0}", work.si));
 #endif
-                    al = (byte)(work.si < m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++).dat : 0x80);
+                    al = (work.si < m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++) : new MmlDatum(0x80));
+                    if (al.dat == 0x80) return enmPart_ends.part_ends;
+                    if (al.dat >= 0x80) break;
 
-                    if (al == 0x80) return enmPart_ends.part_ends;
-                    if (al >= 0x80) break;
-
-                    al = (byte)m_seg.m_buf.Get(work.si++).dat;
+                    al = m_seg.m_buf.Get(work.si++);
                     //byte ah = 0;
 
-                    all_length += al;
+                    all_length += al.dat;
                 } while (true);
 
                 //cl_00:;
-                command_exec(al);
+                command_exec((byte)al.dat);
                 if (loop_flag != 0) return enmPart_ends.part_ends;
 
             } while (true);
@@ -259,6 +258,7 @@ namespace PMDDotNET.Compiler
             loop_length = -1;
             loop_flag = 0;
 
+            //Console.WriteLine("bp:{0}", work.bp);
             work.si = (int)(m_seg.m_buf.Get(work.bp).dat + (m_seg.m_buf.Get(work.bp + 1).dat * 0x100));
             work.si += 0;//offset m_buf
             work.bp += 2;
@@ -278,7 +278,10 @@ namespace PMDDotNET.Compiler
         {
             do
             {
-                int al = (byte)m_seg.m_buf.Get(work.si++).dat;
+                MmlDatum ald;
+                byte al;
+                ald = (work.si < m_seg.m_buf.Count) ? m_seg.m_buf.Get(work.si++) : (new MmlDatum(0x80));
+                al = (byte)ald.dat;
                 if (al == 0x80) return enmPart_ends.kpart_end;
                 if (al >= 0x80)
                 {
@@ -293,6 +296,7 @@ namespace PMDDotNET.Compiler
                 int bx = work.bx;
                 work.bx += al;
                 work.si = (int)(m_seg.m_buf.Get(work.bx).dat + (m_seg.m_buf.Get(work.bx + 1).dat * 0x100));
+                //Console.WriteLine("bx:{0} si:{1}", work.bx, work.si);
                 work.si += 0;//offset m_buf
                 rcom_loop();
                 work.bx = bx;
@@ -356,27 +360,27 @@ namespace PMDDotNET.Compiler
         {
             do
             {
-                int al;
+                MmlDatum al;
                 do
                 {
-                    al = (byte)m_seg.m_buf.Get(work.si++).dat;
-                    if (al == 0xff) goto rpart_end;
-                    if (al >= 0xc0) break;
+                    al = (work.si < m_seg.m_buf.Count ? m_seg.m_buf.Get(work.si++) : new MmlDatum(0xff));
+                    if (al.dat == 0xff) goto rpart_end;
+                    if (al.dat >= 0xc0) break;
 
-                    if ((al & 0x80) != 0)
+                    if ((al.dat & 0x80) != 0)
                     {
                         work.si++;
                     }
                     //rl_01:;
-                    al = (byte)m_seg.m_buf.Get(work.si++).dat;
-                    all_length += al;
+                    al = m_seg.m_buf.Get(work.si++);
+                    all_length += al.dat;
 
                 } while (true);
                 //;==============================================================================
                 //; Rpart / 各種特殊コマンド処理
                 //;==============================================================================
                 // rl_00:
-                command_exec((byte)al);
+                command_exec((byte)al.dat);
                 if (loop_flag != 0) goto rpart_end;
             } while (true);
         //;==============================================================================

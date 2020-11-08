@@ -1,4 +1,5 @@
-﻿using System;
+﻿using musicDriverInterface;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -356,10 +357,13 @@ namespace PMDDotNET.Compiler
 		public string currentMMLFile;
 		public Stack<string> includeFileHistoryStack = new Stack<string>();
 
-        //public Stack<int> includeFileLineStack = new Stack<int>();
+		public Stack<LinePos> macroStack { get; set; } = new Stack<LinePos>();
+		public string AliesName = "";
 
-        //mml_seg ends
+		//public Stack<int> includeFileLineStack = new Stack<int>();
+
+		//mml_seg ends
 
 
-    }
+	}
 }

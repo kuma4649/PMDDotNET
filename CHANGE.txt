@@ -1,4 +1,7 @@
 更新履歴
+TAG050 2020/11/08
+  Compiler/Driver:トレースモード、マクロマーク対応
+
 TAG049 2020/11/01
   Compiler/Driver:スキップ再生対応
 

@@ -99,7 +99,7 @@ namespace PMDDotNET.Console
                 }
 
 #if DEBUG
-                //compiler.SetCompileSwitch("IDE");
+                compiler.SetCompileSwitch("IDE");
                 //compiler.SetCompileSwitch("SkipPoint=R60:C13");
 #endif
 

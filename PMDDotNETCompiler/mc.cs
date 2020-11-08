@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Threading;
 using musicDriverInterface;
 using PMDDotNET.Common;
 
@@ -1274,7 +1276,16 @@ namespace PMDDotNET.Compiler
             //;==============================================================================
             //;	Part Endmark をセット
             //;==============================================================================
-            m_seg.m_buf.Set(work.di, new MmlDatum(0x80));
+
+            List<object> args = new List<object>();
+            args.Add(null);
+            args.Add(null);
+            args.Add(m_seg.macroLst.Count > 0 ? m_seg.macroLst.ToArray() : null);
+            m_seg.macroLst.Clear();
+            MmlDatum md = new MmlDatum(0x80);
+            md.args = args;
+
+            m_seg.m_buf.Set(work.di, md);
             work.di++;
             //;==============================================================================
             //;	PART INC. & LOOP
@@ -6168,6 +6179,10 @@ namespace PMDDotNET.Compiler
             List<object> args = new List<object>();
             args.Add((mml_seg.octave << 4) | mml_seg.ontei);
             args.Add(mml_seg.leng);
+            
+            args.Add(m_seg.macroLst.Count > 0 ? m_seg.macroLst.ToArray() : null);
+            m_seg.macroLst.Clear();
+
             LinePos lp = MakeLinePos();
             MmlDatum dmy = m_seg.m_buf.Get(work.di - 1);
             dmy.type = enmMMLType.Note;
@@ -9392,6 +9407,9 @@ namespace PMDDotNET.Compiler
         {
             char ch;
             int ax;
+            
+            int bsi = work.si;//KUMA:Added
+
             //	push es
             //    mov ax, hs_seg
             //    mov es, ax
@@ -9443,6 +9461,44 @@ namespace PMDDotNET.Compiler
             work.bx = work.dx;
 
         hscom_main:;
+
+
+
+            //KUMA:Added
+
+            string macroName = "!";
+            while (bsi < work.si) macroName += mml_seg.mml_buf[bsi++];
+
+            if (work.isIDE)
+            {
+
+                //IDE特殊コマンドを出力
+                LinePos pos = MakeLinePos();
+                List<object> args = new List<object>();
+                MmlDatum cmd = new MmlDatum(enmMMLType.IDE, args, pos, 0xff);
+
+                m_seg.macroLst.Add(cmd);
+
+                //public Stack<Tuple<string, object>> macroStack { get; internal set; }
+                //
+                LinePos nLp = LinePos.Copy(pos);
+                nLp.aliesName = mml_seg.AliesName;
+                nLp.aliesNextName = macroName;
+                nLp.aliesDepth = mml_seg.macroStack.Count + 1;
+                nLp.col--;
+                nLp.row--;
+                mml_seg.macroStack.Push(nLp);
+                mml_seg.AliesName = macroName;
+
+                List<object> tArgs = new List<object>();
+                tArgs.Add(mml_seg.macroStack.ToArray());
+                cmd = new MmlDatum(enmMMLType.TraceUpdateStack, tArgs, pos, 0xff);
+                args.Add(cmd);
+
+            }
+
+
+
             ax = hs_seg.currentBuf[work.bx] + hs_seg.currentBuf[work.bx + 1] * 0x100;
 
             //    assume es:m_seg
@@ -9465,6 +9521,32 @@ namespace PMDDotNET.Compiler
             work.si = mml_seg.hscomSI.Pop();
             int ax = work.si;
             calc_line(ref ax);
+
+
+
+            //KUMA:Added
+
+            if (work.isIDE)
+            {
+
+                //IDE特殊コマンドを出力
+                LinePos pos = MakeLinePos();
+                List<object> args = new List<object>();
+                MmlDatum cmd = new MmlDatum(enmMMLType.IDE, args, pos, 0xff);
+
+                m_seg.macroLst.Add(cmd);
+
+                LinePos nlp = mml_seg.macroStack.Pop();
+                mml_seg.AliesName = nlp.aliesName;
+
+                List<object> tArgs = new List<object>();
+                tArgs.Add(mml_seg.macroStack.ToArray());
+                cmd = new MmlDatum(enmMMLType.TraceUpdateStack, tArgs, pos, 0xff);
+                args.Add(cmd);
+
+            }
+
+
 
             return enmPass2JumpTable.olc03;
         }

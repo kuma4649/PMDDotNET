@@ -126,6 +126,9 @@ namespace PMDDotNET.Driver
 
         //; END OF MUSIC['L' ｶﾞ ｱｯﾀﾄｷﾊ ｿｺﾍ ﾓﾄﾞﾙ]
         mp15z:;
+
+            pmd.FlashMacroList();
+
             r.si--;
             pw.partWk[r.di].address = r.si;//mov[di],si
             pw.partWk[r.di].loopcheck = 3;
@@ -140,6 +143,7 @@ namespace PMDDotNET.Driver
             return mp1z;
 
         mp2z:;//; F - NUMBER SET
+            pmd.FlashMacroList();
             pmd.lfoinitp();
             pmd.oshift();
             fnumsetz();
@@ -271,6 +275,8 @@ namespace PMDDotNET.Driver
                             return pmd.mnp_ret;
                     }
                 } while (true);
+
+                pmd.FlashMacroList();
 
                 //pcmmnp_2:
                 //; END OF MUSIC["L"があった時はそこに戻る]

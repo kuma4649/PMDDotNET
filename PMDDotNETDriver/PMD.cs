@@ -1259,11 +1259,11 @@ namespace PMDDotNET.Driver
             do
             {
                 pw.cmd = pw.md[r.si];
-                if (r.si == pw.jumpIndex) 
+                if (r.si == pw.jumpIndex)
                     pw.jumpIndex = -1;//KUMA:Added
 
                 r.al = (byte)pw.md[r.si++].dat;
-                if (r.al < 0x80) 
+                if (r.al < 0x80)
                     goto mp2;
                 if (r.al == 0x80) goto mp15;
 
@@ -1281,6 +1281,9 @@ namespace PMDDotNET.Driver
 
         //; END OF MUSIC["L"があった時はそこに戻る]
         mp15:;
+
+            FlashMacroList();
+
             r.si--;
             pw.partWk[r.di].address = r.si;//mov[di],si
             pw.partWk[r.di].loopcheck = 3;
@@ -1295,6 +1298,9 @@ namespace PMDDotNET.Driver
             return mp1;
 
         mp2:;//; F-NUMBER SET
+
+            FlashMacroList();
+
             lfoinit();
             oshift();
             fnumset();
@@ -1308,6 +1314,20 @@ namespace PMDDotNET.Driver
             calc_q();
             return porta_return();
         }
+
+        public void FlashMacroList()
+        {
+            if (pw.cmd.args != null && pw.cmd.args.Count > 2)
+            {
+                object obj = pw.cmd.args[2];
+                if (obj != null && obj is MmlDatum[])
+                {
+                    MmlDatum[] mds = (MmlDatum[])obj;
+                    foreach (MmlDatum md in mds) ExecIDESpecialCommand(md);
+                }
+            }
+        }
+
         private Func<object> porta_return()
         { 
             if (pw.partWk[r.di].volpush == 0) goto mp_new;
@@ -1547,6 +1567,7 @@ namespace PMDDotNET.Driver
             {
                 do
                 {
+                    pw.cmd = pw.md[r.si++];
                     r.al = (byte)pw.md[r.si++].dat;
                     if (r.al == 0x80) break;
                     if (r.al < 0x80) return fmmnp_3;
@@ -1559,6 +1580,8 @@ namespace PMDDotNET.Driver
                     }
 
                 } while (true);
+
+                FlashMacroList();
 
                 //fmmnp_2:
                 //	; END OF MUSIC["L"があった時はそこに戻る]
@@ -1577,6 +1600,8 @@ namespace PMDDotNET.Driver
 
         public Func<object> fmmnp_3()
         {
+            FlashMacroList();
+
             pw.partWk[r.di].fnum = 0;//; 休符に設定
             pw.partWk[r.di].onkai = 0xff;//-1
             pw.partWk[r.di].onkai_def = 0xff;//-1
@@ -1688,7 +1713,9 @@ namespace PMDDotNET.Driver
 
         //; END OF MUSIC["L"があった時はそこに戻る]
         private Func<object> mp15p()
-        { 
+        {
+            FlashMacroList();
+
             r.si--;
             pw.partWk[r.di].address = r.si;//mov[di],si
             pw.partWk[r.di].loopcheck = 3;
@@ -1705,6 +1732,8 @@ namespace PMDDotNET.Driver
 
         private Func<object> mp2p()//; TONE SET
         {
+            FlashMacroList();
+
             lfoinitp();
             oshiftp();
             fnumsetp();
@@ -1842,6 +1871,7 @@ namespace PMDDotNET.Driver
             {
                 do
                 {
+                    pw.cmd = pw.md[r.si];
                     r.al = (byte)pw.md[r.si++].dat;
                     if (r.al == 0x80) break;
                     if (r.al < 0x80) goto psgmnp_4;
@@ -1865,6 +1895,9 @@ namespace PMDDotNET.Driver
 
                 //    ; END OF MUSIC["L"があった時はそこに戻る]
                 //psgmnp_2:
+
+                FlashMacroList();
+
                 r.si--;
                 pw.partWk[r.di].address = r.si;
                 pw.partWk[r.di].loopcheck = 3;
@@ -1880,6 +1913,7 @@ namespace PMDDotNET.Driver
             } while (true);
 
         psgmnp_4:;
+            
             ssgdrum_check();
             if (!r.carry) return fmmnp_3;
 
@@ -1957,6 +1991,7 @@ namespace PMDDotNET.Driver
         private void rhyms00()
         {
         rhyms00:;
+            pw.cmd = pw.rd[r.bx];
             r.al = (byte)pw.rd[r.bx].dat;//rdにはmd(正規の演奏データ)或いはrdDmy(ダミーの演奏データ)のどちらかがセットされている
             r.bx++;
 
@@ -1971,6 +2006,8 @@ namespace PMDDotNET.Driver
                 if (r == 1) goto rhyms00;
                 return;
             }
+
+            FlashMacroList();
 
             pw.kshot_dat = 0;//; rest
             rlnset();
@@ -2007,6 +2044,7 @@ namespace PMDDotNET.Driver
         reom:;
             do
             {
+                pw.cmd = pw.md[r.si];
                 r.al = (byte)pw.md[r.si].dat;
 
                 if (r.si == pw.jumpIndex)
@@ -2024,6 +2062,8 @@ namespace PMDDotNET.Driver
                 }
             } while (true);
 
+            FlashMacroList();
+
             //re00:
             pw.partWk[r.di].address = r.si;
             r.ah = 0;
@@ -2039,6 +2079,7 @@ namespace PMDDotNET.Driver
 
             rhyms00:;
             {
+                pw.cmd = pw.rd[r.bx];//	mov al,[bx]
                 r.al = (byte)pw.rd[r.bx].dat;//	mov al,[bx]
                 r.bx++;
 
@@ -2053,6 +2094,8 @@ namespace PMDDotNET.Driver
                     return;
                 }
 
+                FlashMacroList();
+
                 pw.kshot_dat = 0;//; rest
                 rlnset();
                 return;
@@ -2060,6 +2103,9 @@ namespace PMDDotNET.Driver
 
 
         rfin:;
+
+            FlashMacroList();
+
             r.si--;
             pw.partWk[r.di].address = r.si;//mov[di],si
             pw.partWk[r.di].loopcheck = 3;
@@ -2262,6 +2308,14 @@ namespace PMDDotNET.Driver
 
         public Func<object> command00()
         {
+            if (r.si - 1 < pw.md.Length && pw.md[r.si - 1].type == enmMMLType.IDE)//KUMA: Added
+            {
+                //alレジスタは無関係でtypeがIDEならばIDE向け特殊コマンドとして処理する
+                //(コンパイラ側はIDEからのコンパイル要求時のみこの状態を作り出すように調整が必要。)
+                ExecIDESpecialCommand(pw.md[r.si - 1]);
+                return null;
+            }
+
             if (r.al < pw.com_end)
             {
                 return out_of_commands();
@@ -10550,6 +10604,18 @@ namespace PMDDotNET.Driver
                     ppz8em(cd);
                     break;
             }
+        }
+
+        private void ExecIDESpecialCommand(MmlDatum md)
+        {
+            //Console.WriteLine("{0}", md);
+
+            List<object> obj = md.args;
+            MmlDatum mmd = (MmlDatum)obj[0];
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = mmd;
+            WriteDummy(cd);
         }
 
 
