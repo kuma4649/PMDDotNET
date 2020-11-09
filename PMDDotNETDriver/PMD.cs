@@ -2308,6 +2308,14 @@ namespace PMDDotNET.Driver
 
         public Func<object> command00()
         {
+            if (pw.cmd != null && pw.cmd.args != null && pw.cmd.args.Count > 2 && pw.cmd.args[2] is MmlDatum[])
+            {
+                foreach (MmlDatum md in (MmlDatum[])pw.cmd.args[2])
+                {
+                    ExecIDESpecialCommand(md);
+                }
+            }
+
             //if (r.si - 1 < pw.md.Length && pw.md[r.si - 1].type == enmMMLType.IDE)//KUMA: Added
             //{
             //    //alレジスタは無関係でtypeがIDEならばIDE向け特殊コマンドとして処理する

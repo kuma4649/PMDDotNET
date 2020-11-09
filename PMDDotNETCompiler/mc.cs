@@ -6168,6 +6168,8 @@ namespace PMDDotNET.Compiler
 
             mml_seg.prsok &= 0xfd; //加工音長フラグreset
             futen();
+
+            if(!work.isIDE)
             press();
 
             //;==============================================================================
@@ -6176,15 +6178,23 @@ namespace PMDDotNET.Compiler
 
             work.al = (byte)mml_seg.leng;
 
+            LinePos lp = MakeLinePos();
+            MmlDatum dmy = m_seg.m_buf.Get(work.di - 1);
+
             List<object> args = new List<object>();
             args.Add((mml_seg.octave << 4) | mml_seg.ontei);
             args.Add(mml_seg.leng);
-            
-            args.Add(m_seg.macroLst.Count > 0 ? m_seg.macroLst.ToArray() : null);
-            m_seg.macroLst.Clear();
 
-            LinePos lp = MakeLinePos();
-            MmlDatum dmy = m_seg.m_buf.Get(work.di - 1);
+            if (dmy.args != null && dmy.args.Count > 2 && dmy.args[2]!=null)
+            {
+                args.Add(dmy.args[2]);
+            }
+            else
+            {
+                args.Add(m_seg.macroLst.Count > 0 ? m_seg.macroLst.ToArray() : null);
+                m_seg.macroLst.Clear();
+            }
+
             dmy.type = enmMMLType.Note;
             dmy.args = args;
             dmy.linePos = lp;
@@ -6687,7 +6697,8 @@ namespace PMDDotNET.Compiler
             }
             work.al += d;
 
-            m_seg.m_buf.Set(work.di, new MmlDatum(255));
+            MmlDatum md = new MmlDatum(255);
+            m_seg.m_buf.Set(work.di, md);
             work.al++;//255 over
 
             if (work.di - 1 == skipIndex)
@@ -8125,7 +8136,18 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private enmPass2JumpTable edloop()
         {
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xf8));
+            MmlDatum md = new MmlDatum(0xf8);
+            if (m_seg.macroLst.Count > 0)
+            {
+                List<object> args = new List<object>();
+                args.Add(null);
+                args.Add(null);
+                args.Add(m_seg.macroLst.ToArray());
+                m_seg.macroLst.Clear();
+                md.args = args;
+            }
+
+            m_seg.m_buf.Set(work.di++, md);
 
             bool cy;
             int bx;

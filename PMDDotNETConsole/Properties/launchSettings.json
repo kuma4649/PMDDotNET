@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-LOGLEVEL=DEBUG  /V /c D:\\bootcamp\\FM音源\\player\\pmd\\AIR_T06.MML"
+      "commandLineArgs": "-LOGLEVEL=DEBUG  /V /c D:\\bootcamp\\FM音源\\player\\pmd\\fromTAN-Y\\ORANGE04.MML"
     }
   }
 }
