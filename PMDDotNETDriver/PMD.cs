@@ -2013,6 +2013,9 @@ namespace PMDDotNET.Driver
             rlnset();
         }
 
+        /// <summary>
+        /// 音長を読み取り、セット
+        /// </summary>
         private void rlnset()
         {
             r.al = (byte)pw.rd[r.bx].dat;// mov al,[bx]
@@ -2041,6 +2044,7 @@ namespace PMDDotNET.Driver
 
         private void reom()
         {
+        //KUMA: K part の解析
         reom:;
             do
             {
@@ -2048,12 +2052,12 @@ namespace PMDDotNET.Driver
                 r.al = (byte)pw.md[r.si].dat;
 
                 if (r.si == pw.jumpIndex)
-                    pw.jumpIndex = -1;//KUMA:Added
+                    pw.jumpIndex = -1;//KUMA:Added スキップ再生向け
 
                 r.si++;
 
                 if (r.al == 0x80) goto rfin;
-                if (r.al < 0x80) break;
+                if (r.al < 0x80) break; // K part に Rn コマンドが指定されていた場合
 
                 object o = commandsr();
                 while (o != null)
@@ -2062,47 +2066,66 @@ namespace PMDDotNET.Driver
                 }
             } while (true);
 
+            //KUMA: R part に処理を切り替える準備
+
+            //Console.WriteLine("{0}", pw.cmd);
+
             FlashMacroList();
+
+            MmlDatum md = new MmlDatum(enmMMLType.TraceLocate, null, LinePos.Copy(pw.cmd.linePos), 0xff);
+            md = new MmlDatum(enmMMLType.TraceLocate, new List<object>(new object[] { 0, 1, md }), LinePos.Copy(pw.cmd.linePos), 0xff);
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = md;
+            WriteDummy(cd);
 
             //re00:
             pw.partWk[r.di].address = r.si;
             r.ah = 0;
             r.ax += r.ax;
-            r.ax += (ushort)pw.radtbl;
+            r.ax += (ushort)pw.radtbl;//KUMA: R part　のアドレステーブル0x00～最大0x7f分存在しうる
             r.bx = r.ax;
             r.ax = (ushort)(pw.md[r.bx].dat + pw.md[r.bx + 1].dat * 0x100);// mov ax,[bx]
 
             r.ax += (ushort)pw.mmlbuf;
             pw.rhyadr = r.ax;
+
+            //KUMA: R part に処理を切り替え
+
             r.bx = r.ax;
             pw.rd = pw.md;
 
-            rhyms00:;
+        rhyms00:;
+            pw.cmd = pw.rd[r.bx];//	mov al,[bx]
+            r.al = (byte)pw.rd[r.bx].dat;//	mov al,[bx]
+            r.bx++;
+
+            if (r.al == 0xff) //KUMA: R part 終端の場合は K part 解析に戻る
             {
-                pw.cmd = pw.rd[r.bx];//	mov al,[bx]
-                r.al = (byte)pw.rd[r.bx].dat;//	mov al,[bx]
-                r.bx++;
+                goto reom;
+            }
 
-                if (r.al == 0xff)
-                {
-                    goto reom;
-                }
-                if ((r.al & 0x80) != 0)
-                {
-                    int r = rhythmon();
-                    if (r == 1) goto rhyms00;
-                    return;
-                }
-
-                FlashMacroList();
-
-                pw.kshot_dat = 0;//; rest
-                rlnset();
+            //0x00 - 0x7f : 休符
+            //0x80 - 0xbf : 音符(発音)
+            //0xc0 - 0xff : コマンド
+            if ((r.al & 0x80) != 0) //KUMA: 最上位bitが1かどうかチェック(mmlコマンド/発音かどうかチェック)
+            {
+                int r = rhythmon();
+                if (r == 1) goto rhyms00;//KUMA: 1の(連続でコマンドを実行したい)場合はループ
                 return;
             }
 
+            //KUMA: alが0～0x7fの場合は休符処理
+
+            FlashMacroList();
+
+            pw.kshot_dat = 0;//; rest
+            rlnset();
+            return;
+
 
         rfin:;
+
+            //KUMA: K part終端処理
 
             FlashMacroList();
 
@@ -2135,18 +2158,23 @@ namespace PMDDotNET.Driver
         //;==============================================================================
         private int rhythmon()
         {
-            if ((r.al & 0b0100_0000) == 0)
+            if ((r.al & 0b0100_0000) == 0)//KUMA: bit6が0の場合はリズム音の発音処理へ
                 goto rhy_shot;
+
+            //KUMA: 各コマンド処理はr.siをインデックスとして使うのでbxとsiを入れ替える
+
             ushort a = r.si;
             r.si = r.bx;
             r.bx = a;
             r.stack.Push(r.bx);
 
-            object o = commandsr();
+            object o = commandsr(); //KUMA: alが示す、コマンド処理をもらってくる
             while (o != null)
             {
-                o = ((Func<object>)o)();
+                o = ((Func<object>)o)();//KUMA: コマンド実施
             }
+
+            //KUMA: 元に戻す
 
             r.bx = r.stack.Pop();
             a = r.si;
@@ -2164,7 +2192,8 @@ namespace PMDDotNET.Driver
             return 0;
         r_nonmask:;
             r.ah = r.al;
-            r.al = (byte)pw.rd[r.bx].dat;
+            pw.cmd = pw.rd[r.bx];
+            r.al = (byte)pw.rd[r.bx].dat;//本来の音符コマンド
             r.bx++;
             r.ax &= 0x3fff;
             pw.kshot_dat = r.ax;
@@ -10614,7 +10643,7 @@ namespace PMDDotNET.Driver
             }
         }
 
-        private void ExecIDESpecialCommand(MmlDatum md)
+        public void ExecIDESpecialCommand(MmlDatum md)
         {
             //Console.WriteLine("{0}", md);
 

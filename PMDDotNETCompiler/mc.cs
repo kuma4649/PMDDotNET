@@ -5891,8 +5891,8 @@ namespace PMDDotNET.Compiler
 
             cx = (byte)cx * 0x100 + ((cx & 0xff00) >> 8);
 
-            m_seg.m_buf.Set(work.di + 0, new MmlDatum((byte)cx));
-            m_seg.m_buf.Set(work.di + 1, new MmlDatum((byte)(cx >> 8)));
+            m_seg.m_buf.Set(work.di + 0, new MmlDatum((byte)cx)); //KUMA: @n
+            m_seg.m_buf.Set(work.di + 1, new MmlDatum((byte)(cx >> 8))); //KUMA: c
             work.di += 2;
 
             mml_seg.length_check1 = 1;//音長データがあったよ
@@ -7463,7 +7463,8 @@ namespace PMDDotNET.Compiler
 
         private enmPass2JumpTable vset()
         {
-            work.dx = (work.dx & 0xff00) + (byte)work.bx;
+            //work.dx = (work.dx & 0xff00) + (byte)work.bx;
+            work.dx = (byte)work.bx;
             return vset2();
         }
 

@@ -101,7 +101,19 @@ namespace PMDDotNET.Driver
             r.bl ^= 0b0000_1111;//volume
             r.ah = 1;//command
             r.al &= 0x7f;//num?
-            ChipDatum cd = new ChipDatum(0x01, (r.al << 8) | r.bh, r.bl);
+
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            pmd.WriteOPNARegister(cd);
+            if (pw.cmd != null && pw.cmd.args != null && pw.cmd.args.Count > 2 && pw.cmd.args[2] is MmlDatum[])
+            {
+                foreach (MmlDatum md in (MmlDatum[])pw.cmd.args[2])
+                {
+                    pmd.ExecIDESpecialCommand(md);
+                }
+            }
+
+            cd = new ChipDatum(0x01, (r.al << 8) | r.bh, r.bl);
             ppsdrv(cd);//.Play(r.al, r.bh, r.bl);//; ppsdrv keyon
         ppsdrm_ret:;
             return;
@@ -125,6 +137,20 @@ namespace PMDDotNET.Driver
             cd = new ChipDatum(0x02, 0, 0);
             ppsdrv(cd);//.Stop();//; ppsdrv 強制keyoff
         eok_nonppsdrv:;
+
+
+            cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = pw.cmd;
+            pmd.WriteOPNARegister(cd);
+            if (pw.cmd != null && pw.cmd.args != null && pw.cmd.args.Count > 2 && pw.cmd.args[2] is MmlDatum[])
+            {
+                foreach (MmlDatum md in (MmlDatum[])pw.cmd.args[2])
+                {
+                    pmd.ExecIDESpecialCommand(md);
+                }
+            }
+
+
             r.si = 0;// pw.efftbl[r.bx].Item2;
             r.si += 0;//offset efftbl
             pw.crtEfcDat = pw.efftbl[r.bx].Item2;
