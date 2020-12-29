@@ -59,6 +59,7 @@ namespace PMDDotNET.Driver
             pw.fm2_port2 = 0x18e;//データ(拡張)
 
             r = new x86Register();
+            r.pw = pw;
             pc98 = new Pc98(WriteOPNARegister, pw);
             pcmload = new PCMLOAD(this, pw, r, pc98, ppz8em, ppsdrv, p86em, appendFileReaderCallback);
 
@@ -964,6 +965,8 @@ namespace PMDDotNET.Driver
 
             if (pw.x68_flg != 0) goto mmain_fm;
 
+            pw.checkJumpIndexSI = true;
+            pw.checkJumpIndexBX = false;
 
             r.di = (ushort)pw.part7;//offset part7
             w = 0; if (pw.partWk[pw.part_data_table[r.di]].address == 0) w = 1;//kuma: added
@@ -1054,6 +1057,9 @@ namespace PMDDotNET.Driver
             rhythmmain();//; RHYTHM
             if (w == 0 && !(pw.partWk[r.di].loopcheck == 3 && pw.partWk[r.di].partloop == 0)) pw.nowLoopCounter = Math.Min(pw.partWk[r.di].loopCounter, pw.nowLoopCounter);//kuma: added
 
+
+            pw.checkJumpIndexSI = true;
+            pw.checkJumpIndexBX = false;
 
             if (pw.board2 != 0)
             {
@@ -1259,8 +1265,8 @@ namespace PMDDotNET.Driver
             do
             {
                 pw.cmd = pw.md[r.si];
-                if (r.si == pw.jumpIndex)
-                    pw.jumpIndex = -1;//KUMA:Added
+                //if (r.si == pw.jumpIndex)
+                    //pw.jumpIndex = -1;//KUMA:Added
 
                 r.al = (byte)pw.md[r.si++].dat;
                 if (r.al < 0x80)
@@ -1641,7 +1647,7 @@ namespace PMDDotNET.Driver
             r.si = (ushort)pw.partWk[pw.part_data_table[r.di]].address; //; si = PART DATA ADDRESS
             if (r.si == 0) return;
 
-            if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
+            //if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
 
             Func<object> ret = null;
             if (pw.partWk[r.di].partmask != 0)
@@ -1690,8 +1696,8 @@ namespace PMDDotNET.Driver
         {
             pw.cmd = pw.md[r.si];
 
-            if (r.si == pw.jumpIndex)
-                pw.jumpIndex = -1;//KUMA:Added
+            //if (r.si == pw.jumpIndex)
+                //pw.jumpIndex = -1;//KUMA:Added
 
             r.al = (byte)pw.md[r.si++].dat;
             if (r.al < 0x80) return mp2p;
@@ -1970,10 +1976,12 @@ namespace PMDDotNET.Driver
 
         private void rhythmmain()
         {
+            pw.checkJumpIndexSI = true;
+            pw.checkJumpIndexBX = false;
             r.si = (ushort)pw.partWk[pw.part_data_table[r.di]].address; //; si = PART DATA ADDRESS
             if (r.si == 0) return;
 
-            if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
+            //if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
 
             //; 音長 -1
             pw.partWk[r.di].leng--;
@@ -1985,6 +1993,8 @@ namespace PMDDotNET.Driver
 
             //rhyms0:	
             r.bx = (ushort)pw.rhyadr;
+            pw.checkJumpIndexSI = false;
+            pw.checkJumpIndexBX = true;
             rhyms00();
         }
 
@@ -2046,6 +2056,8 @@ namespace PMDDotNET.Driver
         {
         //KUMA: K part の解析
         reom:;
+            pw.checkJumpIndexSI = true;
+            pw.checkJumpIndexBX = false;
             do
             {
                 pw.cmd = pw.md[r.si];
@@ -2080,6 +2092,7 @@ namespace PMDDotNET.Driver
 
             //re00:
             pw.partWk[r.di].address = r.si;
+            pw.checkJumpIndexSI = false;
             r.ah = 0;
             r.ax += r.ax;
             r.ax += (ushort)pw.radtbl;//KUMA: R part　のアドレステーブル0x00～最大0x7f分存在しうる
@@ -2094,6 +2107,8 @@ namespace PMDDotNET.Driver
             r.bx = r.ax;
             pw.rd = pw.md;
 
+            pw.checkJumpIndexBX = true;
+
         rhyms00:;
             pw.cmd = pw.rd[r.bx];//	mov al,[bx]
             r.al = (byte)pw.rd[r.bx].dat;//	mov al,[bx]
@@ -2101,6 +2116,7 @@ namespace PMDDotNET.Driver
 
             if (r.al == 0xff) //KUMA: R part 終端の場合は K part 解析に戻る
             {
+                pw.checkJumpIndexBX = false;
                 goto reom;
             }
 
@@ -2111,6 +2127,7 @@ namespace PMDDotNET.Driver
             {
                 int r = rhythmon();
                 if (r == 1) goto rhyms00;//KUMA: 1の(連続でコマンドを実行したい)場合はループ
+                pw.checkJumpIndexBX = false;
                 return;
             }
 
@@ -2120,6 +2137,7 @@ namespace PMDDotNET.Driver
 
             pw.kshot_dat = 0;//; rest
             rlnset();
+            pw.checkJumpIndexBX = false;
             return;
 
 
@@ -2163,6 +2181,8 @@ namespace PMDDotNET.Driver
 
             //KUMA: 各コマンド処理はr.siをインデックスとして使うのでbxとsiを入れ替える
 
+            pw.checkJumpIndexSI = true;
+            pw.checkJumpIndexBX = false;
             ushort a = r.si;
             r.si = r.bx;
             r.bx = a;
@@ -2176,6 +2196,8 @@ namespace PMDDotNET.Driver
 
             //KUMA: 元に戻す
 
+            pw.checkJumpIndexSI = false;
+            pw.checkJumpIndexBX = true;
             r.bx = r.stack.Pop();
             a = r.si;
             r.si = r.bx;

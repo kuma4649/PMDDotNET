@@ -97,8 +97,8 @@ namespace PMDDotNET.Driver
                 pw.cmd = pw.md[r.si];
                 r.al = (byte)pw.md[r.si].dat;
 
-                if (r.si == pw.jumpIndex)
-                    pw.jumpIndex = -1;//KUMA:Added
+                //if (r.si == pw.jumpIndex)
+                    //pw.jumpIndex = -1;//KUMA:Added
 
                 r.si++;
                 if (r.al < 0x80) goto mp2m;

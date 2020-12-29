@@ -1056,6 +1056,8 @@ namespace PMDDotNET.Driver
 
         //pmdDotNET 独自
         public int jumpIndex = -1;
+        public bool checkJumpIndexSI = false;
+        public bool checkJumpIndexBX = false;
 
 
 

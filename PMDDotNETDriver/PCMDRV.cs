@@ -39,7 +39,7 @@ namespace PMDDotNET.Driver
             if (r.si == 0)
                 return;// goto pcmmain_ret;
 
-            if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
+            //if (r.si == pw.jumpIndex) pw.jumpIndex = -1;//KUMA:Added
 
             Func<object> ret = null;
             if (pw.partWk[r.di].partmask != 0)
@@ -90,8 +90,8 @@ namespace PMDDotNET.Driver
                 pw.cmd = pw.md[r.si];
                 r.al = (byte)pw.md[r.si].dat;
 
-                if (r.si == pw.jumpIndex)
-                    pw.jumpIndex = -1;//KUMA:Added
+                //if (r.si == pw.jumpIndex)
+                    //pw.jumpIndex = -1;//KUMA:Added
 
                 r.si++;
 

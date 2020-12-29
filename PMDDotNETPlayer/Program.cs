@@ -255,7 +255,7 @@ namespace PMDDotNET.Player
                 //dop.ppsdrv = ppsdrv;
                 dop.envPmd = envPmd;
                 dop.srcFile = srcFile;
-                dop.jumpIndex = -1;// 112;// -1;
+                dop.jumpIndex = -1;// -1;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
                 for(int i = 0; i < opt.Count; i++)

@@ -5,6 +5,8 @@ namespace PMDDotNET.Driver
 {
     public class x86Register
     {
+        public PW pw = null;
+
         public byte al;
         public byte ah;
         public ushort ax
@@ -30,6 +32,12 @@ namespace PMDDotNET.Driver
             }
             set
             {
+                if (pw != null && pw.checkJumpIndexBX)
+                {
+                    if (value == pw.jumpIndex)
+                        pw.jumpIndex = -1;
+                }
+
                 bh = (byte)(value >> 8);
                 bl = (byte)value;
             }
@@ -67,7 +75,22 @@ namespace PMDDotNET.Driver
 
         public ushort di { get; internal set; }
 
-        public ushort si { get; internal set; }
+        private ushort _si;
+        public ushort si {
+            get
+            {
+                return _si;
+            }
+            set
+            {
+                if (pw != null && pw.checkJumpIndexSI)
+                {
+                    if (value == pw.jumpIndex) 
+                        pw.jumpIndex = -1;
+                }
+                _si = value;
+            }
+        }
 
         public ushort bp { get; internal set; }
 

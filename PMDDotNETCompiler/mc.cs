@@ -4102,7 +4102,7 @@ namespace PMDDotNET.Compiler
                 if (skipSW == 2)
                 {
                     //音階コマンドのみ対象とする
-                    if (bbx < 9)
+                    if (bbx < 9 || bbx==0x33)
                     {
                         skipIndex = bdi;
                         skipSW = 3;
