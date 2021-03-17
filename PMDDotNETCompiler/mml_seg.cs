@@ -354,6 +354,7 @@ namespace PMDDotNET.Compiler
 
 		public List<string> includeFileHistory = new List<string>();
 		public int includeFileHistoryPos;
+		public object currentDocument;
 		public string currentMMLFile;
 		public Stack<string> includeFileHistoryStack = new Stack<string>();
 

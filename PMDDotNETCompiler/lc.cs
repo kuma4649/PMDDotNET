@@ -213,6 +213,9 @@ namespace PMDDotNET.Compiler
 
             part_chr++;
             part_num++;
+            if (part_chr == 'G') part_type = "SSG";
+            if (part_chr == 'H') part_type = "SSG";
+            if (part_chr == 'I') part_type = "SSG";
             if (part_chr < 'K') return enmPart_ends.part_loop;
 
             int di = work.di;
@@ -228,7 +231,7 @@ namespace PMDDotNET.Compiler
                 char al_c = bx < 3 ? _fm3_partchr[bx] : _pcm_partchr[bx - 3];
                 part_chr = al_c;
                 part_num = bx < 3 ? bx : (bx - 3);
-                part_type = bx < 3 ? "FM3ex" : "PPZ8";
+                part_type = bx < 3 ? "FMOPNex" : "PPZ8";
                 if (work.di < 3) fm3_adr[work.di] = 0;
                 else pcm_adr[work.di - 3] = 0;
 
@@ -720,7 +723,7 @@ namespace PMDDotNET.Compiler
 
 
         public string part_mes = "Part ";
-        public string part_type = "YM2608";
+        public string part_type = "FMOPN";
         public char part_chr = ' ';
         public int part_num = 0;
         private string part_chr_n = "\tLength : ";

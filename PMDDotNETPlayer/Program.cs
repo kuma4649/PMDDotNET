@@ -1119,7 +1119,7 @@ Welcome to PMDDotNET !
 
             if (arg.port == 0x03)
             {
-                return ppz8em.LoadPcm(0, (byte)arg.address, (byte)arg.data, (byte[])arg.addtionalData);
+                return ppz8em.LoadPcm(0, (byte)arg.address, (byte)arg.data, (byte[][])arg.addtionalData);
             }
             else
             {

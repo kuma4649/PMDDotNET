@@ -6155,6 +6155,12 @@ namespace PMDDotNET.Compiler
 
         private enmPass2JumpTable bp9()
         {
+            enmMMLType mt = enmMMLType.Note;
+            if (work.al == 0xf)
+            {
+                mt = enmMMLType.Rest;
+            }
+
             bool cy = lngset2(out int bx, out byte al);
             work.bx = bx;
             work.al = al;
@@ -6182,7 +6188,17 @@ namespace PMDDotNET.Compiler
             MmlDatum dmy = m_seg.m_buf.Get(work.di - 1);
 
             List<object> args = new List<object>();
-            args.Add((mml_seg.octave << 4) | mml_seg.ontei);
+            if (lp.part != "Rhythm")
+            {
+                args.Add((mml_seg.octave << 4) | mml_seg.ontei);
+            }
+            else
+            {
+                //if (mt == enmMMLType.Note)
+                    args.Add((int)mml_seg.lastprg);//K partの場合は音色番号をセット
+                //else
+                    //args.Add(-1);
+            }
             args.Add(mml_seg.leng);
 
             if (dmy.args != null && dmy.args.Count > 2 && dmy.args[2]!=null)
@@ -6196,6 +6212,7 @@ namespace PMDDotNET.Compiler
             }
 
             dmy.type = enmMMLType.Note;
+
             dmy.args = args;
             dmy.linePos = lp;
 
@@ -6235,6 +6252,7 @@ namespace PMDDotNET.Compiler
             p++;
 
             return new LinePos(
+                mml_seg.currentDocument,
                 mml_seg.currentMMLFile//.mml_filename
                 , Math.Max(mml_seg.line, 1)
                 , Math.Max(mml_seg.stPos - mml_seg.linehead + 1, 1)
@@ -6242,14 +6260,14 @@ namespace PMDDotNET.Compiler
                 , mml_seg.ongen == mml_seg.pcm_ex
                   ? "PPZ8"
                   : (mml_seg.chipCh < 6
-                    ? "FM"
+                    ? "FMOPN"
                     : (mml_seg.chipCh >= 6 && mml_seg.chipCh <= 8
-                        ? "FM3ex"
+                        ? "FMOPNex"
                         : (mml_seg.chipCh >= 9 && mml_seg.chipCh <= 11
                             ? "SSG"
                             : (mml_seg.chipCh == 18
                                 ? "ADPCM"
-                                : ""
+                                : "Rhythm"
                               )
                           )
                       )

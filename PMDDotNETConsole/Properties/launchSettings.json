@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-LOGLEVEL=DEBUG  /V /c c:\\test\\pmdSkipBug.mml"
+      "commandLineArgs": "-LOGLEVEL=TRACE  /V /c c:\\test\\pmdtracebug_ikunagae.mml"
     }
   }
 }

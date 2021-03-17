@@ -162,14 +162,14 @@ namespace PMDDotNET.Driver
             p8_load_main:;
             byte[] pcmData = GetPCMDataFromFile(pw.filename_ofs);
             ppzPcmData[r.cl] = pcmData;
-            ChipDatum cd = new ChipDatum(0x03, r.cl, r.ch, 0, pcmData);//LoadPCM
+            ChipDatum cd = new ChipDatum(0x03, r.cl, r.ch, 0, ppzPcmData);// pcmData);//LoadPCM
             int ret = ppz8em(cd);
 
             if (ret==0) goto p8_load_exit;//KUMA:読み込めた
             if (ret!=2) goto p8_load_exit;//; file not found or 形式が違うなら
 
             r.ch ^= 1;//; もう片方の形式も
-            cd = new ChipDatum(0x03, r.cl, r.ch, 0, pcmData);//LoadPCM
+            cd = new ChipDatum(0x03, r.cl, r.ch, 0, ppzPcmData);// pcmData);//LoadPCM
             ret = ppz8em(cd);//pcm loadを試してみる
 
         p8_load_exit:;
