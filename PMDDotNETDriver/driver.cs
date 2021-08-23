@@ -281,8 +281,16 @@ namespace PMDDotNET.Driver
             throw new NotImplementedException();
         }
 
-        public void Init(string fileName, Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, MmlDatum[] srcBuf, object addtionalOption)
+        public void Init(List<ChipAction> chipsAction, MmlDatum[] srcBuf, Func<string, Stream> appendFileReaderCallback_, object addtionalOption)
         {
+            //    throw new NotImplementedException();
+            //}
+
+            //public void Init(Action<ChipDatum> opnaWrite, Action<long, int> opnaWaitSend, MmlDatum[] srcBuf, object addtionalOption)
+            //{
+            Action<ChipDatum> opnaWrite = chipsAction[0].WriteRegister;
+            Action<long, int> opnaWaitSend = chipsAction[0].WaitSend;
+
             object[] option = (object[])addtionalOption;
 
             object[] pdnos = (object[])option[0];
@@ -305,7 +313,7 @@ namespace PMDDotNET.Driver
 
             Func<string, Stream> appendFileReaderCallback = 
                 (pdnos.Length < 13 || pdnos[12] == null) 
-                ? CreateAppendFileReaderCallback(Path.GetDirectoryName(fileName)) 
+                ? CreateAppendFileReaderCallback(Path.GetDirectoryName(pdno.srcFile)) 
                 : (Func<string, Stream>)pdnos[12];
 
             if (pdnos.Length == 14)
@@ -588,5 +596,6 @@ namespace PMDDotNET.Driver
         {
             throw new NotImplementedException();
         }
+
     }
 }
