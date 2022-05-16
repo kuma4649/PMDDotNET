@@ -571,8 +571,11 @@ namespace PMDDotNET.Compiler
                 mc.print_mes(loop_mes2);
             }
 
+            if (work.compilerInfo.partName == null) work.compilerInfo.partName = new List<string>();
             work.compilerInfo.partName.Add(part_chr.ToString());
+            if (work.compilerInfo.totalCount == null) work.compilerInfo.totalCount = new List<int>();
             work.compilerInfo.totalCount.Add(tc);
+            if (work.compilerInfo.loopCount == null) work.compilerInfo.loopCount = new List<int>();
             work.compilerInfo.loopCount.Add(lc);
 
             return;
