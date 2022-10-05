@@ -1,4 +1,7 @@
 更新履歴
+TAG059 2022/10/05
+  Compiler:英文エラーメッセージの調整(Thanks! pedipanol.)
+
 TAG058 2022/05/16
   Compiler:コンパイル情報を格納する際のバグ修正
 
