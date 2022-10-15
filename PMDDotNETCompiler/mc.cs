@@ -4635,7 +4635,7 @@ namespace PMDDotNET.Compiler
             lngcal();
             cy = futen();
             cch = (byte)m_seg.m_buf.Get(work.di - 1).dat;
-            if (al >= cch)//KUMA:ディレイ値が指定音長よりも長い場合はエラー
+            if (work.al >= cch)//KUMA:ディレイ値が指定音長よりも長い場合はエラー
             {
                 error('}', 8, work.si);
             }

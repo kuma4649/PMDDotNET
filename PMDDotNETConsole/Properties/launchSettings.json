@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-LOGLEVEL=TRACE  /V /c c:\\test\\pmdtracebug_ikunagae.mml"
+      "commandLineArgs": "-LOGLEVEL=TRACE  /V /c D:\\bootcamp\\FM音源\\data\\自作\\test\\testPMDポルタメント\\testPMDポルタメント.mml"
     }
   }
 }
