@@ -18,7 +18,7 @@ namespace PMDDotNET.Console
         private static Common.Environment env = null;
 
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             Log.writeLine = WriteLine;
 #if DEBUG
@@ -33,7 +33,7 @@ namespace PMDDotNET.Console
             if (args == null || args.Length-fnIndex < 1 )
             {
                 WriteLine(LogLevel.ERROR, msg.get("E0600"));
-                return;
+                return 1;
             }
 
             try
@@ -42,17 +42,18 @@ namespace PMDDotNET.Console
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 #endif
 
-                Compile(args, fnIndex);
+                return Compile(args, fnIndex);
 
             }
             catch (Exception ex)
             {
                 Log.WriteLine(LogLevel.FATAL, ex.Message);
                 Log.WriteLine(LogLevel.FATAL, ex.StackTrace);
+                return 1;
             }
         }
 
-        private static void Compile(string[] args,int argIndex)
+        private static int Compile(string[] args,int argIndex)
         {
             try
             {
@@ -88,7 +89,7 @@ namespace PMDDotNET.Console
                 if (string.IsNullOrEmpty(srcFile))
                 {
                     Log.WriteLine(LogLevel.ERROR, msg.get("E0601"));
-                    return;
+                    return 1;
                 }
 
                 byte[] ffFileBuf = null;
@@ -179,6 +180,7 @@ namespace PMDDotNET.Console
                                 File.WriteAllBytes(outfn, compiler.outFFFileBuf);
                             }
                         }
+                        else return 1;
                     }
 
                 }
@@ -214,11 +216,12 @@ namespace PMDDotNET.Console
             {
                 Log.WriteLine(LogLevel.FATAL, ex.Message);
                 Log.WriteLine(LogLevel.FATAL, ex.StackTrace);
+                return 1;
             }
             finally
             {
             }
-
+            return 0;
         }
 
         private static Stream appendFileReaderCallback(string arg)
