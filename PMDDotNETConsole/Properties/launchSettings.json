@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETConsole": {
       "commandName": "Project",
-      "commandLineArgs": "-LOGLEVEL=INFO  /V /c C:\\Users\\kuma\\Downloads\\pmdtest.mml"
+      "commandLineArgs": "-LOGLEVEL=INFO  /V /c D:\\bootcamp\\FM音源\\data\\自作\\test\\testPMDTranspose.mml"
     }
   }
 }

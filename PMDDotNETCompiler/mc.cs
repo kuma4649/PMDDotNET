@@ -41,14 +41,14 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         //;
         //;	MML Compiler/Effect Compiler FOR PC-9801/88VA 
-        //;							ver 4.8r
+        //;							ver 4.8s
         //;
         //;==============================================================================
         //	.186
 
         public static string ver = "4.8s";// version
         public static int vers = 0x48;
-        public static string date = "2020/01/22";// date
+        public static string date = "2023/09/23";// date
 
 #if !hyouka
         public int hyouka = 0;//1で評価版(save機能cut)
@@ -2638,14 +2638,17 @@ namespace PMDDotNET.Compiler
         //;==============================================================================
         private void transpose_set()
         {
-            int bx = 0;
-            byte al = 0;
-            if (lngset(out bx, out al))
-            {
-                error('#', 7, work.si);
-            }
+            _ = getnum(out _, out byte dl);//230923 FIXED
+            mml_seg.transpose = dl;//
+            
+            //int bx = 0;
+            //byte al = 0;
+            //if (lngset(out bx, out al))
+            //{
+            //    error('#', 7, work.si);
+            //}
 
-            mml_seg.transpose = al;
+            //mml_seg.transpose = al;
         }
 
 
@@ -7711,19 +7714,21 @@ namespace PMDDotNET.Compiler
             return enmPass2JumpTable.olc03;
 
         psgprg:;
+            work.bx = (byte)work.bx;
+            if (work.bx >= mml_seg.psgenvdat_max + 1) work.bx = 0;
             //work.bx *= 4;
             //work.bx = (byte)work.bx;
             work.bx += 0;//offset psgenvdat
             cmd = new MmlDatum((byte)0xf0, enmMMLType.Instrument, MakeLinePos(), new object[] { });
             m_seg.m_buf.Set(work.di++, cmd);
             cx = 4;
-            if (work.bx > 9)
-            {
-                musicDriverInterface.Log.WriteLine(LogLevel.WARNING,
-                    string.Format(msg.get("W0100"), work.bx)
-                    );
-                work.bx = 0;
-            }
+            //if (work.bx > 9)
+            //{
+            //    musicDriverInterface.Log.WriteLine(LogLevel.WARNING,
+            //        string.Format(msg.get("W0100"), work.bx)
+            //        );
+            //    work.bx = 0;
+            //}
             //pplop0:;
             for (int i = 0; i < 4; i++)
             {

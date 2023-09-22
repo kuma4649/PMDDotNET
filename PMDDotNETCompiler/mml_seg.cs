@@ -186,8 +186,8 @@ namespace PMDDotNET.Compiler
 			,new byte[]{ 1,2,0,1 }// @8 Brass 1
 			,new byte[]{ 1,2,24,1 }// @9 Brass 2
 		};
-
-		public int max_part = 11;
+		public int psgenvdat_max = 9;
+        public int max_part = 11;
 		public int fm = 0;
 		public int fm2 = 1;
 		public int psg = 2;
