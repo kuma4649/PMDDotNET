@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29920.165
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompiler", "PMDDotNETCompiler\PMDDotNETCompiler.csproj", "{355325D6-883D-4C6B-AFE4-E62164B84689}"
 EndProject
@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "document", "document", "{97
 	ProjectSection(SolutionItems) = preProject
 		CHANGE.txt = CHANGE.txt
 		compile.bat = compile.bat
+		LICENSE.txt = LICENSE.txt
 		makeZip.bat = makeZip.bat
 		play.bat = play.bat
 		README.md = README.md
