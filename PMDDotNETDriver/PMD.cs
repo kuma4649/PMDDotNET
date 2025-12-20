@@ -3616,6 +3616,15 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].lfo_wave = r.al;
 
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Lfo, pw.cmd.linePos
+                , (int)1 //wave
+                , (byte)pw.partWk[r.di].lfo_wave
+                , (byte)pw.partWk[r.di]._lfo_wave
+                );
+            WriteDummy(cd);
+
             return null;
         }
 
@@ -5487,6 +5496,14 @@ namespace PMDDotNET.Driver
             r.al = r.rol(r.al, 1);
             pw.partWk[r.di].lfoswi &= 0x8f;
             pw.partWk[r.di].lfoswi |= r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.LfoSwitch, pw.cmd.linePos
+                , (int)(sbyte)pw.partWk[r.di].lfoswi
+                );
+            WriteDummy(cd);
+
             lfo_change();
             lfoinit_main();
             lfo_change();
@@ -5608,6 +5625,21 @@ namespace PMDDotNET.Driver
             pw.partWk[r.di].time = r.al;
             pw.partWk[r.di].time2 = r.al;
 
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Lfo, pw.cmd.linePos
+                , (int)0
+                , (byte)pw.partWk[r.di].delay
+                , (byte)pw.partWk[r.di].speed
+                , (sbyte)pw.partWk[r.di].step
+                , (byte)pw.partWk[r.di].time
+                , (byte)pw.partWk[r.di]._delay
+                , (byte)pw.partWk[r.di]._speed
+                , (sbyte)pw.partWk[r.di]._step
+                , (byte)pw.partWk[r.di]._time
+                );
+            WriteDummy(cd);
+
             return lfoinit_main;
         }
 
@@ -5643,6 +5675,14 @@ namespace PMDDotNET.Driver
             r.al &= 7;
             pw.partWk[r.di].lfoswi &= 0xf8;
             pw.partWk[r.di].lfoswi |= r.al;
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.LfoSwitch, pw.cmd.linePos
+                , (int)(sbyte)pw.partWk[r.di].lfoswi
+                );
+            WriteDummy(cd);
+
             return lfoinit_main;
         }
 

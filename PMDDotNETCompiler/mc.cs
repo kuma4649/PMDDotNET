@@ -8597,13 +8597,14 @@ namespace PMDDotNET.Compiler
             work.si--;
         lfoset_main:;
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
+            MmlDatum md = new MmlDatum(work.ah, enmMMLType.Lfo, MakeLinePos(), new object[] { work.ah, 0, 0, 0, 0 });
+            m_seg.m_buf.Set(work.di++, md);
 
             int ax_p = work.ah * 0x100 + work.al;//ah(A/B)保存
             work.dx = ((byte)'M') * 0x100 + (byte)work.dx;
             get_clock(); //delay
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
-
+            md.args[1] = work.al;
             work.ah = (byte)(ax_p >> 8);
             work.al = (byte)ax_p;
 
@@ -8613,6 +8614,7 @@ namespace PMDDotNET.Compiler
 
             cy = getnum(out bx, out dl);// speed
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md.args[2] = dl;
 
             work.al = (byte)(work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
 
@@ -8623,6 +8625,7 @@ namespace PMDDotNET.Compiler
 
             cy = getnum(out bx, out dl);// depth1
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md.args[3] = dl;
 
             work.al = (byte)(work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
 
@@ -8633,6 +8636,7 @@ namespace PMDDotNET.Compiler
 
             cy = getnum(out bx, out dl);// depth2
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md.args[4] = dl;
 
             return enmPass2JumpTable.olc0;
 
@@ -8641,29 +8645,37 @@ namespace PMDDotNET.Compiler
             work.si--;
             if (work.ah != 0xf2) goto delay_only2;
 
-            m_seg.m_buf.Set(work.di - 2, new MmlDatum(0xc2));
+            md.dat = 0xc2;
+            //m_seg.m_buf.Set(work.di - 2, new MmlDatum(0xc2));
             return enmPass2JumpTable.olc0;
 
         delay_only2:;
 
-            m_seg.m_buf.Set(work.di - 2, new MmlDatum(0xb9));
+            md.dat = 0xb9;
+            //m_seg.m_buf.Set(work.di - 2, new MmlDatum(0xb9));
             return enmPass2JumpTable.olc0;
 
         //;==============================================================================
         //; COMMAND "MX" LFO Speed Extended Mode Set Ver.4.0m～
         //;==============================================================================
         extlfo_set:;
+
             work.al = (byte)(work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a);
             work.ah = 0xbb;
             if (work.al == (byte)'B') goto extlfo_set_main;
             work.ah = 0xca;
             if (work.al == (byte)'A') goto extlfo_set_main;
             work.si--;
+
         extlfo_set_main:;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
+            
+            MmlDatum md_1 = new MmlDatum(work.ah, enmMMLType.Lfo, MakeLinePos(), new object[] { work.ah, 0 });
+            m_seg.m_buf.Set(work.di++, md_1);
+            
             cy = getnum(out bx, out dl);
             work.al = dl;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_1.args[1] = work.al;
 
             return enmPass2JumpTable.olc0;
 
@@ -8679,11 +8691,14 @@ namespace PMDDotNET.Compiler
             if (work.al == (byte)'A') goto depthset_main;
             work.si--;
         depthset_main:;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
+            MmlDatum md_depth = new MmlDatum(work.ah, enmMMLType.Lfo, MakeLinePos(), new object[] { work.ah, 0, 0, 0, 0 });
+            m_seg.m_buf.Set(work.di++, md_depth);
             byte ah_p = work.ah;
             byte al_p = work.al;
             cy = getnum(out bx, out dl);
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md_depth.args[1] = dl;
+
             if (dl != 0)// 0の場合は
             {
                 goto dps_nextparam;
@@ -8709,6 +8724,7 @@ namespace PMDDotNET.Compiler
             cy = getnum(out bx, out dl);
 
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md_depth.args[2] = dl;
 
             work.ah = ah_p;
             work.al = al_p;
@@ -8724,6 +8740,7 @@ namespace PMDDotNET.Compiler
             //; 値３(counter)   4.7a～
             work.al = 0xb7;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_depth.args[3] = dl;
 
             ah_p = work.ah;
             al_p = work.al;
@@ -8746,10 +8763,12 @@ namespace PMDDotNET.Compiler
         mdc_noa:;
             work.al = (byte)work.bx;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_depth.args[4] = work.al;
             return enmPass2JumpTable.olc0;
 
         dps_param2set:;
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md_depth.args[2] = dl;
             work.ah = ah_p;
             work.al = al_p;
             return enmPass2JumpTable.olc0;
@@ -8770,7 +8789,8 @@ namespace PMDDotNET.Compiler
             al_p = work.al;
             mml_seg.bend2 = 0;
             mml_seg.bend3 = 1;
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
+            MmlDatum md_porta = new MmlDatum(work.ah, enmMMLType.Lfo, MakeLinePos(), new object[] { work.ah, 0, 0, 0, 0, 0, 0 });
+            m_seg.m_buf.Set(work.di++, md_porta);
             cy = getnum(out bx, out dl);
             mml_seg.bend1 = (sbyte)dl;
             ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
@@ -8790,17 +8810,24 @@ namespace PMDDotNET.Compiler
         bset:;
             work.al = (byte)mml_seg.bend2;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_porta.args[1] = work.al;
 
             work.al = (byte)mml_seg.bend3;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_porta.args[2] = work.al;
 
             work.al = (byte)mml_seg.bend1;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_porta.args[3] = work.al;
 
             work.al = (byte)255;
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            md_porta.args[4] = work.al;
 
             work.dx = (ah_p - 1) * 0x100 + 1;            //0f1h or 0beh
+            md_porta.args[5] = (byte)(work.dx >> 8);
+            md_porta.args[6] = (byte)(work.dx);
+
             return enmPass2JumpTable.parset;
 
         //;==============================================================================
@@ -8821,6 +8848,9 @@ namespace PMDDotNET.Compiler
             work.al = al_p;
 
             work.dx = work.ah * 0x100 + (byte)work.dx;
+
+            work.ctype = enmMMLType.Lfo;
+            work.cargs = new object[] { (byte)(work.dx >> 8), (byte)work.dx };
 
             return enmPass2JumpTable.parset;
 
@@ -8883,7 +8913,7 @@ namespace PMDDotNET.Compiler
             }
             work.ah = work.al;
             work.al = (byte)(work.bx >> 8);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al, enmMMLType.LfoSwitch, MakeLinePos(), work.ah));
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
 
             ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
@@ -8923,7 +8953,7 @@ namespace PMDDotNET.Compiler
         lsm2_0:;
             work.ah = work.al;
             work.al = (byte)(work.bx >> 8);
-            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al));
+            m_seg.m_buf.Set(work.di++, new MmlDatum(work.al, enmMMLType.LfoSwitch, MakeLinePos(), work.ah));
             m_seg.m_buf.Set(work.di++, new MmlDatum(work.ah));
             return enmPass2JumpTable.olc0;
         }

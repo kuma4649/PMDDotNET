@@ -2,7 +2,7 @@
   "profiles": {
     "PMDDotNETPlayer": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\bootcamp\\FM音源\\data\\pmd\\pmddata\\DESIRE\\DES_01.M"
+      "commandLineArgs": "D:\\bootcamp\\FM音源\\data\\自作\\pmd\\pmdlfotest.M"
     }
   }
 }

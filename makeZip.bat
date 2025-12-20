@@ -7,8 +7,8 @@ mkdir output\player
 del /Q .\output\*.*
 del /Q .\output\compiler\*.*
 del /Q .\output\player\*.*
-xcopy .\PMDDotNETConsole.Net4\bin\Release\net472\*.* .\output\compiler\ /E /R /Y /I /K
-xcopy .\PMDDotNETPlayer\bin\Release\*.* .\output\player\ /E /R /Y /I /K
+xcopy .\PMDDotNETConsole\bin\Release\netcoreapp3.1\*.* .\output\compiler\ /E /R /Y /I /K
+xcopy .\PMDDotNETPlayer\bin\Release\net8.0\*.* .\output\player\ /E /R /Y /I /K
 del /Q .\output\*.pdb
 del /Q .\output\*.config
 del /Q .\output\compiler\*.pdb
