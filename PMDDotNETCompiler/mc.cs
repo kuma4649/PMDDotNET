@@ -8969,17 +8969,20 @@ namespace PMDDotNET.Compiler
             char ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (ch == 'X') return extenv_set();
 
-            m_seg.m_buf.Set(work.di++, new MmlDatum(0xf0));
+            MmlDatum md = new MmlDatum(0xf0, enmMMLType.Envelope, MakeLinePos(), new object[] { 0xf0, 0, 0, 0, 0, 0 });
+            m_seg.m_buf.Set(work.di++, md);
             int cx = 3;
             bool cy;
             int bx;
             byte dl;
 
             //pe0:;
+            int ind = 1;
             do
             {
                 cy = getnum(out bx, out dl);
                 m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+                md.args[ind++] = dl;
 
                 ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si++] : (char)0x1a;
                 if (ch != ',')
@@ -8991,6 +8994,7 @@ namespace PMDDotNET.Compiler
 
             cy = getnum(out bx, out dl);
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md.args[ind++] = dl;
 
             ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
             if (ch == ',') goto extend_psgenv;
@@ -8998,13 +9002,16 @@ namespace PMDDotNET.Compiler
 
         //;	4.0h Extended
         extend_psgenv:;
-            m_seg.m_buf.Set(work.di - 5, new MmlDatum(0xcd));
+            md.dat = 0xcd;
+            //m_seg.m_buf.Set(work.di - 5, new MmlDatum(0xcd));
             work.si++;
             cy = getnum(out bx, out dl);
             m_seg.m_buf.Set(work.di - 1, new MmlDatum(m_seg.m_buf.Get(work.di - 1).dat & 0xf));
+            md.args[ind - 1] = (byte)((byte)md.args[ind - 1] & 0x0f);
             dl <<= 4;
             dl &= 0xf0;
             m_seg.m_buf.Set(work.di - 1, new MmlDatum(m_seg.m_buf.Get(work.di - 1).dat | dl));
+            md.args[ind - 1] = (byte)((byte)md.args[ind - 1] | dl);
             dl = 0;
 
             ch = work.si < mml_seg.mml_buf.Length ? mml_seg.mml_buf[work.si] : (char)0x1a;
@@ -9013,6 +9020,7 @@ namespace PMDDotNET.Compiler
             cy = getnum(out bx, out dl);
         not_set_al:;
             m_seg.m_buf.Set(work.di++, new MmlDatum(dl));
+            md.args[ind++] = dl;
             work.dx = (work.dx & 0xff00) | dl;
             return enmPass2JumpTable.olc0;
         }

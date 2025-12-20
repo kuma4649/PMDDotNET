@@ -3671,6 +3671,19 @@ namespace PMDDotNET.Driver
             r.al &= 0x0f;
             pw.partWk[r.di].eenv_al = r.al;
 
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Envelope, pw.cmd.linePos
+                , (int)1
+                , (byte)pw.partWk[r.di].eenv_ar
+                , (byte)pw.partWk[r.di].eenv_dr
+                , (byte)pw.partWk[r.di].eenv_sr
+                , (byte)pw.partWk[r.di].eenv_rr
+                , (byte)pw.partWk[r.di].eenv_sl
+                , (byte)pw.partWk[r.di].eenv_al
+                );
+            WriteDummy(cd);
+
             if (pw.partWk[r.di].envf == 0xff)
                 goto not_set_count;// ノーマル＞拡張に移行したか？
 
@@ -5722,6 +5735,17 @@ namespace PMDDotNET.Driver
             r.al = (byte)pw.md[r.si++].dat;
             pw.partWk[r.di].eenv_rr = r.al;//pr2
             pw.partWk[r.di].eenv_rrc = r.al;//pr2b
+
+            //IDE向け
+            ChipDatum cd = new ChipDatum(-1, -1, -1);
+            cd.addtionalData = new MmlDatum(-1, enmMMLType.Envelope, pw.cmd.linePos
+                , (int)0
+                , (byte)pw.partWk[r.di].eenv_ar
+                , (sbyte)pw.partWk[r.di].eenv_dr
+                , (byte)pw.partWk[r.di].eenv_sr
+                , (byte)pw.partWk[r.di].eenv_rr
+                );
+            WriteDummy(cd);
 
             if (pw.partWk[r.di].envf!=0xff)
                 goto not_set_count2;//; 拡張＞ノーマルに移行したか？
