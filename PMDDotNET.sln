@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34525.116
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompiler", "PMDDotNETCompiler\PMDDotNETCompiler.csproj", "{355325D6-883D-4C6B-AFE4-E62164B84689}"
 EndProject
@@ -25,15 +25,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCommon", "PMDDotNE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETConsole", "PMDDotNETConsole\PMDDotNETConsole.csproj", "{3C6498BD-FD6E-41D2-90C2-5CF995287DFF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETConsole.Net4", "PMDDotNETConsole.Net4\PMDDotNETConsole.Net4.csproj", "{A8B4E80E-8D44-4EDB-83B0-873F729C8627}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETDriver", "PMDDotNETDriver\PMDDotNETDriver.csproj", "{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETPlayer", "PMDDotNETPlayer\PMDDotNETPlayer.csproj", "{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompilerTestService", "PMDDotNETCompilerTestService\PMDDotNETCompilerTestService.csproj", "{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PMDDotNETCompilerUnitTest", "PMDDotNETCompilerUnitTest\PMDDotNETCompilerUnitTest.csproj", "{C482C57B-4996-4511-AAF8-95ADE3B1F298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PMDDotNETPlayer", "PMDDotNETPlayer\PMDDotNETPlayer.csproj", "{AF9EAB58-2BF8-4B7D-AEA4-2310627D7512}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,18 +51,10 @@ Global
 		{3C6498BD-FD6E-41D2-90C2-5CF995287DFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C6498BD-FD6E-41D2-90C2-5CF995287DFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C6498BD-FD6E-41D2-90C2-5CF995287DFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8B4E80E-8D44-4EDB-83B0-873F729C8627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8B4E80E-8D44-4EDB-83B0-873F729C8627}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8B4E80E-8D44-4EDB-83B0-873F729C8627}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8B4E80E-8D44-4EDB-83B0-873F729C8627}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D6B689A-6CC1-478E-97C1-41D95C78D0F9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8935BD5-EFDE-4E93-ABC4-CCF183D38881}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C23E67F6-0FBF-448F-8E51-0649D14DCF5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,6 +63,10 @@ Global
 		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C482C57B-4996-4511-AAF8-95ADE3B1F298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF9EAB58-2BF8-4B7D-AEA4-2310627D7512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF9EAB58-2BF8-4B7D-AEA4-2310627D7512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF9EAB58-2BF8-4B7D-AEA4-2310627D7512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF9EAB58-2BF8-4B7D-AEA4-2310627D7512}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

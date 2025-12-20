@@ -1,4 +1,8 @@
 更新履歴
+TAG063 2025/12/20
+  Common/Compiler/Driver:.NETStandard2.1に変更
+  Player:.NET8に変更
+
 TAG062 2023/06/24
   Compiler:transposeの負数対応。(mc.asmの暫定対応に合わせたもの)
   Compiler:psgprgの処理をオリジナルに合わせた。(出力されるデータに差異無し)

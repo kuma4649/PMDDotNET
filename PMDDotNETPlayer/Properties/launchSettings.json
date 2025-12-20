@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PMDDotNETPlayer": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\bootcamp\\FM音源\\data\\pmd\\pmddata\\DESIRE\\DES_01.M"
+    }
+  }
+}

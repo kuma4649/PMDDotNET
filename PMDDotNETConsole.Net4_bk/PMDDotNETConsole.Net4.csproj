@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>PMDDotNETConsole</RootNamespace>
     <AssemblyName>PMDDotNETConsole</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net481</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>

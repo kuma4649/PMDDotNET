@@ -1,16 +1,18 @@
-﻿using PMDDotNET.Common;
-using musicDriverInterface;
+﻿using musicDriverInterface;
 using NAudio.Wave;
 using Nc86ctl;
 using NScci;
+using PMDDotNET.Common;
+using PMDDotNET.Driver;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using System.Runtime.CompilerServices;
-using PMDDotNET.Driver;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Xml;
 
 namespace PMDDotNET.Player
 {
@@ -42,7 +44,7 @@ namespace PMDDotNET.Player
                 }
             }
         }
-        private static readonly uint SamplingRate = 55467;//44100;
+        private static readonly uint SamplingRate = 55467;
         private static readonly uint SamplingRatePPSGIMIC = 44100;
         private static readonly uint SamplingRatePPSSCCI = 16000;
         private static readonly uint samplingBuffer = 1024;
@@ -79,7 +81,6 @@ namespace PMDDotNET.Player
         {
             Log.writeLine += WriteLine;
 #if DEBUG
-            //Log.writeLine += WriteLineF;
             Log.level = LogLevel.INFO;
 #else
             Log.level = LogLevel.INFO;
@@ -99,7 +100,7 @@ namespace PMDDotNET.Player
                 }
             }
 
-            if (mIndex<0)
+            if (mIndex < 0)
             {
                 Log.WriteLine(LogLevel.INFO, "引数(.Mファイル)１個欲しいよぉ...");
                 return -1;
@@ -185,13 +186,13 @@ namespace PMDDotNET.Player
                     Reset = ppsdrv.Reset,
                     SamplingRate = (uint)
                         (
-                            device == 0 
-                            ? SamplingRate 
+                            device == 0
+                            ? SamplingRate
                             : (
                                 userPPSFREQ == -1
                                 ? (
-                                device == 1 
-                                ? SamplingRatePPSGIMIC 
+                                device == 1
+                                ? SamplingRatePPSGIMIC
                                 : SamplingRatePPSSCCI
                                 )
                                 : (uint)userPPSFREQ
@@ -205,7 +206,7 @@ namespace PMDDotNET.Player
                 p86em = new MDSound.P86();
                 MDSound.MDSound.Chip chip86 = new MDSound.MDSound.Chip
                 {
-                    type = MDSound.MDSound.enmInstrumentType.mpcmX68k,//TBD
+                    type = MDSound.MDSound.enmInstrumentType.mpcmX68k,
                     ID = 0,
                     Instrument = p86em,
                     Update = p86em.Update,
@@ -220,10 +221,6 @@ namespace PMDDotNET.Player
 
 
                 mds = new MDSound.MDSound(SamplingRate, samplingBuffer, new MDSound.MDSound.Chip[] { chip, chipp, chipps, chip86 });
-                //ppz8em = new PPZ8em(SamplingRate);
-                //ppsdrv = new PPSDRV(SamplingRate);
-
-
 
                 Common.Environment env = new Common.Environment();
                 env.AddEnv("pmd");
@@ -231,7 +228,7 @@ namespace PMDDotNET.Player
                 envPmd = env.GetEnvVal("pmd");
                 envPmdOpt = env.GetEnvVal("pmdopt");
 
-                List<string> opt = (envPmdOpt==null) ? (new List<string>()) : envPmdOpt.ToList();
+                List<string> opt = (envPmdOpt == null) ? (new List<string>()) : envPmdOpt.ToList();
                 for (int i = fnIndex; i < args.Length; i++)
                 {
                     opt.Add(args[i]);
@@ -251,19 +248,17 @@ namespace PMDDotNET.Player
                 dop.usePPZ = usePPZ;
                 dop.isLoadADPCM = false;
                 dop.loadADPCMOnly = false;
-                //dop.ppz8em = ppz8em;
-                //dop.ppsdrv = ppsdrv;
                 dop.envPmd = envPmd;
                 dop.srcFile = srcFile;
-                dop.jumpIndex = -1;// -1;
+                dop.jumpIndex = -1;
                 List<string> pop = new List<string>();
                 bool pmdvolFound = false;
-                for(int i = 0; i < opt.Count; i++)
+                for (int i = 0; i < opt.Count; i++)
                 {
                     if (i == mIndex) continue;
                     string op = opt[i].ToUpper().Trim();
                     pop.Add(op);
-                    if(op.IndexOf("-D") >= 0 || op.IndexOf("/D") >= 0)
+                    if (op.IndexOf("-D") >= 0 || op.IndexOf("/D") >= 0)
                         pmdvolFound = true;
                 }
 
@@ -284,15 +279,15 @@ namespace PMDDotNET.Player
 
                 //AUTO指定の場合に構成が変わるので、構成情報を受け取ってから音量設定を行う
                 isNRM = dop.isNRM;
-                isSPB=dop.isSPB;
+                isSPB = dop.isSPB;
                 isVA = dop.isVA;
                 usePPS = dop.usePPS;
                 usePPZ = dop.usePPZ;
                 string[] pmdOptionVol = SetVolume();
                 //ユーザーがコマンドラインでDオプションを指定していない場合はpmdVolを適用させる
-                if (!pmdvolFound && pmdOptionVol != null && pmdOptionVol.Length>0)
+                if (!pmdvolFound && pmdOptionVol != null && pmdOptionVol.Length > 0)
                 {
-                    ((Driver.Driver)drv).resetOption(pmdOptionVol);//
+                    ((Driver.Driver)drv).resetOption(pmdOptionVol);
                 }
 
 
@@ -338,14 +333,14 @@ namespace PMDDotNET.Player
                     {
                         if (drv.GetStatus() == 0)
                         {
-                            System.Threading.Thread.Sleep((int)(latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
+                            System.Threading.Thread.Sleep((int)(latency * 2.0));
                         }
                         break;
                     }
 
                     if (loop != 0 && drv.GetNowLoopCounter() > loop)
                     {
-                        System.Threading.Thread.Sleep((int)(latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
+                        System.Threading.Thread.Sleep((int)(latency * 2.0));
                         break;
                     }
                 }
@@ -354,7 +349,7 @@ namespace PMDDotNET.Player
                 drv.StopRendering();
                 ((Driver.Driver)drv).dispStatus();
             }
-            catch(PmdException pe)
+            catch (PmdException pe)
             {
                 Log.WriteLine(LogLevel.ERROR, pe.Message);
             }
@@ -404,58 +399,45 @@ namespace PMDDotNET.Player
         {
             List<string> ret = new List<string>();
 
-            if (device == 0 || device == 3)//EMU or wav
+            if (device == 0 || device == 3)
             {
-                //fmgen向け設定
-                //fm:ssg = 1:0.25で調整
-                //
-                //  pmd内で1:(0.45～0.50)に補正される
-                //  ・OPNの場合のみpmdのコード上でfmの音量を下げるコードを通過する
-                //  ・GIMIC ProとLiteのターミナルでも mファイルを再生し確認
                 VolumeV = new int[] { 0, 0, 0, 0 };
                 if (isNRM)
                 {
-                    //PC98のOPNを想定
-                    VolumeV[0] = 12;//FM  98は88よりFMが大きい
-                    VolumeV[1] = -5;//SSG
-                    VolumeV[2] = -191;//Rhythm
-                    VolumeV[3] = -191;//Adpcm
+                    VolumeV[0] = 12;
+                    VolumeV[1] = -5;
+                    VolumeV[2] = -191;
+                    VolumeV[3] = -191;
                 }
                 else
                 {
-                    //OPNA(-86/SPB)を想定
-                    VolumeV[0] = 0;//FM
-                    VolumeV[1] = -5;//SSG
-                    VolumeV[2] = 0;//Rhythm //未調査
-                    VolumeV[3] = 0;//Adpcm //未調査
+                    VolumeV[0] = 0;
+                    VolumeV[1] = -5;
+                    VolumeV[2] = 0;
+                    VolumeV[3] = 0;
                 }
             }
-            else if (device == 1)//GIMIC
+            else if (device == 1)
             {
                 if (VolumeR == null)
                 {
                     VolumeR = new int[] { 0 };
                     if (isNRM)
-                        VolumeR[0] = 31;//GMC-OPNA に31を送信
+                        VolumeR[0] = 31;
                     else
-                        VolumeR[0] = 66;//GMC-OPNA に66を送信
+                        VolumeR[0] = 66;
                 }
 
-                //GMC-OPNA以外のOPNA系モジュール
                 if (!isGimicOPNA)
                 {
-                    //pmdのオプションで調整
                     ret.Add("/DF12");
                     ret.Add("/DS0");
                 }
             }
-            else if (device == 2)//SCCI
+            else if (device == 2)
             {
-                //SCCIの場合はバランス調整はユーザー任せ
             }
 
-
-            //一度目の音量設定時は反映を行わない
             if (VolumeV != null)
             {
                 mds.SetVolumeYM2608FM(VolumeV[0]);
@@ -466,10 +448,10 @@ namespace PMDDotNET.Player
 
             if (VolumeR != null)
             {
-                if (isGimicOPNA) //GMC-OPNA
+                if (isGimicOPNA)
                 {
                     rsc.setSSGVolume((byte)VolumeR[0]);
-                    Thread.Sleep(500);//少し休む(即再生を始めると音が飛ぶ)
+                    Thread.Sleep(500);
                 }
             }
 
@@ -488,7 +470,7 @@ namespace PMDDotNET.Player
 
         static void WriteLine(LogLevel level, string msg)
         {
-            if (level == LogLevel.ERROR || level== LogLevel.FATAL)
+            if (level == LogLevel.ERROR || level == LogLevel.FATAL)
                 Console.ForegroundColor = ConsoleColor.Red;
 
 #if DEBUG
@@ -580,7 +562,7 @@ namespace PMDDotNET.Player
                 i++;
             }
 
-            if (device == 3 && loop == 0) loop = 1;//wave出力の場合、無限ループは1に変更
+            if (device == 3 && loop == 0) loop = 1;
             return i;
         }
 
@@ -613,6 +595,7 @@ namespace PMDDotNET.Player
                 userPPSFREQ = Math.Min(Math.Max(n, 2000), 192000);
             }
         }
+
         private static void OptionSetPPSWAIT(string v)
         {
             if (string.IsNullOrEmpty(v)) return;
@@ -647,9 +630,9 @@ namespace PMDDotNET.Player
             string[] prm = v.Split(',');
             if (prm == null || prm.Length < 1) return;
             VolumeV = new int[4] { 0, 0, 0, 0 };
-            for(int i = 0; i < prm.Length; i++)
+            for (int i = 0; i < prm.Length; i++)
             {
-                if(int.TryParse(prm[i],out VolumeV[i]))
+                if (int.TryParse(prm[i], out VolumeV[i]))
                     VolumeV[i] = Math.Min(Math.Max(VolumeV[i], -191), 20);
             }
         }
@@ -840,7 +823,7 @@ Welcome to PMDDotNET !
                 case 1://GIMIC
 
                     //サイズと経過時間から、追加でウエイトする。
-                    int m = Math.Max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
+                    int m = Math.Max((int)(size / 20 - elapsed), 0);
                     Thread.Sleep(m);
 
                     //ポートも一応見る
@@ -933,8 +916,8 @@ Welcome to PMDDotNET !
                         rsc.c86ctl = nc86ctl;
                         rsc.init();
 
-                        rsc.SetMasterClock(7987200);//SoundBoardII
-                        rsc.setSSGVolume(63);//PC-8801
+                        rsc.SetMasterClock(7987200);
+                        rsc.setSSGVolume(63);
                     }
                     return rsc;
                 case 2://SCCI存在チェック
@@ -969,7 +952,7 @@ Welcome to PMDDotNET !
                             }
                         }
                     }
-                scciExit:;
+                scciExit:
                     RScciSoundChip rssc = null;
                     if (ct == null)
                     {
@@ -999,15 +982,13 @@ Welcome to PMDDotNET !
                 for (int i = 0; i < bufCnt; i++)
                 {
                     mds.Update(emuRenderBuf, 0, 2, OneFrame);
-                    //ppz8em.Update(emuRenderBuf);
-                    //ppsdrv.Update(emuRenderBuf);
 
                     buffer[offset + i * 2 + 0] = emuRenderBuf[0];
                     buffer[offset + i * 2 + 1] = emuRenderBuf[1];
 
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.WriteLine(LogLevel.FATAL, string.Format("{0} {1}", ex.Message, ex.StackTrace));
             }
@@ -1022,8 +1003,8 @@ Welcome to PMDDotNET !
             double oPPS = sw.ElapsedTicks / swFreq;
             double step = 1 / (double)SamplingRate;
             uint PPSSamplingRate = (uint)(
-                userPPSFREQ == -1 
-                ? (device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI) 
+                userPPSFREQ == -1
+                ? (device == 1 ? SamplingRatePPSGIMIC : SamplingRatePPSSCCI)
                 : (uint)userPPSFREQ);
             double stepPPS = 1 / (double)PPSSamplingRate;
 
@@ -1037,7 +1018,7 @@ Welcome to PMDDotNET !
                     double el1 = sw.ElapsedTicks / swFreq;
                     if (el1 - o >= step)
                     {
-                        if (el1 - o >= step * SamplingRate / 100.0)//閾値10ms
+                        if (el1 - o >= step * SamplingRate / 100.0)
                         {
                             do
                             {
@@ -1054,7 +1035,7 @@ Welcome to PMDDotNET !
 
                     if (el1 - oPPS >= stepPPS)
                     {
-                        if (el1 - oPPS >= stepPPS * PPSSamplingRate / 100.0)//閾値10ms
+                        if (el1 - oPPS >= stepPPS * PPSSamplingRate / 100.0)
                         {
                             do
                             {
@@ -1096,11 +1077,6 @@ Welcome to PMDDotNET !
                 }
             }
 
-#if DEBUG
-            //if (dat.address == 0x29)
-                //Log.WriteLine(LogLevel.INFO, string.Format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data, dat.port));
-#endif
-
             switch (device)
             {
                 case 0:
@@ -1141,11 +1117,7 @@ Welcome to PMDDotNET !
             }
         }
 
-
-        //static int aold = -1;
-        //static int dold = -1;
-
-        private static void PPSDRVpsg(int a,int d)
+        private static void PPSDRVpsg(int a, int d)
         {
             switch (device)
             {
@@ -1154,14 +1126,8 @@ Welcome to PMDDotNET !
                     break;
                 case 1:
                 case 2:
-                    //if (aold != a || dold != d)
-                    {
-                        rsc.setRegister(0 * 0x100 + a, d);
-                        if (ppsdrvWait > -1) rsc.setRegister(-1, ppsdrvWait);
-
-                        //aold = a;
-                        //dold = d;
-                    }
+                    rsc.setRegister(0 * 0x100 + a, d);
+                    if (ppsdrvWait > -1) rsc.setRegister(-1, ppsdrvWait);
                     break;
             }
         }
